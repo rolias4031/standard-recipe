@@ -1,16 +1,8 @@
-import { useState } from 'react';
-import { useSession, signIn } from 'next-auth/react';
-
+import { useSession } from 'next-auth/react';
+import SignInModal from 'components/auth/SignInModal';
+import Redirect from 'components/util/Redirect';
 
 export default function Home() {
-  const [email, setEmail] = useState<string>('')
   const session = useSession();
-  return (
-    <div>
-      <input  type="text" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <button type="button" onClick={() => signIn("email", { email })}>signin</button>
-      {email}
-      <div className='border bg-gray-700'>{session.status === 'authenticated' ? 'Success' : 'hi'}</div>
-    </div>
-  );
+  return session.status === 'authenticated' ? <div>Home</div> : <Redirect path='/signin' />
 }
