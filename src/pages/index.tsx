@@ -1,8 +1,15 @@
-import { useSession } from 'next-auth/react';
-import SignInModal from 'components/auth/SignInModal';
-import Redirect from 'components/util/Redirect';
+import PageGuard from 'components/auth/PageGuard';
+import StandardRecipeLogo from 'components/display/StandardRecipeLogo';
+import NavBar from 'components/NavBar';
 
 export default function Home() {
-  const session = useSession();
-  return session.status === 'authenticated' ? <div>Home</div> : <Redirect path='/signin' />
+  return (
+    <PageGuard redirectPath="/signin">
+      {(session) => (
+        <div className="">
+          <NavBar session={session} />
+        </div>
+      )}
+    </PageGuard>
+  );
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 import Redirect from 'components/util/Redirect';
 import SignInModal from 'components/auth/SignInModal';
+import PageGuard from 'components/auth/PageGuard';
 
 export default function SignIn() {
   const session = useSession();
