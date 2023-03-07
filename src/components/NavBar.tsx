@@ -6,11 +6,14 @@ import LoadingSpinner from './util/LoadingSpinner';
 
 interface NavBarProps {
   session: Session
+  styles: {
+    div: string
+  }
 }
 
-function NavBar({ session }: NavBarProps) {
+function NavBar({ session, styles }: NavBarProps) {
   return (
-    <div className="flex items-center border-b mx-10 py-4">
+    <div className={styles.div}>
       <StandardRecipeLogo styles={{ div: 'flex-1' }} />
       <div className="flex space-x-5 text-xs items-center">
         <div>{session?.user?.email}</div>

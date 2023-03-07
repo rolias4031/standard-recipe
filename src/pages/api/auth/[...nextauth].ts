@@ -1,11 +1,11 @@
-import NextAuth from 'next-auth';
+import NextAuth, { AuthOptions } from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
 import prisma from 'lib/prismadb';
 import EmailProvider from 'next-auth/providers/email';
 
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
@@ -13,6 +13,9 @@ export const authOptions = {
       from: process.env.EMAIL_FROM,
     }),
   ],
+  session: {
+    strategy: 'database'
+  },
 };
 
 export default NextAuth(authOptions);
