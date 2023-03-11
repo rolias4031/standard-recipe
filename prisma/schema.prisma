@@ -11,19 +11,21 @@ datasource db {
   relationMode = "prisma"
 }
 
+// next auth models
+
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -44,6 +46,8 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  recipes       Recipe[]  @relation("author")
+  favorites     Recipe[]  @relation("favorites")
   accounts      Account[]
   sessions      Session[]
 }
@@ -54,4 +58,87 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// standard recipe models, in order of parent - child
+
+model Recipe {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String        @default("placeholder") @db.VarChar(500)
+  status       RecipeStatus  @default(draft)
+  instructions Instruction[]
+  ingredients  Ingredient[]
+  equipment    Equipment[]
+  images       RecipeImage[]
+  author       User          @relation("author", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId     String
+  favorites    User[]        @relation("favorites")
+  createdAt    DateTime      @updatedAt
+  updatedAt    DateTime      @default(now())
+
+  // version control relations
+  parent   Recipe?  @relation("parent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId String?
+  forks    Recipe[] @relation("parent")
+}
+
+model Instruction {
+  id              String       @id @default(cuid())
+  order           String
+  description     String       @db.VarChar(500)
+  optional        Boolean      @default(false)
+  recipe          Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId        String
+  ingredientLinks Ingredient[]
+}
+
+model Equipment {
+  id       String  @id @default(cuid())
+  name     String
+  notes    String? @db.VarChar(250)
+  recipe   Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId String
+  optional Boolean @default(false)
+}
+
+model Ingredient {
+  id                String          @id @default(cuid())
+  quantity          String
+  optional          Boolean         @default(false)
+  recipe            Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId          String
+  units             IngredientUnits @relation(fields: [ingredientUnitsId], references: [id])
+  ingredientUnitsId String
+  name              IngredientName  @relation(fields: [ingredientNameId], references: [id])
+  ingredientNameId  String
+  notes             String?         @db.VarChar(250)
+  instructionLinks  Instruction[]
+}
+
+model IngredientUnits {
+  id          String       @id @default(cuid())
+  units       String
+  description String
+  Ingredient  Ingredient[]
+}
+
+model IngredientName {
+  id         String       @id @default(cuid())
+  name       String
+  Ingredient Ingredient[]
+  // potentially add a type field
+}
+
+model RecipeImage {
+  id       String @id @default(cuid())
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId String
+  url      String
+}
+
+enum RecipeStatus {
+  draft
+  archived
+  published
 }
