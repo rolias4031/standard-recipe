@@ -5,7 +5,11 @@ import { useState } from 'react';
 import NewRecipeModal from 'components/CreateRecipe/NewRecipeModal';
 
 export default function Home() {
-  const [isNewRecipeModalOpen, setIsNewRecipeModalOpen] = useState<boolean>(false);
+  const [isNewRecipeModalOpen, setIsNewRecipeModalOpen] =
+    useState<boolean>(false);
+  function closeModal() {
+    setIsNewRecipeModalOpen(false);
+  }
   return (
     <PageGuard redirectPath="/signin">
       {(session) => (
@@ -25,7 +29,7 @@ export default function Home() {
               }}
             />
             {isNewRecipeModalOpen ? (
-              <NewRecipeModal user={session?.user} />
+              <NewRecipeModal user={session?.user} onCloseModal={closeModal} />
             ) : null}
           </div>
         </div>
