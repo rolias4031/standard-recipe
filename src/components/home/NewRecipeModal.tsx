@@ -2,16 +2,19 @@ import { ModalBackdrop } from 'pirate-ui';
 import React, { useState } from 'react';
 import { SessionUser } from 'types/types';
 import ArrowLeftIcon from 'components/util/ArrowLeftIcon';
-import { useCreateNewDraftRecipe, useGetUserDraftNames } from 'lib/hooks';
+import { useCreateNewDraftRecipe } from 'lib/hooks';
 
 interface NewRecipeModalProps {
-  user?: SessionUser | undefined;
   onCloseModal: () => void;
+  recipeDraftNames: string[];
 }
 
-function NewRecipeModal({ user, onCloseModal }: NewRecipeModalProps) {
+function NewRecipeModal({
+  onCloseModal,
+  recipeDraftNames,
+}: NewRecipeModalProps) {
   const [newRecipeName, setNewRecipeName] = useState<string>('');
-  const { data, status } = useGetUserDraftNames();
+  const [ inputValid, setInputValid ] = useState<boolean>(true)
   const { mutate } = useCreateNewDraftRecipe();
 
   function newDraftRecipeHandler() {
@@ -19,9 +22,8 @@ function NewRecipeModal({ user, onCloseModal }: NewRecipeModalProps) {
   }
 
   function onChangeHandler(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!data) return
-    if (data.draftNames.includes(e.target.value)) {
-      console.log('INVALID');
+    if (recipeDraftNames.includes(e.target.value)) {
+      setInputValid(false)
     }
     setNewRecipeName(e.target.value);
   }
@@ -42,7 +44,7 @@ function NewRecipeModal({ user, onCloseModal }: NewRecipeModalProps) {
         <div className="w-full my-auto">
           <input
             type="text"
-            className="input-display w-full"
+            className={`input-display w-full ${inputValid ? '' : 'border-red-200 border'}`}
             placeholder="Name your recipe"
             value={newRecipeName}
             onChange={onChangeHandler}

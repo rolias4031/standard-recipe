@@ -1,14 +1,14 @@
 import { useRef, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createNewDraftRecipeMutation } from './mutations';
-import { fetchUserDraftNames } from './queries';
+import { fetchUserRecipes } from './queries';
 
 export const useCreateNewDraftRecipe = () => {
   return useMutation({ mutationFn: createNewDraftRecipeMutation})
 }
 
-export const useGetUserDraftNames = () => {
-  return useQuery({ queryKey: ['user', 'drafts'], queryFn: fetchUserDraftNames })
+export const useGetUserRecipes = () => {
+  return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes })
 }
 
 export const useAutoFocusOnElement = () => {

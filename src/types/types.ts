@@ -1,6 +1,7 @@
 import { NextApiRequest } from 'next';
 import { DefaultUser, Session } from 'next-auth';
 import { z } from 'zod';
+import { Prisma, Recipe } from '@prisma/client';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -24,6 +25,8 @@ export interface NewDraftRecipeMutationInputs {
   };
 }
 
+// server
+
 export interface ExtendedSession extends Session {
   userId?: string;
 }
@@ -37,32 +40,18 @@ export interface CustomError extends Error {
   errors: string[];
 }
 
-export interface UserDraftNamesPayload extends BaseApiPayload {
-  draftNames: string[];
+// queries and mutations
+
+export interface UserRecipesQueryPayload extends BasePayload {
+  recipes?: Recipe[];
+  recipeDraftNames?: string[]
 }
 
-export interface BaseApiPayload {
+export type UserRecipesQuery = Prisma.RecipeGetPayload<{
+  select: { name: true };
+}>;
+
+export interface BasePayload {
   message: string;
-}
-
-export interface Recipe {
-  id: string;
-  name: string;
-  description: string;
-  status: RecipeStatus;
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  parentId: string | null;
-}
-
-export interface ErrorResponse {
-  errors: string[];
-  message: string;
-}
-
-export enum RecipeStatus {
-  draft = 'draft',
-  published = 'published',
-  archived = 'archived',
+  errors?: string[];
 }
