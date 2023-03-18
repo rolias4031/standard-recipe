@@ -1,5 +1,5 @@
 import { NextApiRequest } from 'next';
-import { DefaultUser, Session } from 'next-auth';
+import { Session } from 'next-auth';
 import { z } from 'zod';
 import { Prisma, Recipe } from '@prisma/client';
 
@@ -7,9 +7,16 @@ type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
 export type LockedInterface<T> = { readonly [K in keyof T]: string };
 
-export interface SessionUser extends Omit<DefaultUser, 'id'> {}
-
 export type BaseZodSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
+
+export interface ValidationPayload {
+  isInvalid: boolean;
+  errors: string[]
+}
+
+export type FormValidationState<T extends string> = {
+  [key in T]?: ValidationPayload;
+};
 
 // interfaces
 
@@ -23,6 +30,10 @@ export interface NewDraftRecipeMutationInputs {
   newDraftRecipeMutationInputs: {
     name: string;
   };
+}
+
+export interface NewRecipeValues {
+  name: string;
 }
 
 // server

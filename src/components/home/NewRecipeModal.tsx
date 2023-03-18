@@ -1,8 +1,7 @@
-import { ModalBackdrop } from 'pirate-ui';
-import React, { useState } from 'react';
-import { SessionUser } from 'types/types';
+import React from 'react';
+import { ModalBackdrop, TextInput } from 'pirate-ui';
 import ArrowLeftIcon from 'components/util/ArrowLeftIcon';
-import { useCreateNewDraftRecipe } from 'lib/hooks';
+import { useCreateNewDraftRecipe, useNewRecipeModalForm } from 'lib/hooks';
 
 interface NewRecipeModalProps {
   onCloseModal: () => void;
@@ -13,19 +12,13 @@ function NewRecipeModal({
   onCloseModal,
   recipeDraftNames,
 }: NewRecipeModalProps) {
-  const [newRecipeName, setNewRecipeName] = useState<string>('');
-  const [ inputValid, setInputValid ] = useState<boolean>(true)
+  const { newRecipeValues, raiseRecipeValues, formValidation } =
+    useNewRecipeModalForm(recipeDraftNames);
+
   const { mutate } = useCreateNewDraftRecipe();
 
   function newDraftRecipeHandler() {
-    mutate({ newDraftRecipeMutationInputs: { name: newRecipeName } });
-  }
-
-  function onChangeHandler(e: React.ChangeEvent<HTMLInputElement>) {
-    if (recipeDraftNames.includes(e.target.value)) {
-      setInputValid(false)
-    }
-    setNewRecipeName(e.target.value);
+    mutate({ newDraftRecipeMutationInputs: { name: newRecipeValues.name } });
   }
 
   return (
@@ -42,12 +35,16 @@ function NewRecipeModal({
         </p>
 
         <div className="w-full my-auto">
-          <input
-            type="text"
-            className={`input-display w-full ${inputValid ? '' : 'border-red-200 border'}`}
-            placeholder="Name your recipe"
-            value={newRecipeName}
-            onChange={onChangeHandler}
+          <TextInput
+            name="name"
+            placeholder="Name your new recipe"
+            styles={{
+              input: 'input-display w-full caret-black rounded',
+              invalid: '',
+            }}
+            curInput={newRecipeValues.name}
+            raiseInput={raiseRecipeValues}
+            isInvalid={formValidation.name?.isInvalid}
           />
           <button
             className="text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2 w-full"
@@ -56,6 +53,9 @@ function NewRecipeModal({
           >
             Get Cookin
           </button>
+          <p>
+            {formValidation.name?.isInvalid}
+          </p>
         </div>
       </div>
     </ModalBackdrop>

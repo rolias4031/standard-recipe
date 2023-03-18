@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .input-display {
-  @apply text-center appearance-none focus:outline-none text-4xl p-3;
+  @apply appearance-none text-4xl p-3 text-center focus:outline-none;
 }
