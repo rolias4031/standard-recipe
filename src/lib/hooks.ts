@@ -33,7 +33,7 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
       z
         .string()
         .min(1)
-        .refine((val) => existingDraftNames.includes(val), {
+        .refine((val) => !existingDraftNames.includes(val), {
           message: 'name taken',
         }),
     ],
@@ -42,16 +42,16 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   function raiseRecipeValues(args: RaiseInputArgs) {
     const schema = formSchemaMap.get(args.name as ValidationKeys);
     if (schema) {
-      validateClientInput(args.name, {
+      validateClientInput({
+        name: args.name,
         schema,
-        input: args.value,
+        input: args.input,
       });
     }
-
     setNewRecipeValues((prevState: NewRecipeValues) => {
       return {
         ...prevState,
-        [args.name]: args.value,
+        [args.name]: args.input,
       };
     });
   }
@@ -75,21 +75,29 @@ export function useFormValidation<T extends string>(keys: T[]) {
     () => initFormValidation(keys),
   );
 
-  function validateClientInput(
-    name: string,
-    {
-      schema,
-      input,
-    }: {
-      schema: ZodSchema;
-      input: string;
-    },
-  ) {
+  function validateClientInput({
+    name,
+    schema,
+    input,
+  }: {
+    name: string;
+    schema: ZodSchema;
+    input: string;
+  }) {
     const validation = schema.safeParse(input);
-    raiseValidation({
-      name,
-      payload: { isInvalid: validation.success, errors: ['errors'] },
-    });
+    console.log(validation);
+    if (validation.success) {
+      raiseValidation({
+        name,
+        payload: { isInvalid: false, errors: ['errors'] },
+      });
+    } else {
+      raiseValidation({
+        name,
+        payload: { isInvalid: true, errors: validation.error },
+      });
+    }
+    
   }
 
   function raiseValidation({
