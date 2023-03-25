@@ -7,7 +7,6 @@ import {
   BaseZodSchema,
   FormValidationState,
   NewDraftRecipeInputs,
-  ValidationPayload,
 } from 'types/types';
 import { RaiseInputArgs } from 'pirate-ui';
 
@@ -22,7 +21,7 @@ export const useGetUserRecipes = () => {
 export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   type ValidationKeys = 'name';
 
-  const { formValidation, validateClientInput } =
+  const { formValidation, validateSingleInput } =
     useFormValidation<ValidationKeys>(['name']);
   const [newDraftRecipeInputs, setNewDraftRecipeInputs] =
     useState<NewDraftRecipeInputs>({
@@ -32,7 +31,7 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   const formSchema = newDraftRecipeSchema(existingDraftNames);
 
   function raiseRecipeValues(args: RaiseInputArgs) {
-    validateClientInput({
+    validateSingleInput({
       name: args.name,
       schema: formSchema,
       input: args.input,
@@ -52,14 +51,16 @@ export function useFormValidation<T extends string>(keys: T[]) {
   // takes array of keys to init formValidation
   // return state containing validation and function to validate input
 
-  function initFormValidation(keys: T[]) {
-    const initState: FormValidationState<T> = {};
+  function initFormValidation(keys: T[]): FormValidationState<T> {
+    const initState = {} as FormValidationState<T>
     keys.forEach((key: T) => {
       initState[key] = {
         isInvalid: false,
-        errors: null,
+        error: undefined,
       };
     });
+
+    initState.form = { isInvalid: false, error: undefined }
     return initState;
   }
 
@@ -67,7 +68,7 @@ export function useFormValidation<T extends string>(keys: T[]) {
     () => initFormValidation(keys),
   );
 
-  function validateClientInput({
+  function validateSingleInput({
     schema,
     name,
     input,
@@ -78,35 +79,22 @@ export function useFormValidation<T extends string>(keys: T[]) {
   }) {
     const validation = schema.shape[name]?.safeParse(input);
     console.log(validation);
-    if (validation && validation.success) {
-      raiseValidation({
-        name,
-        payload: { isInvalid: false, errors: null },
-      });
-    } else {
-      raiseValidation({
-        name,
-        payload: { isInvalid: true, errors: validation?.error ?? null },
-      });
-    }
-  }
-
-  function raiseValidation({
-    name,
-    payload,
-  }: {
-    name: string;
-    payload: ValidationPayload;
-  }) {
     setFormValidation((prevState: FormValidationState<T>) => {
+      if (!validation) return prevState;
+      const isInvalid = !validation.success;
+      const error = !validation.success && validation.error;
       return {
         ...prevState,
-        [name]: payload,
+        [name]: { isInvalid, error },
       };
     });
   }
 
-  return { formValidation, validateClientInput };
+  function validateAllInputs() {
+    console.log('hi');
+  }
+
+  return { formValidation, validateSingleInput };
 }
 
 export const useAutoFocusOnElement = () => {

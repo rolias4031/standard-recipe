@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserButton } from '@clerk/nextjs';
-import StandardRecipeLogo from './display/StandardRecipeLogo';
+import StandardRecipeLogo from 'components/common/StandardRecipeLogo';
 
 interface NavBarProps {
   styles: {

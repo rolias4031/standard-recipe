@@ -1,5 +1,5 @@
 import { GeneralButton } from 'pirate-ui';
-import NavBar from 'components/NavBar';
+import NavBar from 'components/common/NavBar';
 import { useState } from 'react';
 import NewRecipeModal from 'components/home/NewRecipeModal';
 import HomeDock from 'components/home/HomeDock';

@@ -1,7 +1,8 @@
 import React from 'react';
 import { ModalBackdrop, TextInput } from 'pirate-ui';
-import ArrowLeftIcon from 'components/util/ArrowLeftIcon';
+import ArrowLeftIcon from 'components/common/ArrowLeftIcon';
 import { useCreateNewDraftRecipe, useNewRecipeModalForm } from 'lib/hooks';
+import FormErrors from 'components/common/FormErrors';
 
 interface NewRecipeModalProps {
   onCloseModal: () => void;
@@ -52,9 +53,7 @@ function NewRecipeModal({
           >
             Get Cookin
           </button>
-          <p>
-            {formValidation.name?.isInvalid}
-          </p>
+          <FormErrors validation={formValidation} />
         </div>
       </div>
     </ModalBackdrop>

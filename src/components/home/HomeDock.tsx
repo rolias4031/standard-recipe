@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useGetUserRecipes } from 'lib/hooks';
-import LoadingPage from 'components/display/LoadingPage';
+import LoadingPage from 'components/common/LoadingPage';
 import { UserRecipesQueryPayload } from 'types/types';
 
 interface HomeDockProps {

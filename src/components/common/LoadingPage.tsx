@@ -1,4 +1,4 @@
-import LoadingSpinner from 'components/util/LoadingSpinner'
+import LoadingSpinner from 'components/common/LoadingSpinner'
 import React from 'react'
 
 function LoadingPage() {

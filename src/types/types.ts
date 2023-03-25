@@ -10,12 +10,12 @@ export type BaseZodSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
 export interface ValidationPayload {
   isInvalid: boolean;
-  errors: ZodError | null
+  error: ZodError | undefined;
 }
 
 export type FormValidationState<T extends string> = {
-  [key in T]?: ValidationPayload;
-};
+  [key in T | 'form']?: ValidationPayload;
+}
 
 // interfaces
 
@@ -25,12 +25,11 @@ export interface MutateConfig<T> {
   body: T;
 }
 
-
 export interface NewDraftRecipeMutationInputs {
-  newDraftRecipeInputs: NewDraftRecipeInputs
+  newDraftRecipeInputs: NewDraftRecipeInputs;
 }
 
-export type NewDraftRecipeInputs = Pick<Recipe, 'name'>
+export type NewDraftRecipeInputs = Pick<Recipe, 'name'>;
 
 // server
 
@@ -47,7 +46,7 @@ export interface CustomError extends Error {
 
 export interface UserRecipesQueryPayload extends BasePayload {
   recipes: Recipe[];
-  recipeDraftNames: string[]
+  recipeDraftNames: string[];
 }
 
 export interface NewDraftRecipeMutationPayload extends BasePayload {
