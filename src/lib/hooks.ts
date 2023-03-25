@@ -92,6 +92,7 @@ export function useFormValidation<T extends string>(keys: T[]) {
 
   function validateAllInputs() {
     console.log('hi');
+    
   }
 
   return { formValidation, validateSingleInput };
