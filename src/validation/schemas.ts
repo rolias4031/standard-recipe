@@ -1,5 +1,21 @@
 import { z } from 'zod';
 
-export const newDraftRecipeSchema = z.object({
-  newRecipeName: z.string().min(1).max(50),
-});
+export function newDraftRecipeSchema(existingDraftNames: string[]) {
+  return z.object({
+    name: z
+    .string()
+    .min(1)
+    .refine((val) => !existingDraftNames.includes(val), {
+      message: 'Name already in use',
+    }),
+  })
+}
+
+// const newDraftRecipeSchema = z.object({
+//   name: z
+//     .string()
+//     .min(1)
+//     .refine((val) => !existingDraftNames.includes(val), {
+//       message: 'Name already in use',
+//     }),
+// });

@@ -1,5 +1,4 @@
 import { useAutoFocusOnElement } from 'lib/hooks';
-import { signIn } from 'next-auth/react';
 import React, { useState } from 'react';
 
 interface SignInModalProps {
@@ -24,7 +23,6 @@ function SignInModal({ styles }: SignInModalProps) {
       <button
         className="text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2"
         type="button"
-        onClick={() => signIn('email', { email })}
       >
         Login with a magic link
       </button>

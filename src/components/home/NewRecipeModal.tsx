@@ -12,13 +12,12 @@ function NewRecipeModal({
   onCloseModal,
   recipeDraftNames,
 }: NewRecipeModalProps) {
-  const { newRecipeValues, raiseRecipeValues, formValidation } =
+  const { newDraftRecipeInputs, raiseRecipeValues, formValidation } =
     useNewRecipeModalForm(recipeDraftNames);
 
   const { mutate } = useCreateNewDraftRecipe();
-
   function newDraftRecipeHandler() {
-    mutate({ newDraftRecipeMutationInputs: { name: newRecipeValues.name } });
+    mutate({ newDraftRecipeInputs });
   }
 
   return (
@@ -42,7 +41,7 @@ function NewRecipeModal({
               input: 'input-display w-full caret-black rounded',
               invalid: '',
             }}
-            curInput={newRecipeValues.name}
+            curInput={newDraftRecipeInputs.name}
             raiseInput={raiseRecipeValues}
             isInvalid={formValidation.name?.isInvalid}
           />

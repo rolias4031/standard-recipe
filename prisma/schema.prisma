@@ -11,55 +11,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-// next auth models
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  recipes       Recipe[]  @relation("author")
-  favorites     Recipe[]  @relation("favorites")
-  accounts      Account[]
-  sessions      Session[]
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 // standard recipe models, in order of parent - child
 
 model Recipe {
@@ -71,9 +22,8 @@ model Recipe {
   ingredients  Ingredient[]
   equipment    Equipment[]
   images       RecipeImage[]
-  author       User          @relation("author", fields: [authorId], references: [id], onDelete: Cascade)
   authorId     String
-  favorites    User[]        @relation("favorites")
+  favorites    Favorite[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -81,6 +31,13 @@ model Recipe {
   parent   Recipe?  @relation("parent", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   parentId String?
   forks    Recipe[] @relation("parent")
+}
+
+model Favorite {
+  id       String @id @default(cuid())
+  userId   String
+  recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId String
 }
 
 model Instruction {

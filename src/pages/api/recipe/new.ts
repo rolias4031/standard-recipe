@@ -1,54 +1,63 @@
-import { getExtendedServerSession, validateClientInputs } from 'lib/util';
+import { validateClientInputs } from 'lib/util';
 import { NextApiResponse } from 'next';
-import { NewDraftRecipeMutationInputs, StandardRecipeApiRequest } from 'types/types';
+import {
+  ErrorPayload,
+  NewDraftRecipeMutationInputs,
+  NewDraftRecipeMutationPayload,
+  StandardRecipeApiRequest,
+} from 'types/types';
+import { Prisma } from '@prisma/client';
 import prisma from 'lib/prismadb';
-import { authOptions } from '../auth/[...nextauth]';
 import { newDraftRecipeSchema } from 'validation/schemas';
+import { getAuth } from '@clerk/nextjs/server';
 
 export default async function handler(
   req: StandardRecipeApiRequest<NewDraftRecipeMutationInputs>,
-  res: NextApiResponse,
+  res: NextApiResponse<NewDraftRecipeMutationPayload | ErrorPayload>,
 ) {
-  const session = await getExtendedServerSession(req, res, authOptions);
-
-  if (!session) {
+  const session = getAuth(req);
+  if (!session || !session.userId) {
     return res.status(401).json({
       message: 'unauthorized',
-      errors: 'No Session Found',
+      errors: ['No Session Found'],
     });
   }
 
-  const { newDraftRecipeMutationInputs } = req.body
+  const { newDraftRecipeInputs } = req.body;
+
+  const recipe: Prisma.RecipeCreateInput = {
+    name: newDraftRecipeInputs.name,
+    authorId: session.userId,
+  };
+
+  const draftRecipes = await prisma.recipe.findMany({
+    where: {
+      authorId: session.userId,
+      status: 'draft',
+    },
+    select: {
+      name: true,
+    }
+  })
 
   const valid = validateClientInputs([
-    { schema: newDraftRecipeSchema, inputs: newDraftRecipeMutationInputs },
+    { schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)), inputs: recipe },
   ]);
   if (!valid) {
-    return res.status(403).json({
+    return res.status(400).json({
       message: 'invalid',
-      errors: 'invalid inputs',
+      errors: ['invalid inputs'],
     });
   }
 
-  const newDraftRecipe = await prisma.user.update({
-    where: {
-      id: session.userId,
-    },
-    data: {
-      recipes: {
-        create: {
-          name: newDraftRecipeMutationInputs.name,
-        },
-      },
-    },
-    include: {
-      recipes: true,
-    },
+  const newDraftRecipe = await prisma.recipe.create({
+    data: recipe,
   });
 
   console.log(newDraftRecipe);
 
   return res.status(200).json({
     message: 'success',
+    draftId: newDraftRecipe.id,
   });
 }

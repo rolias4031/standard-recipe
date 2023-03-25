@@ -1,7 +1,10 @@
-import { CustomError, MutateConfig, NewDraftRecipeMutationInputs } from 'types/types';
-import { createApiUrl } from './util-client';
-
-
+import {
+  CustomError,
+  ErrorPayload,
+  MutateConfig,
+  NewDraftRecipeMutationInputs,
+} from 'types/types';
+import { createApiUrl, isErrorPayload } from './util-client';
 
 async function mutateWithBody<T>(config: MutateConfig<T>) {
   const response = await fetch(createApiUrl(config.apiRoute), {
@@ -9,14 +12,15 @@ async function mutateWithBody<T>(config: MutateConfig<T>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config.body),
   });
-  const result = await response.json();
-  console.log(result);
-  if (!response.ok || !(response.status in { 200: null, 201: null })) {
+  const result: T | ErrorPayload = await response.json();
+  if (!response.ok && isErrorPayload(result)) {
     const error = new Error() as CustomError;
     error.errors = result.errors;
     throw error;
   }
-  return result;
+  if (!isErrorPayload(result)) {
+    return result;
+  }
 }
 
 export function createNewDraftRecipeMutation(

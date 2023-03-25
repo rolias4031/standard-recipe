@@ -1,11 +1,12 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createNewDraftRecipeMutation } from './mutations';
+import { newDraftRecipeSchema } from 'validation/schemas';
 import { fetchUserRecipes } from './queries';
-import { z, ZodSchema } from 'zod';
 import {
+  BaseZodSchema,
   FormValidationState,
-  NewRecipeValues,
+  NewDraftRecipeInputs,
   ValidationPayload,
 } from 'types/types';
 import { RaiseInputArgs } from 'pirate-ui';
@@ -23,32 +24,20 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
 
   const { formValidation, validateClientInput } =
     useFormValidation<ValidationKeys>(['name']);
-  const [newRecipeValues, setNewRecipeValues] = useState<NewRecipeValues>({
-    name: '',
-  });
+  const [newDraftRecipeInputs, setNewDraftRecipeInputs] =
+    useState<NewDraftRecipeInputs>({
+      name: '',
+    });
 
-  const formSchemaMap = new Map<ValidationKeys, ZodSchema>([
-    [
-      'name',
-      z
-        .string()
-        .min(1)
-        .refine((val) => !existingDraftNames.includes(val), {
-          message: 'name taken',
-        }),
-    ],
-  ]);
+  const formSchema = newDraftRecipeSchema(existingDraftNames);
 
   function raiseRecipeValues(args: RaiseInputArgs) {
-    const schema = formSchemaMap.get(args.name as ValidationKeys);
-    if (schema) {
-      validateClientInput({
-        name: args.name,
-        schema,
-        input: args.input,
-      });
-    }
-    setNewRecipeValues((prevState: NewRecipeValues) => {
+    validateClientInput({
+      name: args.name,
+      schema: formSchema,
+      input: args.input,
+    });
+    setNewDraftRecipeInputs((prevState: NewDraftRecipeInputs) => {
       return {
         ...prevState,
         [args.name]: args.input,
@@ -56,16 +45,19 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
     });
   }
 
-  return { newRecipeValues, raiseRecipeValues, formValidation };
+  return { newDraftRecipeInputs, raiseRecipeValues, formValidation };
 };
 
 export function useFormValidation<T extends string>(keys: T[]) {
+  // takes array of keys to init formValidation
+  // return state containing validation and function to validate input
+
   function initFormValidation(keys: T[]) {
     const initState: FormValidationState<T> = {};
     keys.forEach((key: T) => {
       initState[key] = {
         isInvalid: false,
-        errors: [],
+        errors: null,
       };
     });
     return initState;
@@ -76,28 +68,27 @@ export function useFormValidation<T extends string>(keys: T[]) {
   );
 
   function validateClientInput({
-    name,
     schema,
+    name,
     input,
   }: {
+    schema: BaseZodSchema;
     name: string;
-    schema: ZodSchema;
     input: string;
   }) {
-    const validation = schema.safeParse(input);
+    const validation = schema.shape[name]?.safeParse(input);
     console.log(validation);
-    if (validation.success) {
+    if (validation && validation.success) {
       raiseValidation({
         name,
-        payload: { isInvalid: false, errors: ['errors'] },
+        payload: { isInvalid: false, errors: null },
       });
     } else {
       raiseValidation({
         name,
-        payload: { isInvalid: true, errors: validation.error },
+        payload: { isInvalid: true, errors: validation?.error ?? null },
       });
     }
-    
   }
 
   function raiseValidation({

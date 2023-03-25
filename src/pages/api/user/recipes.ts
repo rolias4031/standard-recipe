@@ -1,17 +1,15 @@
-import { getExtendedServerSession } from 'lib/util';
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from 'lib/prismadb';
-import { Prisma } from '@prisma/client';
-import { authOptions } from '../auth/[...nextauth]';
-import { UserRecipesQueryPayload } from 'types/types';
+import { ErrorPayload, UserRecipesQueryPayload } from 'types/types';
+import { getAuth } from '@clerk/nextjs/server';
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<UserRecipesQueryPayload>,
+  res: NextApiResponse<UserRecipesQueryPayload | ErrorPayload>,
 ) {
-  const session = await getExtendedServerSession(req, res, authOptions);
+  const session = getAuth(req);
 
-  if (!session) {
+  if (!session || !session.userId) {
     return res.status(401).json({
       message: 'unauthorized',
       errors: ['No Session Found'],
@@ -24,13 +22,15 @@ export default async function handler(
     },
   });
 
-  const recipeDraftNames: string[] = []
+  const recipeDraftNames: string[] = [];
 
-  recipes.forEach((recipe) => {
-    if (recipe.status === 'draft') {
-      recipeDraftNames.push(recipe.name)
-    }
-  })
+  if (recipes.length > 0) {
+    recipes.forEach((recipe) => {
+      if (recipe.status === 'draft') {
+        recipeDraftNames.push(recipe.name);
+      }
+    });
+  }
 
   return res.status(200).json({
     message: 'success',

@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useGetUserRecipes } from 'lib/hooks';
 import LoadingPage from 'components/display/LoadingPage';
-import { Recipe } from '@prisma/client';
 import { UserRecipesQueryPayload } from 'types/types';
 
 interface HomeDockProps {

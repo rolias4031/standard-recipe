@@ -1,7 +1,6 @@
 import { NextApiRequest } from 'next';
-import { Session } from 'next-auth';
-import { z } from 'zod';
-import { Prisma, Recipe } from '@prisma/client';
+import { z, ZodError } from 'zod';
+import { Recipe } from '@prisma/client';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -11,7 +10,7 @@ export type BaseZodSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
 export interface ValidationPayload {
   isInvalid: boolean;
-  errors: string[]
+  errors: ZodError | null
 }
 
 export type FormValidationState<T extends string> = {
@@ -26,21 +25,14 @@ export interface MutateConfig<T> {
   body: T;
 }
 
+
 export interface NewDraftRecipeMutationInputs {
-  newDraftRecipeMutationInputs: {
-    name: string;
-  };
+  newDraftRecipeInputs: NewDraftRecipeInputs
 }
 
-export interface NewRecipeValues {
-  name: string;
-}
+export type NewDraftRecipeInputs = Pick<Recipe, 'name'>
 
 // server
-
-export interface ExtendedSession extends Session {
-  userId?: string;
-}
 
 export interface StandardRecipeApiRequest<T>
   extends Omit<NextApiRequest, 'body'> {
@@ -54,15 +46,19 @@ export interface CustomError extends Error {
 // queries and mutations
 
 export interface UserRecipesQueryPayload extends BasePayload {
-  recipes?: Recipe[];
-  recipeDraftNames?: string[]
+  recipes: Recipe[];
+  recipeDraftNames: string[]
 }
 
-export type UserRecipesQuery = Prisma.RecipeGetPayload<{
-  select: { name: true };
-}>;
+export interface NewDraftRecipeMutationPayload extends BasePayload {
+  draftId: string;
+}
 
 export interface BasePayload {
   message: string;
-  errors?: string[];
+}
+
+export interface ErrorPayload {
+  message: string;
+  errors: string[];
 }

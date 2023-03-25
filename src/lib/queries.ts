@@ -1,18 +1,20 @@
-import { createApiUrl } from './util-client';
-import { BasePayload, CustomError, UserRecipesQueryPayload } from 'types/types'
+import { createApiUrl, isErrorPayload } from './util-client';
+import { BasePayload, CustomError, ErrorPayload, UserRecipesQueryPayload } from 'types/types'
 
 async function fetchData<T extends BasePayload>(url: string) {
   const response = await fetch(createApiUrl(url), {
     method: 'GET'
   });
-  const result: T = await response.json();
-  console.log(result);
-  if (!response.ok && result.errors) {
+  const result: T | ErrorPayload = await response.json();
+  console.log(result)
+  if (!response.ok && isErrorPayload(result)) {
     const error = new Error() as CustomError;
     error.errors = result.errors;
     throw error;
   }
-  return result;
+  if (!isErrorPayload(result)) {
+    return result
+  }
 }
 
 export async function fetchUserRecipes() {
