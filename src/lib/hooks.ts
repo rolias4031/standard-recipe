@@ -63,11 +63,11 @@ export function useFormValidation<T extends string>(keys: T[]) {
     keys.forEach((key: T) => {
       initState[key] = {
         isInvalid: false,
-        error: [],
+        error: undefined,
       };
     });
 
-    initState.form = { isInvalid: false, error: [] };
+    initState.form = { isInvalid: false, error: undefined };
     return initState;
   }
 
@@ -85,7 +85,6 @@ export function useFormValidation<T extends string>(keys: T[]) {
     allInputs: Record<string, string | number>;
   }) {
     const formValidation = schema.safeParse(allInputs);
-    console.log('formValidation', formValidation);
     setFormValidation((prevState) => {
       if (!formValidation.success && formValidation.error instanceof ZodError) {
         const formErrors = formValidation.error.format();
@@ -94,16 +93,16 @@ export function useFormValidation<T extends string>(keys: T[]) {
           ...prevState,
           [name]: {
             isInvalid: inputIsInvalid,
-            error: inputIsInvalid ? formErrors[name]?._errors : [],
+            error: inputIsInvalid ? formErrors[name]?._errors : undefined,
           },
-          form: { isInvalid: !formValidation.success, error: [] },
+          form: { isInvalid: !formValidation.success, error: undefined },
         } 
         return newState
       }
       return {
         ...prevState,
-        [name]: { isInvalid: false, error: [] },
-        form: { isInvalid: false, error: [] },
+        [name]: { isInvalid: false, error: undefined },
+        form: { isInvalid: false },
       };
     });
   }

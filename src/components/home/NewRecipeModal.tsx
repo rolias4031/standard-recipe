@@ -28,13 +28,13 @@ function NewRecipeModal({
           styles={{ icon: 'w-6 h-6' }}
           onCloseModal={onCloseModal}
         />
-        <p className="text-center text-gray-800 text-xl mt-10">
+        <div className="h-1/4 text-center text-gray-800 text-xl mt-10">
           First, name your new recipe.
           <br />
           This name must be unique among all your other recipes.
-        </p>
+        </div>
 
-        <div className="w-full my-auto">
+        <div className="w-full h-1/4 flex flex-col justify-end">
           <TextInput
             name="name"
             placeholder="Name your new recipe"
@@ -54,7 +54,15 @@ function NewRecipeModal({
           >
             Get Cookin
           </button>
-          <FormErrors validation={formValidation} />
+        </div>
+        <div className="text-red-500 h-1/4 flex flex-col justify-center items-center">
+          {formValidation.name.error ? (
+            formValidation.name.error.map((e) => {
+              return <div key={e}>{e}</div>;
+            })
+          ) : (
+            null
+          )}
         </div>
       </div>
     </ModalBackdrop>
