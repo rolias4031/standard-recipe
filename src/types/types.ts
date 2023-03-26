@@ -10,11 +10,11 @@ export type BaseZodSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
 export interface ValidationPayload {
   isInvalid: boolean;
-  error: ZodError | undefined;
+  error: string[];
 }
 
 export type FormValidationState<T extends string> = {
-  [key in T | 'form']?: ValidationPayload;
+  [key in T | 'form']: ValidationPayload;
 }
 
 // interfaces

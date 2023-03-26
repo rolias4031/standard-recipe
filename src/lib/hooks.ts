@@ -9,6 +9,7 @@ import {
   NewDraftRecipeInputs,
 } from 'types/types';
 import { RaiseInputArgs } from 'pirate-ui';
+import { ZodError } from 'zod';
 
 export const useCreateNewDraftRecipe = () => {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
@@ -21,8 +22,9 @@ export const useGetUserRecipes = () => {
 export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   type ValidationKeys = 'name';
 
-  const { formValidation, validateSingleInput } =
+  const { formValidation, validateInputs } =
     useFormValidation<ValidationKeys>(['name']);
+
   const [newDraftRecipeInputs, setNewDraftRecipeInputs] =
     useState<NewDraftRecipeInputs>({
       name: '',
@@ -30,13 +32,14 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
 
   const formSchema = newDraftRecipeSchema(existingDraftNames);
 
-  function raiseRecipeValues(args: RaiseInputArgs) {
-    validateSingleInput({
-      name: args.name,
-      schema: formSchema,
-      input: args.input,
-    });
+  function raiseRecipeInputs(args: RaiseInputArgs) {
     setNewDraftRecipeInputs((prevState: NewDraftRecipeInputs) => {
+      const latestInputs = { ...prevState, [args.name]: args.input };
+      validateInputs({
+        name: args.name,
+        schema: formSchema,
+        allInputs: latestInputs,
+      });
       return {
         ...prevState,
         [args.name]: args.input,
@@ -44,7 +47,11 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
     });
   }
 
-  return { newDraftRecipeInputs, raiseRecipeValues, formValidation };
+  return {
+    newDraftRecipeInputs,
+    raiseRecipeInputs,
+    formValidation,
+  };
 };
 
 export function useFormValidation<T extends string>(keys: T[]) {
@@ -52,15 +59,15 @@ export function useFormValidation<T extends string>(keys: T[]) {
   // return state containing validation and function to validate input
 
   function initFormValidation(keys: T[]): FormValidationState<T> {
-    const initState = {} as FormValidationState<T>
+    const initState = {} as FormValidationState<T>;
     keys.forEach((key: T) => {
       initState[key] = {
         isInvalid: false,
-        error: undefined,
+        error: [],
       };
     });
 
-    initState.form = { isInvalid: false, error: undefined }
+    initState.form = { isInvalid: false, error: [] };
     return initState;
   }
 
@@ -68,34 +75,40 @@ export function useFormValidation<T extends string>(keys: T[]) {
     () => initFormValidation(keys),
   );
 
-  function validateSingleInput({
+  function validateInputs({
     schema,
     name,
-    input,
+    allInputs,
   }: {
     schema: BaseZodSchema;
     name: string;
-    input: string;
+    allInputs: Record<string, string | number>;
   }) {
-    const validation = schema.shape[name]?.safeParse(input);
-    console.log(validation);
-    setFormValidation((prevState: FormValidationState<T>) => {
-      if (!validation) return prevState;
-      const isInvalid = !validation.success;
-      const error = !validation.success && validation.error;
+    const formValidation = schema.safeParse(allInputs);
+    console.log('formValidation', formValidation);
+    setFormValidation((prevState) => {
+      if (!formValidation.success && formValidation.error instanceof ZodError) {
+        const formErrors = formValidation.error.format();
+        const inputIsInvalid = name in formErrors;
+        const newState: FormValidationState<T> = {
+          ...prevState,
+          [name]: {
+            isInvalid: inputIsInvalid,
+            error: inputIsInvalid ? formErrors[name]?._errors : [],
+          },
+          form: { isInvalid: !formValidation.success, error: [] },
+        } 
+        return newState
+      }
       return {
         ...prevState,
-        [name]: { isInvalid, error },
+        [name]: { isInvalid: false, error: [] },
+        form: { isInvalid: false, error: [] },
       };
     });
   }
 
-  function validateAllInputs() {
-    console.log('hi');
-
-  }
-
-  return { formValidation, validateSingleInput };
+  return { formValidation, validateInputs };
 }
 
 export const useAutoFocusOnElement = () => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ModalBackdrop, TextInput } from 'pirate-ui';
 import ArrowLeftIcon from 'components/common/ArrowLeftIcon';
 import { useCreateNewDraftRecipe, useNewRecipeModalForm } from 'lib/hooks';
@@ -13,7 +13,7 @@ function NewRecipeModal({
   onCloseModal,
   recipeDraftNames,
 }: NewRecipeModalProps) {
-  const { newDraftRecipeInputs, raiseRecipeValues, formValidation } =
+  const { newDraftRecipeInputs, raiseRecipeInputs, formValidation } =
     useNewRecipeModalForm(recipeDraftNames);
 
   const { mutate } = useCreateNewDraftRecipe();
@@ -43,13 +43,14 @@ function NewRecipeModal({
               invalid: '',
             }}
             curInput={newDraftRecipeInputs.name}
-            raiseInput={raiseRecipeValues}
+            raiseInput={raiseRecipeInputs}
             isInvalid={formValidation.name?.isInvalid}
           />
           <button
             className="text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2 w-full"
             type="button"
             onClick={newDraftRecipeHandler}
+            disabled={formValidation.form?.isInvalid}
           >
             Get Cookin
           </button>
