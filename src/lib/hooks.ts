@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createNewDraftRecipeMutation } from './mutations';
 import { newDraftRecipeSchema } from 'validation/schemas';
-import { fetchUserRecipes } from './queries';
+import { fetchRecipeById, fetchUserRecipes } from './queries';
 import {
   BaseZodSchema,
   FormValidationState,
@@ -19,11 +19,20 @@ export const useGetUserRecipes = () => {
   return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes });
 };
 
+export const useGetRecipeById = (recipeId: string) => {
+  return useQuery({
+    queryKey: ['recipe', recipeId],
+    queryFn: () => fetchRecipeById(recipeId),
+    enabled: recipeId ? true : false
+  });
+};
+
 export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   type ValidationKeys = 'name';
 
-  const { formValidation, validateInputs } =
-    useFormValidation<ValidationKeys>(['name']);
+  const { formValidation, validateInputs } = useFormValidation<ValidationKeys>([
+    'name',
+  ]);
 
   const [newDraftRecipeInputs, setNewDraftRecipeInputs] =
     useState<NewDraftRecipeInputs>({
@@ -67,7 +76,7 @@ export function useFormValidation<T extends string>(keys: T[]) {
       };
     });
 
-    initState.form = { isInvalid: false, error: undefined };
+    initState.form = { isInvalid: true, error: undefined };
     return initState;
   }
 
@@ -96,8 +105,8 @@ export function useFormValidation<T extends string>(keys: T[]) {
             error: inputIsInvalid ? formErrors[name]?._errors : undefined,
           },
           form: { isInvalid: !formValidation.success, error: undefined },
-        } 
-        return newState
+        };
+        return newState;
       }
       return {
         ...prevState,
@@ -120,3 +129,14 @@ export const useAutoFocusOnElement = () => {
 
   return { inputRef };
 };
+
+export const useFocusOnElement = (condition: boolean) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (inputRef.current && condition) {
+      inputRef.current.focus();
+    }
+  }, [condition]);
+
+  return { inputRef };
+}

@@ -1,5 +1,5 @@
 import { createApiUrl, isErrorPayload } from './util-client';
-import { BasePayload, CustomError, ErrorPayload, UserRecipesQueryPayload } from 'types/types'
+import { BasePayload, CustomError, ErrorPayload, RecipeQueryPayload, UserRecipesQueryPayload } from 'types/types'
 
 async function fetchData<T extends BasePayload>(url: string) {
   const response = await fetch(createApiUrl(url), {
@@ -19,4 +19,8 @@ async function fetchData<T extends BasePayload>(url: string) {
 
 export async function fetchUserRecipes() {
   return fetchData<UserRecipesQueryPayload>('api/user/recipes')
+}
+
+export async function fetchRecipeById(recipeId: string) {
+  return fetchData<RecipeQueryPayload>(`api/recipe/${recipeId}`)
 }

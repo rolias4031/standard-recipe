@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ModalBackdrop, TextInput } from 'pirate-ui';
-import ArrowLeftIcon from 'components/common/ArrowLeftIcon';
+import React from 'react';
+import { useRouter } from 'next/router';
+import { ModalBackdrop, TextInput, GeneralButton } from 'pirate-ui';
+import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import { useCreateNewDraftRecipe, useNewRecipeModalForm } from 'lib/hooks';
-import FormErrors from 'components/common/FormErrors';
+import LoadingSpinner from 'components/common/LoadingSpinner';
 
 interface NewRecipeModalProps {
   onCloseModal: () => void;
@@ -13,12 +14,23 @@ function NewRecipeModal({
   onCloseModal,
   recipeDraftNames,
 }: NewRecipeModalProps) {
+
+  const router = useRouter()
+
   const { newDraftRecipeInputs, raiseRecipeInputs, formValidation } =
     useNewRecipeModalForm(recipeDraftNames);
 
-  const { mutate } = useCreateNewDraftRecipe();
+  const { mutate, status } = useCreateNewDraftRecipe();
   function newDraftRecipeHandler() {
-    mutate({ newDraftRecipeInputs });
+    mutate({ newDraftRecipeInputs }, {
+      onSuccess: (data) => {
+        console.log(data.draftId)
+        router.push({
+          pathname: '/create/[recipeId]',
+          query: { recipeId: data.draftId }
+        })
+      }
+    });
   }
 
   return (
@@ -46,23 +58,23 @@ function NewRecipeModal({
             raiseInput={raiseRecipeInputs}
             isInvalid={formValidation.name?.isInvalid}
           />
-          <button
-            className="text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2 w-full"
-            type="button"
+          <GeneralButton
+            styles={{
+              button:
+                'text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2 w-full disabled:bg-gray-300',
+            }}
             onClick={newDraftRecipeHandler}
-            disabled={formValidation.form?.isInvalid}
+            disabled={formValidation.form.isInvalid}
           >
-            Get Cookin
-          </button>
+            {status !== 'loading' ? 'Create' : <LoadingSpinner color='white' size='6' /> }
+          </GeneralButton>
         </div>
         <div className="text-red-500 h-1/4 flex flex-col justify-center items-center">
-          {formValidation.name.error ? (
-            formValidation.name.error.map((e) => {
-              return <div key={e}>{e}</div>;
-            })
-          ) : (
-            null
-          )}
+          {formValidation.name.error
+            ? formValidation.name.error.map((e) => {
+                return <div key={e}>{e}</div>;
+              })
+            : null}
         </div>
       </div>
     </ModalBackdrop>

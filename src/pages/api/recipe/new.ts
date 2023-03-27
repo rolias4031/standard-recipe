@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import prisma from 'lib/prismadb';
 import { newDraftRecipeSchema } from 'validation/schemas';
 import { getAuth } from '@clerk/nextjs/server';
+import { ERRORS } from 'lib/constants';
 
 export default async function handler(
   req: StandardRecipeApiRequest<NewDraftRecipeMutationInputs>,
@@ -19,7 +20,7 @@ export default async function handler(
   if (!session || !session.userId) {
     return res.status(401).json({
       message: 'unauthorized',
-      errors: ['No Session Found'],
+      errors: [ERRORS.UNAUTHORIZED],
     });
   }
 
@@ -45,8 +46,8 @@ export default async function handler(
   ]);
   if (!valid) {
     return res.status(400).json({
-      message: 'invalid',
-      errors: ['invalid inputs'],
+      message: 'failure',
+      errors: [ERRORS.INVALID_INPUT],
     });
   }
 

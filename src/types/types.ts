@@ -44,6 +44,10 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface RecipeQueryPayload extends BasePayload {
+  recipe: Recipe;
+}
+
 export interface UserRecipesQueryPayload extends BasePayload {
   recipes: Recipe[];
   recipeDraftNames: string[];
