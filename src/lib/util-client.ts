@@ -7,3 +7,7 @@ export function createApiUrl(route: string): string {
 export function isErrorPayload(obj: any): obj is ErrorPayload {
   return obj && typeof obj.message === 'string' && Array.isArray(obj.errors);
 }
+
+export function genId() {
+  return (Math.random() + Math.random()).toString();
+}

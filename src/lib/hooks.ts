@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createNewDraftRecipeMutation } from './mutations';
+import { createNewDraftRecipeMutation, saveRecipeMutation } from './mutations';
 import { newDraftRecipeSchema } from 'validation/schemas';
 import { fetchRecipeById, fetchUserRecipes } from './queries';
 import {
@@ -10,6 +10,10 @@ import {
 } from 'types/types';
 import { RaiseInputArgs } from 'pirate-ui';
 import { ZodError } from 'zod';
+
+export const useSaveRecipe = () => {
+  return useMutation({ mutationFn: saveRecipeMutation });
+};
 
 export const useCreateNewDraftRecipe = () => {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
@@ -23,7 +27,7 @@ export const useGetRecipeById = (recipeId: string) => {
   return useQuery({
     queryKey: ['recipe', recipeId],
     queryFn: () => fetchRecipeById(recipeId),
-    enabled: recipeId ? true : false
+    enabled: recipeId ? true : false,
   });
 };
 
@@ -95,6 +99,7 @@ export function useFormValidation<T extends string>(keys: T[]) {
   }) {
     const formValidation = schema.safeParse(allInputs);
     setFormValidation((prevState) => {
+      console.log(formValidation, allInputs);
       if (!formValidation.success && formValidation.error instanceof ZodError) {
         const formErrors = formValidation.error.format();
         const inputIsInvalid = name in formErrors;
@@ -139,4 +144,4 @@ export const useFocusOnElement = (condition: boolean) => {
   }, [condition]);
 
   return { inputRef };
-}
+};

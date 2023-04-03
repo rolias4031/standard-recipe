@@ -14,32 +14,36 @@ function NewRecipeModal({
   onCloseModal,
   recipeDraftNames,
 }: NewRecipeModalProps) {
-
-  const router = useRouter()
+  const router = useRouter();
 
   const { newDraftRecipeInputs, raiseRecipeInputs, formValidation } =
     useNewRecipeModalForm(recipeDraftNames);
 
   const { mutate, status } = useCreateNewDraftRecipe();
   function newDraftRecipeHandler() {
-    mutate({ newDraftRecipeInputs }, {
-      onSuccess: (data) => {
-        console.log(data.draftId)
-        router.push({
-          pathname: '/create/[recipeId]',
-          query: { recipeId: data.draftId }
-        })
-      }
-    });
+    mutate(
+      { newDraftRecipeInputs },
+      {
+        onSuccess: (data) => {
+          console.log(data.draftId);
+          router.push({
+            pathname: '/create/[recipeId]',
+            query: { recipeId: data.draftId },
+          });
+        },
+      },
+    );
   }
 
   return (
     <ModalBackdrop>
       <div className="bg-white rounded-sm p-10 w-3/4 h-5/6 flex flex-col">
-        <ArrowLeftIcon
-          styles={{ icon: 'w-6 h-6' }}
-          onCloseModal={onCloseModal}
-        />
+        <GeneralButton onClick={onCloseModal}>
+          <ArrowLeftIcon
+            styles={{ icon: 'w-6 h-6' }}
+          />
+        </GeneralButton>
+
         <div className="h-1/4 text-center text-gray-800 text-xl mt-10">
           First, name your new recipe.
           <br />
@@ -54,8 +58,8 @@ function NewRecipeModal({
               input: 'input-display w-full caret-black rounded',
               invalid: '',
             }}
-            curInput={newDraftRecipeInputs.name}
-            raiseInput={raiseRecipeInputs}
+            value={newDraftRecipeInputs.name}
+            onChange={raiseRecipeInputs}
             isInvalid={formValidation.name?.isInvalid}
           />
           <GeneralButton
@@ -66,7 +70,11 @@ function NewRecipeModal({
             onClick={newDraftRecipeHandler}
             disabled={formValidation.form.isInvalid}
           >
-            {status !== 'loading' ? 'Create' : <LoadingSpinner color='white' size='6' /> }
+            {status !== 'loading' ? (
+              'Create'
+            ) : (
+              <LoadingSpinner color="white" size="6" />
+            )}
           </GeneralButton>
         </div>
         <div className="text-red-500 h-1/4 flex flex-col justify-center items-center">

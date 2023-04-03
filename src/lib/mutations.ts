@@ -1,9 +1,11 @@
 import {
+  BasePayload,
   CustomError,
   ErrorPayload,
   MutateConfig,
   NewDraftRecipeMutationInputs,
   NewDraftRecipeMutationPayload,
+  SaveRecipeMutationInputs,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
@@ -31,6 +33,16 @@ export async function createNewDraftRecipeMutation(
   >({
     method: 'POST',
     apiRoute: 'api/recipe/new',
+    body,
+  });
+}
+
+export async function saveRecipeMutation(
+  body: SaveRecipeMutationInputs,
+): Promise<BasePayload> {
+  return mutateWithBody<SaveRecipeMutationInputs, BasePayload>({
+    method: 'POST',
+    apiRoute: 'api/recipe/save',
     body,
   });
 }

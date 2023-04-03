@@ -1,3 +1,5 @@
 export interface IconProps {
-  size: string
+  styles?: {
+    icon?: string;
+  }
 }

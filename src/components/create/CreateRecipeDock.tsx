@@ -16,7 +16,7 @@ function CreateRecipeDock({ recipeId, children }: CreateRecipeDockProps) {
   if (status === 'loading') {
     return <LoadingPage />
   }
-  return <div>CreateRecipeDock</div>;
+  return null;
 }
 
 export default CreateRecipeDock;

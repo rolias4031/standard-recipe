@@ -25,11 +25,9 @@ export interface MutateConfig<T> {
   body: T;
 }
 
-export interface NewDraftRecipeMutationInputs {
-  newDraftRecipeInputs: NewDraftRecipeInputs;
-}
-
 export type NewDraftRecipeInputs = Pick<Recipe, 'name'>;
+
+export type SaveRecipeInputs = Pick<Recipe, 'description' | 'id'>
 
 // server
 
@@ -44,6 +42,12 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface SaveRecipeMutationInputs {
+  saveRecipeMutationInputs: SaveRecipeInputs
+}
+export interface NewDraftRecipeMutationInputs {
+  newDraftRecipeInputs: NewDraftRecipeInputs;
+}
 export interface RecipeQueryPayload extends BasePayload {
   recipe: Recipe;
 }
