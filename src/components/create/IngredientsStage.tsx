@@ -241,12 +241,21 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
   return (
     <div
       id={id}
-      className="flex items-center bg-blue-100 text-gray-800 w-full"
+      className="grid grid-cols-[auto_1fr] bg-blue-100 text-gray-800 w-full"
       onMouseEnter={() => setIsMouseIn(true)}
       onMouseLeave={() => setIsMouseIn(false)}
     >
-      <div className="font-mono text-gray-300 w-8 bg-red-100">{order}</div>
-      <div className="flex flex-col space-y-2 w-full">
+      <div className="font-mono row-start-2 col-start-1 w-10 flex items-center text-gray-300 bg-red-100">
+        {order}
+      </div>
+      {order === 1 ? (
+        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full bg-green-100">
+          <div className="w-56">ingredient</div>
+          <div className="w-32">quantity</div>
+          <div className="w-32">units</div>
+        </div>
+      ) : null}
+      <div className="w-full col-start-2 row-start-2">
         <div className="flex items-center space-x-2">
           <input
             className="w-56 border focus:border-gray-800 border-gray-300 outline-none p-1 px-2 rounded"
@@ -258,7 +267,11 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
             step="0.1"
             min="0"
           />
-          <InputWithPopover />
+          <InputWithPopover
+            styles={{
+              div: 'w-32 rounded p-1 border focus:border-gray-800 border-gray-300 outline-none',
+            }}
+          />
           {isMouseIn || isOptionsOpen ? (
             <button
               className={`text-sm  ${
@@ -270,25 +283,26 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
             </button>
           ) : null}
         </div>
-        {isOptionsOpen ? (
-          <OptionsMenu
-            id={id}
-            onRemove={onRemove}
-            isOptional={isOptional}
-            raiseOptional={setIsOptional}
-            styles={{
-              div: 'border border-gray-800 rounded flex flex-col space-y-3 p-3',
-            }}
-          >
-            <AddSubstitutes
-              id={id}
-              curSubs={ingredientSubs}
-              onAddSub={addSubsHandler}
-              onRemoveSub={removeSubHandler}
-            />
-          </OptionsMenu>
-        ) : null}
       </div>
+
+      {isOptionsOpen ? (
+        <OptionsMenu
+          id={id}
+          onRemove={onRemove}
+          isOptional={isOptional}
+          raiseOptional={setIsOptional}
+          styles={{
+            div: 'border border-gray-800 row-start-3 col-start-2 rounded flex flex-col space-y-3 p-3',
+          }}
+        >
+          <AddSubstitutes
+            id={id}
+            curSubs={ingredientSubs}
+            onAddSub={addSubsHandler}
+            onRemoveSub={removeSubHandler}
+          />
+        </OptionsMenu>
+      ) : null}
     </div>
   );
 }
@@ -338,7 +352,6 @@ function IngredientsStage({ ingredients }: IngredientStageProps) {
       <TipBox />
       <InputsController>
         {({ inputIds, removeInputHandler }) => (
-
           <div className="flex flex-col space-y-5">
             {inputIds.map((id, index) => (
               <IngredientInput

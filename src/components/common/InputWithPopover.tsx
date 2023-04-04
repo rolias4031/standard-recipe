@@ -1,8 +1,15 @@
+import { genId } from 'lib/util-client';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import XIcon from './icons/XIcon';
 
-function InputWithPopover() {
+interface InputWithPopoverProps {
+  styles: {
+    div: string
+  }
+}
+
+function InputWithPopover({styles}: InputWithPopoverProps) {
   const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,7 +65,7 @@ function InputWithPopover() {
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setText(e.target.value)
         }
-        className="w-32 rounded p-1 border focus:border-gray-800 border-gray-300 outline-none"
+        className={styles.div}
       />
       {isOpen && inputRef.current
         ? createPortal(
@@ -84,6 +91,7 @@ function InputWithPopover() {
               {content}
             </div>,
             document.body,
+            genId()
           )
         : null}
     </>
