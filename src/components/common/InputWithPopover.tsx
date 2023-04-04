@@ -58,7 +58,7 @@ function InputWithPopover() {
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setText(e.target.value)
         }
-        className="w-28 rounded p-1 border focus:border-gray-800 outline-none"
+        className="w-32 rounded p-1 border focus:border-gray-800 border-gray-300 outline-none"
       />
       {isOpen && inputRef.current
         ? createPortal(
@@ -78,7 +78,7 @@ function InputWithPopover() {
                     inputRef.current?.focus()
                   }}
                 >
-                  <XIcon styles={{ icon: 'w-3 h-3 text-white' }} />
+                  <XIcon styles={{ icon: 'w-4 h-4 text-white' }} />
                 </div>
               </button>
               {content}
