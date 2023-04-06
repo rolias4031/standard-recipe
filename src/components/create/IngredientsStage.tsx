@@ -1,28 +1,28 @@
 import { Ingredient } from '@prisma/client';
 import React, {
   Dispatch,
-  ReactElement,
   ReactNode,
   SetStateAction,
   useRef,
   useState,
 } from 'react';
-import { genId } from 'lib/util-client';
+import { genId, pickStyles as ps } from 'lib/util-client';
 import InputWithPopover from 'components/common/InputWithPopover';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
+import HorizontalEllipsisIcon from 'components/common/icons/HorizontalEllipsisIcon';
 
 function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
 
   return (
-    <div className="flex flex-col bg-gray-50 border-gray-300 text-gray-800 p-3 border rounded-lg space-y-3">
+    <div className="flex flex-col card-primary text-primary p-5 space-y-3">
       <div className="flex justify-between items-center">
         <p className="font-semibold text-lg">Tips</p>
         <button
           onClick={() => setIsTipOpen((prev) => !prev)}
           type="button"
-          className="hover:text-black"
+          className="btn-text-primary"
         >
           {isTipOpen ? 'hide' : 'show'}
         </button>
@@ -92,14 +92,14 @@ function SubTag({ sub, onRemoveSub }: SubTagProps) {
   return (
     <div
       key={sub}
-      className="text-white text-sm bg-emerald-700 rounded flex items-center space-x-2 p-1 px-2"
+      className="text-white text-sm bg-neutral-800 rounded flex items-center space-x-2 p-1 px-2"
       onMouseEnter={() => setIsMouseOver(true)}
       onMouseLeave={() => setIsMouseOver(false)}
     >
       <span>{sub}</span>
       {isMouseOver ? (
         <button onClick={() => onRemoveSub(sub)}>
-          <XIcon styles={{ icon: 'w-4 h-4 text-white' }} />
+          <XIcon styles={{ icon: 'w-4 h-4 text-red-500' }} />
         </button>
       ) : null}
     </div>
@@ -111,6 +111,9 @@ interface AddSubstitutesProps {
   curSubs: string[];
   onAddSub: (newSub: string) => void;
   onRemoveSub: (subToRemove: string) => void;
+  styles: {
+    div: string;
+  };
 }
 
 function AddSubstitutes({
@@ -118,34 +121,41 @@ function AddSubstitutes({
   curSubs,
   onAddSub,
   onRemoveSub,
+  styles,
 }: AddSubstitutesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex flex-col items-start">
-      <label className="text-sm block" htmlFor={`substitutes-${id}`}>
-        Add substitutes
-      </label>
-      <div className="flex items-center space-x-1">
-        <input
-          ref={inputRef}
-          type="text"
-          className="text-gray-800 border border-gray-300 rounded outline-none text-xs p-1 focus:border-gray-800"
-        />
+    <div className={styles.div}>
+      <div>
+        <label className="text-sm block" htmlFor={`substitutes-${id}`}>
+          Add substitutes
+        </label>
+        <div className="flex items-center space-x-1">
+          <input
+            ref={inputRef}
+            type="text"
+            className="w-36 inp-primary inp-sm"
+            disabled={curSubs.length >= 3}
+            placeholder={curSubs.length >= 3 ? 'limit reached' : ''}
+          />
 
-        <button
-          type="button"
-          className="bg-emerald-700 rounded-full"
-          onClick={() => {
-            if (!inputRef.current || inputRef.current.value === '') return;
-            const newSub = inputRef.current.value;
-            inputRef.current.value = '';
-            onAddSub(newSub);
-          }}
-        >
-          <PlusIcon styles={{ icon: 'w-5 h-5 text-white' }} />
-        </button>
+          <button
+            type="button"
+            className="btn-primary rounded-full"
+            onClick={() => {
+              if (!inputRef.current || inputRef.current.value === '') return;
+              const newSub = inputRef.current.value;
+              inputRef.current.value = '';
+              onAddSub(newSub);
+            }}
+            disabled={curSubs.length >= 3}
+          >
+            <PlusIcon styles={{ icon: 'w-5 h-5 text-white' }} />
+          </button>
+        </div>
       </div>
-      <div className="flex items-start space-x-2 mt-2">
+
+      <div className="flex items-start space-x-2">
         {curSubs.map((s) => (
           <SubTag key={s} sub={s} onRemoveSub={onRemoveSub} />
         ))}
@@ -175,36 +185,33 @@ function OptionsMenu({
 }: OptionsMenuProps) {
   return (
     <div className={styles.div}>
-      <div className="flex items-center space-x-4">
+      <div className="flex flex-col space-y-3">
+        <div className="flex items-center space-x-1">
+          <input
+            id={`optional-${id}`}
+            type="checkbox"
+            className="w-4 h-4 accent-neutral-800 cursor-pointer"
+            checked={isOptional}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              raiseOptional(e.target.checked)
+            }
+          />
+          <label
+            className="text-sm btn-text-primary"
+            htmlFor={`optional-${id}`}
+          >
+            Optional
+          </label>
+        </div>
         <button
           type="button"
           onClick={() => onRemove(id)}
-          className="w-fit text-sm"
+          className="w-fit text-sm btn-text-primary"
         >
           Remove
         </button>
-        <button
-          type="button"
-          onClick={() => console.log('duplicate')}
-          className="w-fit text-sm"
-        >
-          Duplicate
-        </button>
       </div>
-      <div className="flex items-center space-x-1">
-        <input
-          id={`optional-${id}`}
-          type="checkbox"
-          className="w-4 h-4 accent-gray-800"
-          checked={isOptional}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            raiseOptional(e.target.checked)
-          }
-        />
-        <label className="text-sm" htmlFor={`optional-${id}`}>
-          Optional
-        </label>
-      </div>
+
       {children}
     </div>
   );
@@ -226,7 +233,7 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
   function addSubsHandler(newSub: string) {
     setIngredientSubs((prev: string[]) => {
       const subExists = prev.find((sub) => sub === newSub);
-      if (subExists) return prev;
+      if (subExists || prev.length === 3) return prev;
       return [...prev, newSub];
     });
   }
@@ -241,47 +248,46 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
   return (
     <div
       id={id}
-      className="grid grid-cols-[auto_1fr] bg-blue-100 text-gray-800 w-full"
+      className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-primary w-full group"
       onMouseEnter={() => setIsMouseIn(true)}
       onMouseLeave={() => setIsMouseIn(false)}
     >
-      <div className="font-mono row-start-2 col-start-1 w-10 flex items-center text-gray-300 bg-red-100">
+      <div className="font-mono text-sm row-start-2 col-start-1 w-6 flex items-center justify-end text-secondary group-hover:text-neutral-800 transition-colors">
         {order}
       </div>
       {order === 1 ? (
-        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full bg-green-100">
-          <div className="w-56">ingredient</div>
-          <div className="w-32">quantity</div>
-          <div className="w-32">units</div>
+        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full text-sm text-secondary font-mono">
+          <div className="w-72">Ingredient</div>
+          <div className="w-36">Quantity</div>
+          <div className="w-36">Units</div>
         </div>
       ) : null}
       <div className="w-full col-start-2 row-start-2">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 rounded">
+          <input className="w-72 inp-primary inp-reg" type="text" />
           <input
-            className="w-56 border focus:border-gray-800 border-gray-300 outline-none p-1 px-2 rounded"
-            type="text"
-          />
-          <input
-            className="w-32 border focus:border-gray-800 border-gray-300 outline-none p-1 px-2 rounded"
+            className="w-36 inp-primary inp-reg"
             type="number"
             step="0.1"
             min="0"
           />
           <InputWithPopover
             styles={{
-              div: 'w-32 rounded p-1 border focus:border-gray-800 border-gray-300 outline-none',
+              div: 'w-36 inp-primary inp-reg',
             }}
           />
-          {isMouseIn || isOptionsOpen ? (
-            <button
-              className={`text-sm  ${
-                isOptionsOpen ? 'text-gray-800' : 'text-gray-300'
-              }`}
-              onClick={() => setIsOptionsOpen((prev) => !prev)}
-            >
-              options
-            </button>
-          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setIsOptionsOpen((prev) => !prev)}
+            className={'transition-all opacity-0 group-hover:opacity-100'}
+          >
+            <HorizontalEllipsisIcon
+              styles={{
+                icon: 'w-8 h-8 text-neutral-800',
+              }}
+            />
+          </button>
         </div>
       </div>
 
@@ -292,7 +298,7 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
           isOptional={isOptional}
           raiseOptional={setIsOptional}
           styles={{
-            div: 'border border-gray-800 row-start-3 col-start-2 rounded flex flex-col space-y-3 p-3',
+            div: 'transition-all border bg-white border-neutral-300 row-start-3 col-start-2 rounded flex space-x-5 p-4 mt-1 h-40',
           }}
         >
           <AddSubstitutes
@@ -300,6 +306,9 @@ function IngredientInput({ id, order, onRemove }: IngredientInputProps) {
             curSubs={ingredientSubs}
             onAddSub={addSubsHandler}
             onRemoveSub={removeSubHandler}
+            styles={{
+              div: 'flex-col space-y-3 items-start border-l pl-5 border-neutral-300',
+            }}
           />
         </OptionsMenu>
       ) : null}
@@ -331,13 +340,15 @@ function InputsController({ children }: InputsControllerProps) {
 
   return (
     <>
-      {children({ inputIds, removeInputHandler })}
-      <button
-        className="bg-gray-300 hover:bg-emerald-700 text-white p-1 rounded"
-        onClick={() => setInputIds((prev: string[]) => [...prev, genId()])}
-      >
-        New Ingredient
-      </button>
+      <div className="flex flex-col space-y-12 card-primary p-6">
+        {children({ inputIds, removeInputHandler })}
+        <button
+          className="p-1 rounded btn-primary transition-all"
+          onClick={() => setInputIds((prev: string[]) => [...prev, genId()])}
+        >
+          New Ingredient
+        </button>
+      </div>
     </>
   );
 }
@@ -348,7 +359,7 @@ interface IngredientStageProps {
 
 function IngredientsStage({ ingredients }: IngredientStageProps) {
   return (
-    <div className="m-10 flex flex-col space-y-16">
+    <div className="flex flex-col py-10 space-y-12 h-full">
       <TipBox />
       <InputsController>
         {({ inputIds, removeInputHandler }) => (

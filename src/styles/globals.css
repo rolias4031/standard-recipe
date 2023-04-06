@@ -5,3 +5,65 @@
 .input-display {
   @apply appearance-none text-4xl p-3 text-center focus:outline-none;
 }
+
+/* buttons */
+
+.btn-reg {
+  @apply px-2 py-1 rounded text-sm;
+}
+
+.btn-circle {
+  @apply rounded-full p-1;
+}
+
+.btn-primary {
+  @apply bg-neutral-800 text-white transition-all duration-200
+    hover:bg-neutral-500
+}
+
+.btn-text-primary {
+  @apply text-neutral-800 transition-all cursor-pointer
+    hover:text-emerald-600;
+}
+
+/* borders and background*/
+.brd-primary {
+  @apply border-neutral-300;
+}
+
+.bg-primary {
+  @apply bg-neutral-50
+}
+
+.card-primary {
+  @apply border border-neutral-300 rounded-lg bg-neutral-50
+}
+
+/* input */
+.inp-primary {
+  @apply rounded
+  border border-neutral-300
+  focus:border-neutral-800 focus:outline-none
+}
+
+.inp-sm {
+  @apply p-1 text-sm
+}
+
+.inp-reg {
+  @apply px-2 py-1
+}
+
+/* text */
+
+.text-primary {
+  @apply text-neutral-800;
+}
+
+.text-secondary {
+  @apply text-neutral-400;
+}
+
+.scale {
+  @apply hover:scale-110;
+}

@@ -1,15 +1,38 @@
 import { genId } from 'lib/util-client';
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import XIcon from './icons/XIcon';
 
-interface InputWithPopoverProps {
-  styles: {
-    div: string
-  }
+interface PopoverButtonProps {
+  name: string;
+  raiseText?: Dispatch<SetStateAction<string>>;
+  raiseIsOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
-function InputWithPopover({styles}: InputWithPopoverProps) {
+function PopoverButton({ name, raiseText, raiseIsOpen }: PopoverButtonProps) {
+  return (
+    <button
+      name={name}
+      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+        if (raiseIsOpen && raiseText) {
+          raiseText(name);
+          raiseIsOpen(false);
+        }
+      }}
+      className="px-2 p-1 w-full text-left hover:bg-neutral-200 transition-colors"
+    >
+      {name}
+    </button>
+  );
+}
+
+interface InputWithPopoverProps {
+  styles: {
+    div: string;
+  };
+}
+
+function InputWithPopover({ styles }: InputWithPopoverProps) {
   const [text, setText] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -42,18 +65,12 @@ function InputWithPopover({styles}: InputWithPopoverProps) {
   );
 
   const content = filteredOptions.map((i) => (
-    <button
+    <PopoverButton
       key={i}
       name={i}
-      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-        console.log(i);
-        setText(i);
-        setIsOpen(false);
-      }}
-      className="px-2 p-1 rounded-sm w-full text-left hover:bg-gray-200"
-    >
-      {i}
-    </button>
+      raiseIsOpen={setIsOpen}
+      raiseText={setText}
+    />
   ));
 
   return (
@@ -70,32 +87,35 @@ function InputWithPopover({styles}: InputWithPopoverProps) {
       {isOpen && inputRef.current
         ? createPortal(
             <div
-              className="flex flex-col items-center border border-gray-800 rounded bg-white ml-2 text-sm w-24"
+              className="flex flex-col items-center border border-neutral-800 rounded bg-white ml-2 text-sm w-28 shadow-md shadow-neutral-600/50"
               style={{
                 position: 'absolute',
-                top: inputRef.current.getBoundingClientRect().top,
-                left: inputRef.current.getBoundingClientRect().right,
+                top:
+                  inputRef.current.getBoundingClientRect().top + window.scrollY,
+                left:
+                  inputRef.current.getBoundingClientRect().right +
+                  window.scrollX,
               }}
               ref={popoverRef}
             >
-              <button className="w-full flex justify-end bg-gray-800">
+              <button className="w-full flex justify-end bg-neutral-800">
                 <div
                   onClick={() => {
                     setText('');
-                    inputRef.current?.focus()
+                    inputRef.current?.focus();
                   }}
                 >
                   <XIcon styles={{ icon: 'w-4 h-4 text-white' }} />
                 </div>
               </button>
-              {content}
+              {content.length === 0 ? <PopoverButton name={'No Matches'} /> : content}
             </div>,
             document.body,
-            genId()
+            genId(),
           )
         : null}
     </>
   );
 }
 
-export default InputWithPopover
+export default InputWithPopover;

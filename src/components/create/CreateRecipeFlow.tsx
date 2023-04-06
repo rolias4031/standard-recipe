@@ -1,6 +1,7 @@
 import { Recipe } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
+import { pickStyles } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { ReactNode, useState } from 'react';
 import IngredientsStage from './IngredientsStage';
@@ -10,9 +11,10 @@ function FlowProgress({ curStage }: { curStage: number }) {
     return (
       <div
         key={i}
-        className={`w-2 h-2 rounded-full border border-green-600 ${
-          i === curStage && 'bg-green-600'
-        }`}
+        className={pickStyles(
+          'h-3 w-3 rounded-full border-2 border-neutral-800',
+          [i === curStage, 'bg-neutral-800'],
+        )}
       ></div>
     );
   });
@@ -55,15 +57,15 @@ function FlowController({ children, onSave }: FlowControllerProps) {
   }
 
   return (
-    <div className="p-10">
+    <div className="flex flex-col flex-grow">
       <div className="flex justify-between items-center">
-        <div className="text-2xl font-bold font-serif">
+        <div className="text-2xl text-primary font-bold">
           {stageConfig.get(stage)?.name}
         </div>
         <GeneralButton
           styles={{
             button:
-              'px-2 py-1 rounded-sm bg-green-600 font-semibold text-sm text-white',
+              'btn-reg btn-primary',
           }}
           onClick={onSave}
         >
@@ -71,10 +73,10 @@ function FlowController({ children, onSave }: FlowControllerProps) {
         </GeneralButton>
       </div>
       {children(stage)}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mt-auto">
         <GeneralButton
           styles={{
-            button: 'bg-green-600 rounded-full p-1',
+            button: 'btn-circle btn-primary scale',
           }}
           onClick={prevStageHandler}
         >
@@ -83,7 +85,7 @@ function FlowController({ children, onSave }: FlowControllerProps) {
         <FlowProgress curStage={stage} />
         <GeneralButton
           styles={{
-            button: 'bg-green-600 rounded-full p-1',
+            button: 'btn-circle btn-primary scale',
           }}
           onClick={nextStageHandler}
         >

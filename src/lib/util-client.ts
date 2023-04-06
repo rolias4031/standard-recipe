@@ -11,3 +11,28 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
 export function genId() {
   return (Math.random() + Math.random()).toString();
 }
+
+type InputArray = [boolean, string, string?];
+type Input = InputArray | string;
+
+export function pickStyles(...inputItems: Input[]): string {
+  let combinedStringArray: string[] = [];
+
+  inputItems.forEach(inputItem => {
+    if (Array.isArray(inputItem)) {
+      const [condition, trueString, falseString] = inputItem;
+
+      if (condition) {
+        combinedStringArray.push(trueString);
+      } else if (falseString !== undefined) {
+        combinedStringArray.push(falseString);
+      }
+    } else if (typeof inputItem === 'string') {
+      combinedStringArray.push(inputItem);
+    }
+  });
+
+  const classString = combinedStringArray.join(' ');
+
+  return classString;
+}

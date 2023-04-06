@@ -22,7 +22,7 @@ export default function Home() {
               onClick={() => setIsNewRecipeModalOpen(true)}
               styles={{
                 button:
-                  'bg-green-600 text-white text-lg px-2 py-1 rounded-sm hover:bg-green-700',
+                  'bg-emerald-700 text-white text-lg px-2 py-1 rounded-sm hover:bg-emerald-700-700',
               }}
             >
               New Recipe

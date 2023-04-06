@@ -58,7 +58,7 @@ function RecipeInfoSection({ recipe }: RecipeInfoSectionProps) {
                   name="name"
                   styles={{
                     input: 'p-2 text-2xl w-full outline-none truncate',
-                    disabled: 'disabled:text-gray-600',
+                    disabled: 'disabled:text-neutral-600',
                   }}
                   value={recipeInfoInputs.name}
                   onChange={raiseRecipeInfoInput}
@@ -69,11 +69,11 @@ function RecipeInfoSection({ recipe }: RecipeInfoSectionProps) {
                 <div className="flex items-center h-full">
                   <GeneralButton>
                     <CircleCheckIcon
-                      styles={{ icon: 'w-6 h-6 text-gray-500' }}
+                      styles={{ icon: 'w-6 h-6 text-neutral-500' }}
                     />
                   </GeneralButton>
                   <GeneralButton>
-                    <CircleXIcon styles={{ icon: 'w-6 h-6 text-gray-500' }} />
+                    <CircleXIcon styles={{ icon: 'w-6 h-6 text-neutral-500' }} />
                   </GeneralButton>
                 </div>
               ) : null}
@@ -88,7 +88,7 @@ function RecipeInfoSection({ recipe }: RecipeInfoSectionProps) {
           placeholder="Tell us about your recipe"
           styles={{
             div: 'w-full flex flex-col space-y-1',
-            label: 'text-sm text-gray-600',
+            label: 'text-sm text-neutral-600',
             input: 'py-1 outline-none w-full text-sm border-b-2 mb-1',
             invalid: 'border-red-300',
           }}

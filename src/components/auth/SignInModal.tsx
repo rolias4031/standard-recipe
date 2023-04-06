@@ -21,7 +21,7 @@ function SignInModal({ styles }: SignInModalProps) {
         ref={inputRef}
       />
       <button
-        className="text-md text-white rounded-sm bg-green-600 hover:bg-green-800 py-2"
+        className="text-md text-white rounded-sm bg-slate-600 hover:bg-neutral-800 py-2"
         type="button"
       >
         Login with a magic link
