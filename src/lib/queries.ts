@@ -1,5 +1,6 @@
 import { createApiUrl, isErrorPayload } from './util-client';
 import { BasePayload, CustomError, ErrorPayload, RecipeQueryPayload, UserRecipesQueryPayload } from 'types/types'
+import { useQuery } from '@tanstack/react-query';
 
 async function fetchData<T extends BasePayload>(url: string) {
   const response = await fetch(createApiUrl(url), {
@@ -24,3 +25,16 @@ export async function fetchUserRecipes() {
 export async function fetchRecipeById(recipeId: string) {
   return fetchData<RecipeQueryPayload>(`api/recipe/${recipeId}`)
 }
+
+
+export const useGetUserRecipes = () => {
+  return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes });
+};
+
+export const useGetRecipeById = (recipeId: string) => {
+  return useQuery({
+    queryKey: ['recipe', recipeId],
+    queryFn: () => fetchRecipeById(recipeId),
+    enabled: recipeId ? true : false,
+  });
+};

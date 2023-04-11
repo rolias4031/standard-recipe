@@ -1,6 +1,7 @@
 import { NextApiRequest } from 'next';
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { Recipe } from '@prisma/client';
+import { RecipeWithFull } from './models';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -10,15 +11,14 @@ export type BaseZodSchema = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
 export interface ValidationPayload {
   isInvalid: boolean;
-  error: string[] | undefined
+  error: string[] | undefined;
 }
 
 export type FormValidationState<T extends string> = {
   [key in T | 'form']: ValidationPayload;
-}
+};
 
 // interfaces
-
 export interface MutateConfig<T> {
   method: ReqMethod;
   apiRoute: string;
@@ -27,7 +27,7 @@ export interface MutateConfig<T> {
 
 export type NewDraftRecipeInputs = Pick<Recipe, 'name'>;
 
-export type SaveRecipeInputs = Pick<Recipe, 'description' | 'id'>
+export type SaveRecipeInputs = Pick<Recipe, 'description' | 'id'>;
 
 // server
 
@@ -43,13 +43,13 @@ export interface CustomError extends Error {
 // queries and mutations
 
 export interface SaveRecipeMutationInputs {
-  saveRecipeMutationInputs: SaveRecipeInputs
+  saveRecipeMutationInputs: SaveRecipeInputs;
 }
 export interface NewDraftRecipeMutationInputs {
   newDraftRecipeInputs: NewDraftRecipeInputs;
 }
 export interface RecipeQueryPayload extends BasePayload {
-  recipe: Recipe;
+  recipe: RecipeWithFull;
 }
 
 export interface UserRecipesQueryPayload extends BasePayload {

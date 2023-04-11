@@ -42,48 +42,52 @@ model Favorite {
 
 model Instruction {
   id              String       @id @default(cuid())
-  order           String
+  order           Int
   description     String       @db.VarChar(500)
   optional        Boolean      @default(false)
   recipe          Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String
   ingredientLinks Ingredient[]
+  equipmentLinks  Equipment[]
 }
 
 model Equipment {
-  id       String  @id @default(cuid())
-  name     String
-  notes    String? @db.VarChar(250)
-  recipe   Recipe  @relation(fields: [recipeId], references: [id])
-  recipeId String
-  optional Boolean @default(false)
+  id               String        @id @default(cuid())
+  name             String
+  notes            String?       @db.VarChar(250)
+  recipe           Recipe        @relation(fields: [recipeId], references: [id])
+  recipeId         String
+  optional         Boolean       @default(false)
+  instructionLinks Instruction[]
 }
 
 model Ingredient {
-  id                String          @id @default(cuid())
-  quantity          String
-  optional          Boolean         @default(false)
-  recipe            Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  id                String           @id @default(cuid())
+  quantity          Float
+  optional          Boolean          @default(false)
+  recipe            Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId          String
-  units             IngredientUnits @relation(fields: [ingredientUnitsId], references: [id])
+  units             IngredientUnits  @relation(fields: [ingredientUnitsId], references: [id])
   ingredientUnitsId String
-  name              IngredientName  @relation(fields: [ingredientNameId], references: [id])
+  name              IngredientName   @relation(fields: [ingredientNameId], references: [id])
   ingredientNameId  String
-  notes             String?         @db.VarChar(250)
+  notes             String?          @db.VarChar(250)
+  substitutes       IngredientName[] @relation("substitutes")
   instructionLinks  Instruction[]
 }
 
 model IngredientUnits {
   id          String       @id @default(cuid())
-  units       String
+  units       String @unique
   description String
-  Ingredient  Ingredient[]
+  ingredients Ingredient[]
 }
 
 model IngredientName {
-  id         String       @id @default(cuid())
-  name       String
-  Ingredient Ingredient[]
+  id            String       @id @default(cuid())
+  name          String @unique
+  ingredients   Ingredient[]
+  substituteFor Ingredient[] @relation("substitutes")
   // potentially add a type field
 }
 

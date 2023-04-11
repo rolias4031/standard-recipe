@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import {
   BasePayload,
   CustomError,
@@ -46,3 +47,11 @@ export async function saveRecipeMutation(
     body,
   });
 }
+
+export const useCreateNewDraftRecipe = () => {
+  return useMutation({ mutationFn: createNewDraftRecipeMutation });
+};
+
+export const useSaveRecipe = () => {
+  return useMutation({ mutationFn: saveRecipeMutation });
+};

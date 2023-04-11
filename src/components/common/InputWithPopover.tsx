@@ -1,21 +1,28 @@
 import { genId } from 'lib/util-client';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { RaiseInputArgs } from 'pirate-ui';
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
-import XIcon from './icons/XIcon';
 
 interface PopoverButtonProps {
   name: string;
-  raiseText?: Dispatch<SetStateAction<string>>;
+  parentInputName?: string;
+  onClick?: ({ input, name }: RaiseInputArgs) => void;
   raiseIsOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
-function PopoverButton({ name, raiseText, raiseIsOpen }: PopoverButtonProps) {
+function PopoverButton({ name, onClick, parentInputName, raiseIsOpen }: PopoverButtonProps) {
   return (
     <button
       name={name}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-        if (raiseIsOpen && raiseText) {
-          raiseText(name);
+        if (raiseIsOpen && onClick && parentInputName) {
+          onClick({input: e.currentTarget.name, name: parentInputName});
           raiseIsOpen(false);
         }
       }}
@@ -27,13 +34,20 @@ function PopoverButton({ name, raiseText, raiseIsOpen }: PopoverButtonProps) {
 }
 
 interface InputWithPopoverProps {
+  name: string;
+  curValue: string;
+  onRaiseInput: ({ input, name }: RaiseInputArgs) => void;
   styles: {
     div: string;
   };
 }
 
-function InputWithPopover({ styles }: InputWithPopoverProps) {
-  const [text, setText] = useState('');
+function InputWithPopover({
+  name,
+  curValue,
+  onRaiseInput,
+  styles,
+}: InputWithPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -61,26 +75,22 @@ function InputWithPopover({ styles }: InputWithPopoverProps) {
   const options = ['Cups', 'Ounces', 'Grams', 'Pounds', 'Kilograms'];
 
   const filteredOptions = options.filter((o) =>
-    o.toLowerCase().includes(text.toLowerCase()),
+    o.toLowerCase().includes(curValue.toLowerCase()),
   );
 
   const content = filteredOptions.map((i) => (
-    <PopoverButton
-      key={i}
-      name={i}
-      raiseIsOpen={setIsOpen}
-      raiseText={setText}
-    />
+    <PopoverButton key={i} name={i} raiseIsOpen={setIsOpen} onClick={onRaiseInput} parentInputName={name}/>
   ));
 
   return (
     <>
       <input
+        name={name}
         ref={inputRef}
-        value={text}
+        value={curValue}
         onFocus={() => setIsOpen(true)}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setText(e.target.value)
+          onRaiseInput({ input: e.target.value, name: e.target.name })
         }
         className={styles.div}
       />
@@ -98,17 +108,23 @@ function InputWithPopover({ styles }: InputWithPopoverProps) {
               }}
               ref={popoverRef}
             >
-              <button className="w-full flex justify-end bg-neutral-800">
-                <div
-                  onClick={() => {
-                    setText('');
-                    inputRef.current?.focus();
-                  }}
-                >
-                  <XIcon styles={{ icon: 'w-4 h-4 text-white' }} />
+              <button
+                name={name}
+                className="w-full flex justify-end bg-neutral-800"
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  onRaiseInput({ input: '', name: e.currentTarget.name });
+                  inputRef.current?.focus();
+                }}
+              >
+                <div>
+                  <span className='text-xs text-white mr-1'>clear</span>
                 </div>
               </button>
-              {content.length === 0 ? <PopoverButton name={'No Matches'} /> : content}
+              {content.length === 0 ? (
+                <PopoverButton name={'No Matches'}  />
+              ) : (
+                content
+              )}
             </div>,
             document.body,
             genId(),

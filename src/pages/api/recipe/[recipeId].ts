@@ -29,6 +29,27 @@ export default async function handler(
   const recipe = await prisma.recipe.findUnique({
     where: {
       id: recipeId
+    },
+    include: {
+      ingredients: {
+        include: {
+          name: true,
+          units: true,
+          substitutes: true,
+          instructionLinks: true,
+        }
+      },
+      equipment: {
+        include: {
+          instructionLinks: true,
+        }
+      },
+      instructions: {
+        include: {
+          equipmentLinks: true,
+          ingredientLinks: true
+        }
+      },
     }
   })
 

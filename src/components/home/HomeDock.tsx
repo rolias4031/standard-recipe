@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { useGetUserRecipes } from 'lib/hooks';
+import { useGetUserRecipes } from 'lib/queries';
 import LoadingPage from 'components/common/LoadingPage';
 import { UserRecipesQueryPayload } from 'types/types';
 

@@ -14,12 +14,13 @@ function CreateRecipePage() {
     return (
       <PageFrame
         styles={{
-          div: 'p-5 mx-auto min-h-screen flex md:p-10 xl:w-5/6',
+          div: 'p-5 mx-auto min-h-screen md:p-10 xl:w-5/6',
         }}
       >
         <CreateRecipeDock recipeId={validRecipeId}>
           {(recipe) => <CreateRecipeFlow recipe={recipe} />}
         </CreateRecipeDock>
+        <div className='h-52' />
       </PageFrame>
     );
   }

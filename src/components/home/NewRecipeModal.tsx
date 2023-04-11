@@ -2,7 +2,8 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { ModalBackdrop, TextInput, GeneralButton } from 'pirate-ui';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
-import { useCreateNewDraftRecipe, useNewRecipeModalForm } from 'lib/hooks';
+import { useNewRecipeModalForm } from 'lib/hooks';
+import { useCreateNewDraftRecipe } from 'lib/mutations';
 import LoadingSpinner from 'components/common/LoadingSpinner';
 
 interface NewRecipeModalProps {
@@ -39,9 +40,7 @@ function NewRecipeModal({
     <ModalBackdrop>
       <div className="bg-white rounded-sm p-10 w-3/4 h-5/6 flex flex-col">
         <GeneralButton onClick={onCloseModal}>
-          <ArrowLeftIcon
-            styles={{ icon: 'w-6 h-6' }}
-          />
+          <ArrowLeftIcon styles={{ icon: 'w-6 h-6' }} />
         </GeneralButton>
 
         <div className="h-1/4 text-center text-neutral-800 text-xl mt-10">

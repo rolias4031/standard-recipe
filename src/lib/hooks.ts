@@ -11,25 +11,7 @@ import {
 import { RaiseInputArgs } from 'pirate-ui';
 import { ZodError } from 'zod';
 
-export const useSaveRecipe = () => {
-  return useMutation({ mutationFn: saveRecipeMutation });
-};
 
-export const useCreateNewDraftRecipe = () => {
-  return useMutation({ mutationFn: createNewDraftRecipeMutation });
-};
-
-export const useGetUserRecipes = () => {
-  return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes });
-};
-
-export const useGetRecipeById = (recipeId: string) => {
-  return useQuery({
-    queryKey: ['recipe', recipeId],
-    queryFn: () => fetchRecipeById(recipeId),
-    enabled: recipeId ? true : false,
-  });
-};
 
 export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   type ValidationKeys = 'name';
