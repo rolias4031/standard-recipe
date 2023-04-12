@@ -54,7 +54,7 @@ model Instruction {
 model Equipment {
   id               String        @id @default(cuid())
   name             String
-  notes            String?       @db.VarChar(250)
+  notes            String        @default("") @db.VarChar(250)
   recipe           Recipe        @relation(fields: [recipeId], references: [id])
   recipeId         String
   optional         Boolean       @default(false)
@@ -71,21 +71,21 @@ model Ingredient {
   ingredientUnitsId String
   name              IngredientName   @relation(fields: [ingredientNameId], references: [id])
   ingredientNameId  String
-  notes             String?          @db.VarChar(250)
+  notes             String           @default("") @db.VarChar(250)
   substitutes       IngredientName[] @relation("substitutes")
   instructionLinks  Instruction[]
 }
 
 model IngredientUnits {
   id          String       @id @default(cuid())
-  units       String @unique
+  units       String       @unique
   description String
   ingredients Ingredient[]
 }
 
 model IngredientName {
   id            String       @id @default(cuid())
-  name          String @unique
+  name          String       @unique
   ingredients   Ingredient[]
   substituteFor Ingredient[] @relation("substitutes")
   // potentially add a type field

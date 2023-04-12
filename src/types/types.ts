@@ -24,6 +24,11 @@ export interface MutateConfig<T> {
   apiRoute: string;
   body: T;
 }
+export interface UpdateIngredientHandlerArgs {
+  ingredientId: string;
+  inputName: string;
+  inputValue: string | number | boolean;
+}
 
 export type NewDraftRecipeInputs = Pick<Recipe, 'name'>;
 

@@ -1,4 +1,17 @@
+import { IngredientWithAllModName } from 'types/models';
 import { ErrorPayload } from 'types/types';
+
+export function findIngredientIndexById<T extends { id: string }>(prev: T[], id: string) {
+  return prev.findIndex((i) => i.id === id);
+}
+
+export function insertIntoPrevArray(
+  prev: IngredientWithAllModName[],
+  index: number,
+  updatedIngredient: IngredientWithAllModName,
+) {
+  return [...prev.slice(0, index), updatedIngredient, ...prev.slice(index + 1)];
+}
 
 export function createApiUrl(route: string): string {
   return `${process.env.NEXT_PUBLIC_BASE_URL}${route}`;

@@ -1,4 +1,9 @@
-import { pickStyles } from 'lib/util-client';
+import { IngredientName } from '@prisma/client';
+import {
+  findIngredientIndexById,
+  insertIntoPrevArray,
+  pickStyles,
+} from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, {
   Dispatch,
@@ -7,6 +12,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { IngredientWithAllModName } from 'types/models';
+import { UpdateIngredientHandlerArgs } from 'types/types';
 import CogIcon from './icons/CogIcon';
 import PlusIcon from './icons/PlusIcon';
 import TrashIcon from './icons/TrashIcon';
@@ -98,6 +105,15 @@ interface RecipeFlowInputProps {
   onRemove: (id: string) => void;
   columnLabelComponents: ReactNode;
   inputComponents: ReactNode;
+  onRaiseInput: ({
+    ingredientId,
+    inputName,
+    inputValue,
+  }: UpdateIngredientHandlerArgs) => void;
+  raiseIngredients: Dispatch<SetStateAction<IngredientWithAllModName[]>>;
+  curSubs: string[];
+  curNotes: string;
+  curOptional: boolean;
 }
 
 function RecipeFlowInput({
@@ -106,26 +122,53 @@ function RecipeFlowInput({
   onRemove,
   columnLabelComponents,
   inputComponents,
+  raiseIngredients,
+  onRaiseInput,
+  curSubs,
+  curNotes,
+  curOptional,
 }: RecipeFlowInputProps) {
   const [optionMode, setOptionMode] = useState<string | null>(null);
   const [isMouseIn, setIsMouseIn] = useState(false);
 
-  const [isOptional, setIsOptional] = useState(false);
-  const [subs, setSubs] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
-
   function addSubsHandler(newSub: string) {
-    setSubs((prev: string[]) => {
-      const subExists = prev.find((sub) => sub === newSub);
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      const index = findIngredientIndexById(prev, id);
+      if (index === -1) return prev;
+      const prevSubs = prev[index]?.substitutes;
+      if (!Array.isArray(prevSubs)) return prev;
+      const subExists = prevSubs.find((sub) => sub === newSub);
       if (subExists || prev.length === 3) return prev;
-      return [...prev, newSub];
+      const updatedIngredient = {
+        ...prev[index],
+        substitutes: [...prevSubs, newSub],
+      };
+      const newIngredientArray = insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
+      return newIngredientArray;
     });
   }
 
   function removeSubHandler(subToRemove: string) {
-    setSubs((prev: string[]) => {
-      const newSubs = [...prev].filter((s) => s !== subToRemove);
-      return newSubs;
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      const index = findIngredientIndexById(prev, id);
+      if (index === -1) return prev;
+      const prevSubs = prev[index]?.substitutes;
+      if (!Array.isArray(prevSubs)) return prev;
+      const newSubs = prevSubs.filter((s) => s !== subToRemove);
+      const updatedIngredient = {
+        ...prev[index],
+        substitutes: newSubs,
+      };
+      const newIngredientArray = insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
+      return newIngredientArray;
     });
   }
 
@@ -179,46 +222,64 @@ function RecipeFlowInput({
             key="2"
             className="flex items-center flex-grow justify-end space-x-4 text-xs text-neutral-400 fade-in"
           >
-            {isOptional ? <div>optional</div> : null}
-            {subs.length > 0 ? <div>subs</div> : null}
-            {notes.length > 0 ? <div>notes</div> : null}
+            {curOptional ? <div>optional</div> : null}
+            {curSubs.length > 0 ? <div>subs</div> : null}
+            {curNotes.length > 0 ? <div>notes</div> : null}
           </div>
         )}
       </div>
       {optionMode !== null ? (
         <div className="flex flex-col space-y-2 row-start-3 col-start-2 fade-in">
-          <div className="flex items-center space-x-2 text-sm mt-1">
+          <div className="flex items-center space-x-3 text-sm mt-1">
             <button
-              className={pickStyles(
-                'text-xs p-1 rounded transition-colors hover:bg-neutral-800 hover:text-white',
-                [
-                  optionMode === 'subs',
-                  'text-white bg-neutral-800',
-                  'text-neutral-800',
-                ],
-              )}
+              type="button"
+              className={pickStyles('btn-sm btn-inverted', [
+                optionMode === 'subs',
+                'text-white bg-neutral-800',
+                'text-neutral-800',
+              ])}
               onClick={() => setOptionMode('subs')}
             >
               Substitutes
             </button>
             <button
-              className={pickStyles(
-                'text-xs p-1 rounded transition-colors hover:bg-neutral-800 hover:text-white',
-                [
-                  optionMode === 'notes',
-                  'text-white bg-neutral-800',
-                  'text-neutral-800',
-                ],
-              )}
+              type="button"
+              className={pickStyles('btn-sm btn-inverted', [
+                optionMode === 'notes',
+                'text-white bg-neutral-800',
+                'text-neutral-800',
+              ])}
               onClick={() => setOptionMode('notes')}
             >
               Notes
             </button>
+            <div className="flex items-center space-x-1">
+              <input
+                id={`optional-${id}`}
+                name="optional"
+                type="checkbox"
+                className="w-4 h-4 accent-neutral-800 cursor-pointer"
+                checked={curOptional}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onRaiseInput({
+                    ingredientId: id,
+                    inputName: e.target.name,
+                    inputValue: e.target.checked,
+                  });
+                }}
+              />
+              <label
+                htmlFor={`optional-${id}`}
+                className="text-xs cursor-pointer"
+              >
+                Optional
+              </label>
+            </div>
           </div>
           {optionMode === 'subs' ? (
             <AddSubstitutes
               id={id}
-              curSubs={subs}
+              curSubs={curSubs}
               onAddSub={addSubsHandler}
               onRemoveSub={removeSubHandler}
               styles={{
@@ -228,15 +289,20 @@ function RecipeFlowInput({
           ) : null}
           {optionMode === 'notes' ? (
             <textarea
+              name="notes"
               className="p-3 inp-primary resize-none w-full placeholder-neutral-400 "
               placeholder="Put important details about your ingredients here. How ripe should the fruit be? What brands have you found work best? What mistakes should people avoid? Why do you like this ingredient?"
-              value={notes}
+              value={curNotes}
               rows={5}
               autoFocus
               draggable={false}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setNotes(e.target.value)
-              }
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                onRaiseInput({
+                  ingredientId: id,
+                  inputName: e.target.name,
+                  inputValue: e.target.value,
+                });
+              }}
             />
           ) : null}
         </div>

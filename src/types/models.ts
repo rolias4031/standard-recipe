@@ -65,7 +65,8 @@ export type RecipeWithFull = RecipeWithAll & {
 
 // * derived and shallower and custom types
 
-export interface IngredientWithAllModName extends Omit<IngredientWithAll, 'name'> {
+export interface IngredientWithAllModName extends Omit<IngredientWithAll, 'name' | 'substitutes'> {
   name: string
+  substitutes: string[]
 }
 

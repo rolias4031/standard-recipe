@@ -1,10 +1,15 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { pickStyles } from 'lib/util-client';
+import {
+  findIngredientIndexById,
+  insertIntoPrevArray,
+  pickStyles,
+} from 'lib/util-client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { TextInput } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { IngredientWithAllModName } from 'types/models';
 import { IngredientUnits } from '@prisma/client';
+import { UpdateIngredientHandlerArgs } from 'types/types';
 
 function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
@@ -77,19 +82,6 @@ function TipBox() {
   );
 }
 
-function findIngredientIndexById(
-  prev: IngredientWithAllModName[],
-  id: string,
-) {
-  return prev.findIndex((i) => i.id === id);
-}
-
-interface UpdateIngredientHandlerArgs {
-  ingredientId: string;
-  inputName: string;
-  inputValue: string | number;
-}
-
 interface IngredientStageProps {
   ingredients: IngredientWithAllModName[];
   raiseIngredients: Dispatch<SetStateAction<IngredientWithAllModName[]>>;
@@ -120,13 +112,16 @@ function IngredientsStage({
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       const index = findIngredientIndexById(prev, ingredientId);
       if (index !== -1) {
-        const updatedIngredient = { ...prev[index], [inputName]: inputValue };
-        const newIngredientsArray = [
-          ...prev.slice(0, index),
-          updatedIngredient,
-          ...prev.slice(index + 1),
-        ];
-        return newIngredientsArray as unknown as IngredientWithAllModName[];
+        const updatedIngredient = {
+          ...prev[index],
+          [inputName]: inputValue,
+        };
+        const newIngredientsArray = insertIntoPrevArray(
+          prev,
+          index,
+          updatedIngredient as IngredientWithAllModName,
+        );
+        return newIngredientsArray;
       }
       return prev;
     });
@@ -146,12 +141,13 @@ function IngredientsStage({
           ...prev[index],
           units: { ...allIngredientUnits.get(unitsValue) },
         };
-        const newIngredientsArray = [
-          ...prev.slice(0, index),
-          updatedIngredient,
-          ...prev.slice(index + 1),
-        ];
-        return newIngredientsArray as unknown as IngredientWithAllModName[];
+        const newIngredientsArray = insertIntoPrevArray(
+          prev,
+          index,
+          updatedIngredient as IngredientWithAllModName,
+        );
+
+        return newIngredientsArray;
       }
       return prev;
     });
@@ -165,8 +161,13 @@ function IngredientsStage({
           <RecipeFlowInput
             key={i.id}
             id={i.id}
+            curSubs={i.substitutes}
+            curOptional={i.optional}
+            curNotes={i.notes}
             order={index + 1}
             onRemove={removeIngredientHandler}
+            raiseIngredients={raiseIngredients}
+            onRaiseInput={updateIngredientHandler}
             columnLabelComponents={
               <>
                 <div className="w-72">Ingredients</div>
@@ -204,7 +205,12 @@ function IngredientsStage({
                 <InputWithPopover
                   name="units"
                   curValue={i.units.units}
-                  onRaiseInput={({ input, name }) => updateUnitsHandler({ingredientId: i.id, unitsValue: input})}
+                  onRaiseInput={({ input, name }) =>
+                    updateUnitsHandler({
+                      ingredientId: i.id,
+                      unitsValue: input,
+                    })
+                  }
                   styles={{ div: 'inp-reg inp-primary w-36' }}
                 />
               </>

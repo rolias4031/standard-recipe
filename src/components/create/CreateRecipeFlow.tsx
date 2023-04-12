@@ -14,13 +14,6 @@ import {
 } from 'types/models';
 import IngredientsStage from './IngredientsStage';
 
-function genIngredientName(): IngredientName {
-  return {
-    id: '',
-    name: '',
-  };
-}
-
 function genIngredientUnits(): IngredientUnits {
   return {
     id: '',
@@ -185,7 +178,8 @@ function initIngredients(
 ): IngredientWithAllModName[] {
   if (ingredients.length > 0) {
     const ingredientsWithFlatName = ingredients.map((i) => {
-      return {...i, name: i.name.name}
+      const flatSubs = i.substitutes.map((s) => s.name)
+      return {...i, name: i.name.name, substitutes: flatSubs }
     });
     return ingredientsWithFlatName
   }
