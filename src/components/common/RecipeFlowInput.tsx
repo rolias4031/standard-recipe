@@ -29,14 +29,14 @@ function SubTag({ sub, onRemoveSub }: SubTagProps) {
   return (
     <div
       key={sub}
-      className="text-neutral-800 text-sm border border-neutral-800 rounded-full flex items-center space-x-2 py-1 px-2"
+      className="text-abyss text-sm border border-abyss rounded-full flex items-center space-x-2 py-1 px-2"
       onMouseEnter={() => setIsMouseOver(true)}
       onMouseLeave={() => setIsMouseOver(false)}
     >
       <span>{sub}</span>
       {isMouseOver ? (
         <button onClick={() => onRemoveSub(sub)}>
-          <XIcon styles={{ icon: 'w-4 h-4 text-emerald-700' }} />
+          <XIcon styles={{ icon: 'w-4 h-4 text-fern' }} />
         </button>
       ) : null}
     </div>
@@ -174,15 +174,15 @@ function RecipeFlowInput({
   return (
     <div
       id={id}
-      className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-primary w-full group py-0"
+      className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 w-full group py-0"
       onMouseEnter={() => setIsMouseIn(true)}
       onMouseLeave={() => setIsMouseIn(false)}
     >
-      <div className="font-mono text-sm row-start-2 col-start-1 w-6 flex items-center justify-end text-secondary transition-colors group-hover:text-neutral-800">
+      <div className="font-mono text-sm row-start-2 col-start-1 w-6 flex items-center justify-end text-concrete transition-colors group-hover:text-abyss">
         {order}
       </div>
       {order === 1 ? (
-        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full text-sm text-primary font-mono">
+        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full text-sm font-mono">
           {columnLabelComponents}
         </div>
       ) : null}
@@ -201,8 +201,8 @@ function RecipeFlowInput({
                 styles={{
                   icon: pickStyles('w-6 h-6 transition-colors', [
                     !optionMode,
-                    'text-secondary hover:text-emerald-700',
-                    'text-emerald-700',
+                    'text-concrete hover:text-fern',
+                    'text-fern',
                   ]),
                 }}
               />
@@ -210,7 +210,7 @@ function RecipeFlowInput({
             <GeneralButton onClick={() => onRemove(id)}>
               <TrashIcon
                 styles={{
-                  icon: 'w-6 h-6 transition-colors text-secondary hover:text-red-500',
+                  icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
                 }}
               />
             </GeneralButton>
@@ -218,7 +218,7 @@ function RecipeFlowInput({
         ) : (
           <div
             key="2"
-            className="flex items-center flex-grow justify-end space-x-4 text-xs text-neutral-400 fade-in"
+            className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete fade-in"
           >
             {curOptional ? <div>optional</div> : null}
             {curSubs.length > 0 ? <div>subs</div> : null}
@@ -233,8 +233,7 @@ function RecipeFlowInput({
               type="button"
               className={pickStyles('btn-sm btn-inverted', [
                 optionMode === 'subs',
-                'text-white bg-emerald-700',
-                'text-neutral-800',
+                'text-white bg-fern',
               ])}
               onClick={() => setOptionMode('subs')}
             >
@@ -244,8 +243,7 @@ function RecipeFlowInput({
               type="button"
               className={pickStyles('btn-sm btn-inverted', [
                 optionMode === 'notes',
-                'text-white bg-emerald-700',
-                'text-neutral-800',
+                'text-white bg-fern',
               ])}
               onClick={() => setOptionMode('notes')}
             >
@@ -256,7 +254,7 @@ function RecipeFlowInput({
                 id={`optional-${id}`}
                 name="optional"
                 type="checkbox"
-                className="w-4 h-4 accent-emerald-700 cursor-pointer"
+                className="w-4 h-4 accent-fern cursor-pointer"
                 checked={curOptional}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   onRaiseInput({
@@ -288,7 +286,7 @@ function RecipeFlowInput({
           {optionMode === 'notes' ? (
             <textarea
               name="notes"
-              className="p-3 inp-primary resize-none w-full placeholder-neutral-400 "
+              className="p-3 inp-primary resize-none w-full placeholder-concrete"
               placeholder="Put important details about your ingredients here. How ripe should the fruit be? What brands have you found work best? What mistakes should people avoid? Why do you like this ingredient?"
               value={curNotes}
               rows={5}

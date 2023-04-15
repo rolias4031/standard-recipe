@@ -141,7 +141,7 @@ function InputWithPopover({
       {isOpen && buttonRef.current
         ? createPortal(
             <div
-              className="flex flex-col items-center border border-emerald-700 rounded-sm bg-white text-sm w-36 shadow-md shadow-neutral-500"
+              className="flex flex-col items-center border border-fern rounded-sm bg-white text-sm w-36 shadow-md shadow-concrete"
               style={{
                 position: 'absolute',
                 top:
@@ -154,7 +154,7 @@ function InputWithPopover({
               }}
               ref={popoverRef}
             >
-              <div className="flex items-center border-emerald-700 bg-emerald-700 p-1">
+              <div className="flex items-center border-fern bg-fern p-1">
                 <input
                   autoFocus
                   placeholder="search"

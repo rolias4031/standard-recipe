@@ -21,7 +21,7 @@ function CharCount({ string, charLimit, styles }: CharCountProps) {
     }
   }, [string, charLimit])
 
-  const divStyle = `${styles?.div} ${isInvalid ? 'text-red-500' : 'text-neutral-800'} text-sm font-semibold`
+  const divStyle = `${styles?.div} ${isInvalid ? 'text-red-500' : 'text-abyss'} text-sm font-semibold`
 
   return (
     <div className={divStyle}>

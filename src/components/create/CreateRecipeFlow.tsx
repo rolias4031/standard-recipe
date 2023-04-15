@@ -1,8 +1,15 @@
 import { IngredientName, IngredientUnit } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
+import LongArrowLeftIcon from 'components/common/icons/LongArrowLeftIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
-import { genEquipment, genId, genIngredient, genInstruction, pickStyles } from 'lib/util-client';
+import {
+  genEquipment,
+  genId,
+  genIngredient,
+  genInstruction,
+  pickStyles,
+} from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
@@ -19,9 +26,9 @@ function FlowProgress({ curStage }: { curStage: number }) {
     return (
       <div
         key={i}
-        className={pickStyles('h-3 w-3 rounded-full border-2 border-emerald-700', [
+        className={pickStyles('h-3 w-3 rounded-full border-2 border-fern', [
           i === curStage,
-          'bg-emerald-700',
+          'bg-fern',
         ])}
       ></div>
     );
@@ -76,10 +83,8 @@ function FlowController({
     <div className="flex flex-col flex-grow">
       <div className="flex justify-between items-center space-x-2">
         <div className="flex items-end space-x-2">
-          <p className="text-lg text-secondary font-light">{recipeName}</p>
-          <p className="text-2xl text-primary font-bold">
-            {stageConfig.get(stage)?.name}
-          </p>
+          <p className="text-lg font-light">{recipeName}</p>
+          <p className="text-2xl font-bold">{stageConfig.get(stage)?.name}</p>
         </div>
         <GeneralButton
           styles={{
@@ -94,7 +99,7 @@ function FlowController({
       <div className="w-full">
         <button
           type="button"
-          className="ml-auto p-1 rounded flex items-center w-fit btn-primary transition-all"
+          className="ml-auto flex items-center w-fit btn-primary btn-reg transition-all"
           onClick={createNewInputHandler}
         >
           <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
@@ -103,10 +108,10 @@ function FlowController({
           </span>
         </button>
       </div>
-      <div className="flex border-t bg-white p-2 left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
+      <div className="flex border-t border-concrete bg-white p-3 left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
         <GeneralButton
           styles={{
-            button: 'btn-circle btn-primary scale',
+            button: 'btn-reg btn-primary scale',
           }}
           onClick={prevStageHandler}
         >
@@ -115,7 +120,7 @@ function FlowController({
         <FlowProgress curStage={stage} />
         <GeneralButton
           styles={{
-            button: 'btn-circle btn-primary scale',
+            button: 'btn-reg btn-primary scale',
           }}
           onClick={nextStageHandler}
         >
@@ -131,10 +136,10 @@ function initIngredients(
 ): IngredientWithAllModName[] {
   if (ingredients.length > 0) {
     const ingredientsWithFlatName = ingredients.map((i) => {
-      const flatSubs = i.substitutes.map((s) => s.name)
-      return {...i, name: i.name.name, substitutes: flatSubs }
+      const flatSubs = i.substitutes.map((s) => s.name);
+      return { ...i, name: i.name.name, substitutes: flatSubs };
     });
-    return ingredientsWithFlatName
+    return ingredientsWithFlatName;
   }
   return [genIngredient(), genIngredient()];
 }
@@ -145,22 +150,24 @@ type ClientInput =
   | Dispatch<SetStateAction<InstructionWithAll[]>>;
 interface StageConfig {
   dispatch: ClientInput;
-  genInput: () => IngredientWithAllModName | EquipmentWithAll | InstructionWithAll;
+  genInput: () =>
+    | IngredientWithAllModName
+    | EquipmentWithAll
+    | InstructionWithAll;
   name: string;
   label: string;
 }
 interface CreateRecipeFlowProps {
   recipe: RecipeWithFull;
-  allUnits: IngredientUnit[]
+  allUnits: IngredientUnit[];
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
+  console.log(allUnits);
 
-  console.log(allUnits)
-  
   // state and mutations
-  const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(() =>
-    initIngredients(recipe.ingredients),
+  const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
+    () => initIngredients(recipe.ingredients),
   );
   const [equipment, setEquipment] = useState<EquipmentWithAll[]>([]);
   const [instructions, setInstructions] = useState<InstructionWithAll[]>([]);

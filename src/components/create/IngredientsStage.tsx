@@ -17,12 +17,7 @@ function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
 
   return (
-    <div
-      className={pickStyles(
-        'flex flex-col card-primary text-neutral-800 space-y-3 transition-all',
-        [isTipOpen, 'p-5 card-primary', 'p-5'],
-      )}
-    >
+    <div className="flex flex-col border-y space-y-3 transition-all">
       <div className="flex justify-between items-center">
         <p className="font-semibold text-lg">Tips</p>
         <button
@@ -43,23 +38,20 @@ function TipBox() {
             </p>
             <div className="ml-16 flex flex-col mt-2 space-y-1">
               <span>
-                <s className="">organic, all-natural,</s>
-                {' '}
-                <span className="text-emerald-700 font-semibold">
+                <s className="">organic, all-natural,</s>{' '}
+                <span className="text-fern font-semibold">
                   sliced fuji apples
                 </span>
               </span>
               <span>
-                <s>Whole Foods</s>
-                {' '}
-                <span className="text-emerald-700 font-semibold">
+                <s>Whole Foods</s>{' '}
+                <span className="text-fern font-semibold">
                   olive oil
                 </span>
               </span>
               <span>
-                <s>grass-fed</s>
-                {' '}
-                <span className="text-emerald-700 font-semibold">
+                <s>grass-fed</s>{' '}
+                <span className="text-fern font-semibold">
                   85% ground beef
                 </span>
               </span>
@@ -162,7 +154,7 @@ function IngredientsStage({
   return (
     <div className="flex flex-col pt-10 pb-3 space-y-10 h-full">
       <TipBox />
-      <div className="flex flex-col space-y-3 card-primary p-6">
+      <div className="flex flex-col space-y-3 border-y p-6">
         {ingredients.map((i, index) => (
           <RecipeFlowInput
             key={i.id}
@@ -220,8 +212,8 @@ function IngredientsStage({
                   }
                   styles={{
                     button: {
-                      root: 'inp-reg focus:outline-emerald-700 rounded-sm w-36 flex',
-                      isToggled: ['bg-emerald-700 text-white', 'bg-smoke'],
+                      root: 'inp-reg focus:outline-fern rounded-sm w-36 flex',
+                      isToggled: ['bg-fern text-white', 'bg-smoke'],
                     },
                   }}
                 />

@@ -43,7 +43,7 @@ function NewRecipeModal({
           <ArrowLeftIcon styles={{ icon: 'w-6 h-6' }} />
         </GeneralButton>
 
-        <div className="h-1/4 text-center text-neutral-800 text-xl mt-10">
+        <div className="h-1/4 text-center text-xl mt-10">
           First, name your new recipe.
           <br />
           This name must be unique among all your other recipes.
@@ -64,7 +64,7 @@ function NewRecipeModal({
           <GeneralButton
             styles={{
               button:
-                'text-md text-white rounded-sm bg-emerald-700 hover:bg-emerald-700-800 py-2 w-full disabled:bg-neutral-300',
+                'text-md text-white rounded-sm bg-fern hover:bg-jungle py-2 w-full disabled:bg-concrete',
             }}
             onClick={newDraftRecipeHandler}
             disabled={formValidation.form.isInvalid}

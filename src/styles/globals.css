@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  @apply text-abyss
+}
+
 .fade-in {
   opacity: 0;
   animation: fadeIn 0.3s 1 forwards;
@@ -20,7 +24,7 @@
 /* buttons */
 
 .btn-reg {
-  @apply px-2 py-1 rounded text-sm;
+  @apply px-2 py-1 rounded-sm text-sm;
 }
 
 .btn-circle {
@@ -28,47 +32,32 @@
 }
 
 .btn-sm {
-  @apply text-xs p-1 rounded;
+  @apply text-xs p-1 rounded-sm;
 }
 
 .btn-primary {
-  @apply bg-emerald-700 text-white transition-all duration-200
-    hover:bg-emerald-900;
+  @apply bg-fern text-white transition-all duration-200
+    hover:bg-jungle;
 }
 
 .btn-inverted {
-  @apply transition-all hover:bg-emerald-700 hover:text-white;
+  @apply transition-all hover:bg-fern hover:text-white;
 }
 
 .btn-text-primary {
-  @apply text-neutral-800 transition-all cursor-pointer
-    hover:text-emerald-600;
+  @apply text-abyss transition-all cursor-pointer
+    hover:text-fern;
 }
 
 /* borders and background*/
-.brd-primary {
-  @apply border-neutral-300;
-}
-
-.bg-primary {
-  @apply bg-neutral-50;
-}
-
-.card-primary {
-  @apply border-y;
-}
 
 /* input */
 .inp-primary {
-  @apply rounded-sm placeholder-neutral-500 bg-smoke focus:outline-emerald-700 focus:bg-white;
+  @apply rounded-sm placeholder-concrete bg-smoke focus:outline-fern focus:bg-white;
 }
 
 .inp-select {
-  @apply rounded-sm bg-smoke focus:outline-emerald-700 focus:text-white focus:bg-emerald-700
-}
-
-.inp-solid {
-  @apply rounded placeholder-neutral-400;
+  @apply rounded-sm bg-smoke focus:outline-fern focus:text-white focus:bg-fern
 }
 
 .inp-sm {
@@ -80,14 +69,6 @@
 }
 
 /* text */
-
-.text-primary {
-  @apply text-neutral-800;
-}
-
-.text-secondary {
-  @apply text-neutral-400;
-}
 
 .scale {
   @apply hover:scale-110;

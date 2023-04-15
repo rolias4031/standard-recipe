@@ -10,8 +10,11 @@ module.exports = {
         '90vh': '90vh',
       },
       colors: {
+        abyss: '#262626',
+        concrete: '#a3a3a3',
         smoke: 'rgb(237, 237, 237)',
-        dust: 'rgb(247, 247, 247)',
+        fern: '#047857',
+        jungle: '#064e3b',
       },
     },
   },
