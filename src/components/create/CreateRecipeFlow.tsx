@@ -1,8 +1,8 @@
-import { IngredientName, IngredientUnits } from '@prisma/client';
+import { IngredientName, IngredientUnit } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
-import { genId, pickStyles } from 'lib/util-client';
+import { genEquipment, genId, genIngredient, genInstruction, pickStyles } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
@@ -14,61 +14,14 @@ import {
 } from 'types/models';
 import IngredientsStage from './IngredientsStage';
 
-function genIngredientUnits(): IngredientUnits {
-  return {
-    id: '',
-    units: '',
-    description: '',
-  };
-}
-
-function genIngredient(): IngredientWithAllModName {
-  return {
-    id: genId(),
-    recipeId: '',
-    name: '',
-    units: genIngredientUnits(),
-    ingredientNameId: '',
-    quantity: 0,
-    ingredientUnitsId: '',
-    substitutes: [],
-    instructionLinks: [],
-    optional: false,
-    notes: '',
-  };
-}
-
-function genEquipment(): EquipmentWithAll {
-  return {
-    id: genId(),
-    name: '',
-    optional: false,
-    notes: '',
-    instructionLinks: [],
-    recipeId: '',
-  };
-}
-
-function genInstruction(): InstructionWithAll {
-  return {
-    id: genId(),
-    description: '',
-    order: 0,
-    optional: false,
-    equipmentLinks: [],
-    ingredientLinks: [],
-    recipeId: '',
-  };
-}
-
 function FlowProgress({ curStage }: { curStage: number }) {
   const dots = [1, 2, 3].map((i) => {
     return (
       <div
         key={i}
-        className={pickStyles('h-3 w-3 rounded-full border-2 border-white', [
+        className={pickStyles('h-3 w-3 rounded-full border-2 border-emerald-700', [
           i === curStage,
-          'bg-white',
+          'bg-emerald-700',
         ])}
       ></div>
     );
@@ -150,7 +103,7 @@ function FlowController({
           </span>
         </button>
       </div>
-      <div className="flex bg-neutral-800 p-1 rounded-full justify-between items-center fixed bottom-6 left-32 right-32 shadow-lg shadow-neutral-600 transition-all">
+      <div className="flex border-t bg-white p-2 left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
         <GeneralButton
           styles={{
             button: 'btn-circle btn-primary scale',
@@ -198,9 +151,12 @@ interface StageConfig {
 }
 interface CreateRecipeFlowProps {
   recipe: RecipeWithFull;
+  allUnits: IngredientUnit[]
 }
 
-function CreateRecipeFlow({ recipe }: CreateRecipeFlowProps) {
+function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
+
+  console.log(allUnits)
   
   // state and mutations
   const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(() =>
@@ -253,6 +209,7 @@ function CreateRecipeFlow({ recipe }: CreateRecipeFlowProps) {
               <IngredientsStage
                 ingredients={ingredients}
                 raiseIngredients={setIngredients}
+                allUnits={allUnits}
               />
             ) : null}
             {stage === 2 ? <div>Equipment</div> : null}

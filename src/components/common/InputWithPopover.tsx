@@ -1,4 +1,4 @@
-import { genId } from 'lib/util-client';
+import { genId, pickStyles } from 'lib/util-client';
 import { RaiseInputArgs } from 'pirate-ui';
 import React, {
   Dispatch,
@@ -8,25 +8,32 @@ import React, {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import XIcon from './icons/XIcon';
 
-interface PopoverButtonProps {
+interface PopoverOptionProps {
   name: string;
   parentInputName?: string;
   onClick?: ({ input, name }: RaiseInputArgs) => void;
   raiseIsOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
-function PopoverButton({ name, onClick, parentInputName, raiseIsOpen }: PopoverButtonProps) {
+function PopoverOption({
+  name,
+  onClick,
+  parentInputName,
+  raiseIsOpen,
+}: PopoverOptionProps) {
   return (
     <button
       name={name}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
         if (raiseIsOpen && onClick && parentInputName) {
-          onClick({input: e.currentTarget.name, name: parentInputName});
+          console.log(e.currentTarget.name);
+          onClick({ input: e.currentTarget.name, name: '' });
           raiseIsOpen(false);
         }
       }}
-      className="px-2 p-1 w-full text-left hover:bg-neutral-200 transition-colors"
+      className="px-2 p-1 w-full text-left hover:bg-neutral-100 transition-colors"
     >
       {name}
     </button>
@@ -37,8 +44,12 @@ interface InputWithPopoverProps {
   name: string;
   curValue: string;
   onRaiseInput: ({ input, name }: RaiseInputArgs) => void;
+  options: string[];
   styles: {
-    div: string;
+    button: {
+      root: string;
+      isToggled: [string, string];
+    };
   };
 }
 
@@ -46,11 +57,34 @@ function InputWithPopover({
   name,
   curValue,
   onRaiseInput,
+  options,
   styles,
 }: InputWithPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [searchText, setSearchText] = useState('');
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  const getPopoverPosition = () => {
+    if (!buttonRef.current) return;
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    const popoverWidth = 36 * 16; // Assuming w-36 and 1rem = 16px
+    const availableSpaceRight = window.innerWidth - buttonRect.right;
+    const availableSpaceLeft = buttonRect.left;
+
+    let leftPosition = buttonRect.right + window.scrollX + 8;
+
+    if (
+      availableSpaceRight < popoverWidth &&
+      availableSpaceLeft > popoverWidth
+    ) {
+      leftPosition = buttonRect.left - popoverWidth - 8;
+    }
+
+    const topPosition = buttonRect.top + window.scrollY;
+
+    return { left: leftPosition, top: topPosition };
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -63,8 +97,8 @@ function InputWithPopover({
 
   const handleClickOutside = (e: MouseEvent) => {
     if (
-      inputRef.current &&
-      !inputRef.current.contains(e.target as Node) &&
+      buttonRef.current &&
+      !buttonRef.current.contains(e.target as Node) &&
       popoverRef.current &&
       !popoverRef.current.contains(e.target as Node)
     ) {
@@ -72,59 +106,83 @@ function InputWithPopover({
     }
   };
 
-  const options = ['Cups', 'Ounces', 'Grams', 'Pounds', 'Kilograms'];
-
-  const filteredOptions = options.filter((o) =>
-    o.toLowerCase().includes(curValue.toLowerCase()),
-  );
+  const filteredOptions =
+    searchText.length > 0
+      ? options.filter((o) =>
+          o.toLowerCase().includes(searchText.toLowerCase()),
+        )
+      : options;
 
   const content = filteredOptions.map((i) => (
-    <PopoverButton key={i} name={i} raiseIsOpen={setIsOpen} onClick={onRaiseInput} parentInputName={name}/>
+    <PopoverOption
+      key={i}
+      name={i}
+      raiseIsOpen={setIsOpen}
+      onClick={onRaiseInput}
+      parentInputName={name}
+    />
   ));
 
   return (
     <>
-      <input
-        name={name}
-        ref={inputRef}
-        value={curValue}
-        onFocus={() => setIsOpen(true)}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          onRaiseInput({ input: e.target.value, name: e.target.name })
-        }
-        className={styles.div}
-      />
-      {isOpen && inputRef.current
+      <button
+        className={pickStyles(styles.button.root, [
+          isOpen,
+          styles.button.isToggled[0],
+          styles.button.isToggled[1],
+        ])}
+        ref={buttonRef}
+        onClick={() => {
+          setIsOpen(true);
+        }}
+      >
+        <span>{curValue === '' ? 'Select' : curValue}</span>
+      </button>
+      {isOpen && buttonRef.current
         ? createPortal(
             <div
-              className="flex flex-col items-center border border-neutral-800 rounded bg-white ml-2 text-sm w-28 shadow-md shadow-neutral-600/50"
+              className="flex flex-col items-center border border-emerald-700 rounded-sm bg-white text-sm w-36 shadow-md shadow-neutral-500"
               style={{
                 position: 'absolute',
                 top:
-                  inputRef.current.getBoundingClientRect().top + window.scrollY,
+                  buttonRef.current.getBoundingClientRect().top +
+                  window.scrollY,
                 left:
-                  inputRef.current.getBoundingClientRect().right +
-                  window.scrollX,
+                  buttonRef.current.getBoundingClientRect().right +
+                  window.scrollX +
+                  8,
               }}
               ref={popoverRef}
             >
-              <button
-                name={name}
-                className="w-full flex justify-end bg-neutral-800"
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  onRaiseInput({ input: '', name: e.currentTarget.name });
-                  inputRef.current?.focus();
-                }}
-              >
-                <div>
-                  <span className='text-xs text-white mr-1'>clear</span>
-                </div>
-              </button>
-              {content.length === 0 ? (
-                <PopoverButton name={'No Matches'}  />
-              ) : (
-                content
-              )}
+              <div className="flex items-center border-emerald-700 bg-emerald-700 p-1">
+                <input
+                  autoFocus
+                  placeholder="search"
+                  autoComplete="false"
+                  value={searchText}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchText(e.target.value)
+                  }
+                  className="w-full text-white px-1 bg-transparent appearance-none outline-none placeholder-white"
+                />
+                <button
+                  name="clear"
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    onRaiseInput({ input: e.currentTarget.name, name: '' });
+                    setSearchText('');
+                  }}
+                >
+                  <XIcon styles={{ icon: 'w-4 h-4 text-white' }} />
+                </button>
+              </div>
+
+              <div className="flex flex-col w-full items-center max-h-64 overflow-auto">
+                {content.length === 0 ? (
+                  <PopoverOption name={'No Matches'} />
+                ) : (
+                  content
+                )}
+              </div>
             </div>,
             document.body,
             genId(),

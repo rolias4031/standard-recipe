@@ -9,6 +9,10 @@ module.exports = {
       height: {
         '90vh': '90vh',
       },
+      colors: {
+        smoke: 'rgb(237, 237, 237)',
+        dust: 'rgb(247, 247, 247)',
+      },
     },
   },
   plugins: [],

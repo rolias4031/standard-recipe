@@ -1,7 +1,64 @@
-import { IngredientWithAllModName } from 'types/models';
+import { IngredientUnit } from '@prisma/client';
+import {
+  EquipmentWithAll,
+  IngredientWithAllModName,
+  InstructionWithAll,
+} from 'types/models';
 import { ErrorPayload } from 'types/types';
 
-export function findIngredientIndexById<T extends { id: string }>(prev: T[], id: string) {
+export function genIngredientUnit(): IngredientUnit {
+  return {
+    id: '',
+    unit: '',
+    abbreviation: '',
+    description: '',
+    property: 'mass',
+  };
+}
+
+export function genIngredient(): IngredientWithAllModName {
+  return {
+    id: genId(),
+    recipeId: '',
+    name: '',
+    unit: genIngredientUnit(),
+    ingredientNameId: '',
+    quantity: 0,
+    ingredientUnitId: '',
+    substitutes: [],
+    instructionLinks: [],
+    optional: false,
+    notes: '',
+  };
+}
+
+export function genEquipment(): EquipmentWithAll {
+  return {
+    id: genId(),
+    name: '',
+    optional: false,
+    notes: '',
+    instructionLinks: [],
+    recipeId: '',
+  };
+}
+
+export function genInstruction(): InstructionWithAll {
+  return {
+    id: genId(),
+    description: '',
+    order: 0,
+    optional: false,
+    equipmentLinks: [],
+    ingredientLinks: [],
+    recipeId: '',
+  };
+}
+
+export function findIngredientIndexById<T extends { id: string }>(
+  prev: T[],
+  id: string,
+) {
   return prev.findIndex((i) => i.id === id);
 }
 
@@ -31,7 +88,7 @@ type Input = InputArray | string;
 export function pickStyles(...inputItems: Input[]): string {
   let combinedStringArray: string[] = [];
 
-  inputItems.forEach(inputItem => {
+  inputItems.forEach((inputItem) => {
     if (Array.isArray(inputItem)) {
       const [condition, trueString, falseString] = inputItem;
 

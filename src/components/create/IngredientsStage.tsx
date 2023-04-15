@@ -1,6 +1,8 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
   findIngredientIndexById,
+  genIngredient,
+  genIngredientUnit,
   insertIntoPrevArray,
   pickStyles,
 } from 'lib/util-client';
@@ -8,7 +10,7 @@ import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { TextInput } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { IngredientWithAllModName } from 'types/models';
-import { IngredientUnits } from '@prisma/client';
+import { IngredientUnit } from '@prisma/client';
 import { UpdateIngredientHandlerArgs } from 'types/types';
 
 function TipBox() {
@@ -17,8 +19,8 @@ function TipBox() {
   return (
     <div
       className={pickStyles(
-        'flex flex-col card-primary text-primary space-y-3 transition-all',
-        [isTipOpen, 'p-5 card-primary', 'p-3'],
+        'flex flex-col card-primary text-neutral-800 space-y-3 transition-all',
+        [isTipOpen, 'p-5 card-primary', 'p-5'],
       )}
     >
       <div className="flex justify-between items-center">
@@ -42,18 +44,21 @@ function TipBox() {
             <div className="ml-16 flex flex-col mt-2 space-y-1">
               <span>
                 <s className="">organic, all-natural,</s>
+                {' '}
                 <span className="text-emerald-700 font-semibold">
                   sliced fuji apples
                 </span>
               </span>
               <span>
                 <s>Whole Foods</s>
+                {' '}
                 <span className="text-emerald-700 font-semibold">
                   olive oil
                 </span>
               </span>
               <span>
                 <s>grass-fed</s>
+                {' '}
                 <span className="text-emerald-700 font-semibold">
                   85% ground beef
                 </span>
@@ -85,18 +90,17 @@ function TipBox() {
 interface IngredientStageProps {
   ingredients: IngredientWithAllModName[];
   raiseIngredients: Dispatch<SetStateAction<IngredientWithAllModName[]>>;
+  allUnits: IngredientUnit[];
 }
 
 function IngredientsStage({
   ingredients,
   raiseIngredients,
+  allUnits,
 }: IngredientStageProps) {
-  const allIngredientUnits = new Map<string, IngredientUnits>([
-    ['Cups', { id: '1', units: 'Cups', description: 'The humble cup' }],
-  ]);
-
   function removeIngredientHandler(id: string) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
+      if (prev.length === 1) return [genIngredient()];
       const newIngredients = prev.filter((i) => i.id !== id);
       return newIngredients;
     });
@@ -129,27 +133,29 @@ function IngredientsStage({
 
   function updateUnitsHandler({
     ingredientId,
-    unitsValue,
+    unitInput,
   }: {
     ingredientId: string;
-    unitsValue: string;
+    unitInput: string;
   }) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       const index = findIngredientIndexById(prev, ingredientId);
-      if (index !== -1) {
-        const updatedIngredient = {
-          ...prev[index],
-          units: { ...allIngredientUnits.get(unitsValue) },
-        };
-        const newIngredientsArray = insertIntoPrevArray(
-          prev,
-          index,
-          updatedIngredient as IngredientWithAllModName,
-        );
+      if (index === -1) return prev;
+      const newUnits =
+        unitInput === 'clear'
+          ? genIngredientUnit()
+          : allUnits.find((u) => u.unit === unitInput);
+      const updatedIngredient = {
+        ...prev[index],
+        unit: newUnits,
+      };
+      const newIngredientsArray = insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
 
-        return newIngredientsArray;
-      }
-      return prev;
+      return newIngredientsArray;
     });
   }
 
@@ -203,15 +209,21 @@ function IngredientsStage({
                   className="inp-reg inp-primary w-36"
                 />
                 <InputWithPopover
-                  name="units"
-                  curValue={i.units.units}
+                  options={allUnits.map((u) => u.unit)}
+                  name="unit"
+                  curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
                   onRaiseInput={({ input, name }) =>
                     updateUnitsHandler({
                       ingredientId: i.id,
-                      unitsValue: input,
+                      unitInput: input,
                     })
                   }
-                  styles={{ div: 'inp-reg inp-primary w-36' }}
+                  styles={{
+                    button: {
+                      root: 'inp-reg focus:outline-emerald-700 rounded-sm w-36 flex',
+                      isToggled: ['bg-emerald-700 text-white', 'bg-smoke'],
+                    },
+                  }}
                 />
               </>
             }

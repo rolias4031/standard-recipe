@@ -1,4 +1,3 @@
-import { IngredientName } from '@prisma/client';
 import {
   findIngredientIndexById,
   insertIntoPrevArray,
@@ -30,14 +29,14 @@ function SubTag({ sub, onRemoveSub }: SubTagProps) {
   return (
     <div
       key={sub}
-      className="text-white text-sm bg-neutral-800 rounded flex items-center space-x-2 p-1 px-2"
+      className="text-neutral-800 text-sm border border-neutral-800 rounded-full flex items-center space-x-2 py-1 px-2"
       onMouseEnter={() => setIsMouseOver(true)}
       onMouseLeave={() => setIsMouseOver(false)}
     >
       <span>{sub}</span>
       {isMouseOver ? (
         <button onClick={() => onRemoveSub(sub)}>
-          <XIcon styles={{ icon: 'w-4 h-4 text-red-500' }} />
+          <XIcon styles={{ icon: 'w-4 h-4 text-emerald-700' }} />
         </button>
       ) : null}
     </div>
@@ -179,20 +178,19 @@ function RecipeFlowInput({
       onMouseEnter={() => setIsMouseIn(true)}
       onMouseLeave={() => setIsMouseIn(false)}
     >
-      <div className="font-mono text-sm row-start-2 col-start-1 w-6 flex items-center justify-end text-secondary group-hover:text-neutral-800 transition-colors">
+      <div className="font-mono text-sm row-start-2 col-start-1 w-6 flex items-center justify-end text-secondary transition-colors group-hover:text-neutral-800">
         {order}
       </div>
       {order === 1 ? (
-        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full text-sm text-secondary font-mono">
+        <div className="row-start-1 col-start-2 flex items-center space-x-2 w-full text-sm text-primary font-mono">
           {columnLabelComponents}
         </div>
       ) : null}
-      <div className="w-full col-start-2 row-start-2 flex items-center space-x-2">
+      <div className="w-full col-start-2 row-start-2 flex items-stretch space-x-2">
         {inputComponents}
         {isMouseIn || optionMode ? (
           <div key="1" className="flex flex-grow justify-between fade-in">
             <GeneralButton
-              styles={{ button: '' }}
               onClick={() =>
                 setOptionMode((prev: string | null) =>
                   prev === null ? 'subs' : null,
@@ -203,8 +201,8 @@ function RecipeFlowInput({
                 styles={{
                   icon: pickStyles('w-6 h-6 transition-colors', [
                     !optionMode,
-                    'text-secondary hover:text-neutral-800',
-                    'text-primary',
+                    'text-secondary hover:text-emerald-700',
+                    'text-emerald-700',
                   ]),
                 }}
               />
@@ -235,7 +233,7 @@ function RecipeFlowInput({
               type="button"
               className={pickStyles('btn-sm btn-inverted', [
                 optionMode === 'subs',
-                'text-white bg-neutral-800',
+                'text-white bg-emerald-700',
                 'text-neutral-800',
               ])}
               onClick={() => setOptionMode('subs')}
@@ -246,7 +244,7 @@ function RecipeFlowInput({
               type="button"
               className={pickStyles('btn-sm btn-inverted', [
                 optionMode === 'notes',
-                'text-white bg-neutral-800',
+                'text-white bg-emerald-700',
                 'text-neutral-800',
               ])}
               onClick={() => setOptionMode('notes')}
@@ -258,7 +256,7 @@ function RecipeFlowInput({
                 id={`optional-${id}`}
                 name="optional"
                 type="checkbox"
-                className="w-4 h-4 accent-neutral-800 cursor-pointer"
+                className="w-4 h-4 accent-emerald-700 cursor-pointer"
                 checked={curOptional}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   onRaiseInput({

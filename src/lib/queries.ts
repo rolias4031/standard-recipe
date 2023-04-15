@@ -1,5 +1,5 @@
 import { createApiUrl, isErrorPayload } from './util-client';
-import { BasePayload, CustomError, ErrorPayload, RecipeQueryPayload, UserRecipesQueryPayload } from 'types/types'
+import { AllUnitsQueryPayload, BasePayload, CustomError, ErrorPayload, RecipeQueryPayload, UserRecipesQueryPayload } from 'types/types'
 import { useQuery } from '@tanstack/react-query';
 
 async function fetchData<T extends BasePayload>(url: string) {
@@ -18,23 +18,34 @@ async function fetchData<T extends BasePayload>(url: string) {
   }
 }
 
-export async function fetchUserRecipes() {
+async function fetchUserRecipes() {
   return fetchData<UserRecipesQueryPayload>('api/user/recipes')
 }
 
-export async function fetchRecipeById(recipeId: string) {
+async function fetchRecipeById(recipeId: string) {
   return fetchData<RecipeQueryPayload>(`api/recipe/${recipeId}`)
 }
 
+async function fetchAllUnits() {
+  return fetchData<AllUnitsQueryPayload>('api/ingredient_units/all')
+}
 
-export const useGetUserRecipes = () => {
+
+export function useGetUserRecipes() {
   return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes });
 };
 
-export const useGetRecipeById = (recipeId: string) => {
+export function useGetRecipeById(recipeId: string) {
   return useQuery({
     queryKey: ['recipe', recipeId],
     queryFn: () => fetchRecipeById(recipeId),
     enabled: recipeId ? true : false,
   });
 };
+
+export function useGetAllUnits() {
+  return useQuery({
+    queryKey: ['all units'],
+    queryFn: fetchAllUnits,
+  })
+}

@@ -18,9 +18,11 @@ function CreateRecipePage() {
         }}
       >
         <CreateRecipeDock recipeId={validRecipeId}>
-          {(recipe) => <CreateRecipeFlow recipe={recipe} />}
+          {(recipe, allUnits) => (
+            <CreateRecipeFlow recipe={recipe} allUnits={allUnits} />
+          )}
         </CreateRecipeDock>
-        <div className='h-52' />
+        <div className="h-72" />
       </PageFrame>
     );
   }

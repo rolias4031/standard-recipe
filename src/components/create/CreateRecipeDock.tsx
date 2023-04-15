@@ -1,19 +1,21 @@
+import { IngredientUnit } from '@prisma/client';
 import LoadingPage from 'components/common/LoadingPage';
-import { useGetRecipeById } from 'lib/queries';
+import { useGetAllUnits, useGetRecipeById } from 'lib/queries';
 import React, { ReactNode } from 'react';
 import { RecipeWithFull } from 'types/models';
 
 interface CreateRecipeDockProps {
   recipeId: string;
-  children: (data: RecipeWithFull) => ReactNode
+  children: (recipe: RecipeWithFull, allUnits: IngredientUnit[]) => ReactNode
 }
 
 function CreateRecipeDock({ recipeId, children }: CreateRecipeDockProps) {
-  const { data, status } = useGetRecipeById(recipeId);
-  if (data && status === 'success') {
-    return <>{children(data.recipe)}</>
+  const { data: recipeData, status: recipeStatus } = useGetRecipeById(recipeId);
+  const { data: unitsData, status: unitsStatus } = useGetAllUnits()
+  if (recipeData && unitsData) {
+    return <>{children(recipeData.recipe, unitsData.units)}</>
   }
-  if (status === 'loading') {
+  if (recipeStatus === 'loading' || unitsStatus === 'loading') {
     return <LoadingPage />
   }
   return null;

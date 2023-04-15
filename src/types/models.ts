@@ -14,7 +14,7 @@ const recipeWithAll = Prisma.validator<Prisma.RecipeArgs>()({
 
 const ingredientWithAll = Prisma.validator<Prisma.IngredientArgs>()({
   include: {
-    units: true,
+    unit: true,
     name: true,
     instructionLinks: true,
     substitutes: true,

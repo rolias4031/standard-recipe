@@ -62,25 +62,27 @@ model Equipment {
 }
 
 model Ingredient {
-  id                String           @id @default(cuid())
-  quantity          Float
-  optional          Boolean          @default(false)
-  recipe            Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId          String
-  units             IngredientUnits  @relation(fields: [ingredientUnitsId], references: [id])
-  ingredientUnitsId String
-  name              IngredientName   @relation(fields: [ingredientNameId], references: [id])
-  ingredientNameId  String
-  notes             String           @default("") @db.VarChar(250)
-  substitutes       IngredientName[] @relation("substitutes")
-  instructionLinks  Instruction[]
+  id               String           @id @default(cuid())
+  quantity         Float
+  optional         Boolean          @default(false)
+  recipe           Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId         String
+  unit             IngredientUnit   @relation(fields: [ingredientUnitId], references: [id])
+  ingredientUnitId String
+  name             IngredientName   @relation(fields: [ingredientNameId], references: [id])
+  ingredientNameId String
+  notes            String           @default("") @db.VarChar(250)
+  substitutes      IngredientName[] @relation("substitutes")
+  instructionLinks Instruction[]
 }
 
-model IngredientUnits {
-  id          String       @id @default(cuid())
-  units       String       @unique
-  description String
-  ingredients Ingredient[]
+model IngredientUnit {
+  id           String       @id @default(cuid())
+  unit         String       @unique
+  abbreviation String
+  description  String
+  property     UnitProperty @default(mass)
+  ingredients  Ingredient[]
 }
 
 model IngredientName {
@@ -96,6 +98,16 @@ model RecipeImage {
   recipe   Recipe @relation(fields: [recipeId], references: [id])
   recipeId String
   url      String
+}
+
+enum UnitProperty {
+  mass
+  volume
+  weight
+  density
+  temperature
+  pressure
+  other
 }
 
 enum RecipeStatus {

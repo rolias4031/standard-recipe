@@ -34,7 +34,7 @@ export default async function handler(
       ingredients: {
         include: {
           name: true,
-          units: true,
+          unit: true,
           substitutes: true,
           instructionLinks: true,
         }
