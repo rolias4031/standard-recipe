@@ -13,7 +13,7 @@ import XIcon from './icons/XIcon';
 interface PopoverOptionProps {
   name: string;
   parentInputName?: string;
-  onClick?: ({ input, name }: RaiseInputArgs) => void;
+  onClick?: ({ value, name }: RaiseInputArgs) => void;
   raiseIsOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -29,7 +29,7 @@ function PopoverOption({
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
         if (raiseIsOpen && onClick && parentInputName) {
           console.log(e.currentTarget.name);
-          onClick({ input: e.currentTarget.name, name: '' });
+          onClick({ value: e.currentTarget.name, name: '' });
           raiseIsOpen(false);
         }
       }}
@@ -43,7 +43,7 @@ function PopoverOption({
 interface InputWithPopoverProps {
   name: string;
   curValue: string;
-  onRaiseInput: ({ input, name }: RaiseInputArgs) => void;
+  onRaiseInput: ({ value, name }: RaiseInputArgs) => void;
   options: string[];
   styles: {
     button: {
@@ -168,7 +168,7 @@ function InputWithPopover({
                 <button
                   name="clear"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    onRaiseInput({ input: e.currentTarget.name, name: '' });
+                    onRaiseInput({ value: e.currentTarget.name, name: '' });
                     setSearchText('');
                   }}
                 >

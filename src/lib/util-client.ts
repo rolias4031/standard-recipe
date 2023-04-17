@@ -1,4 +1,5 @@
 import { IngredientUnit } from '@prisma/client';
+import { Dispatch, SetStateAction } from 'react';
 import {
   EquipmentWithAll,
   IngredientWithAllModName,
@@ -55,17 +56,17 @@ export function genInstruction(): InstructionWithAll {
   };
 }
 
-export function findIngredientIndexById<T extends { id: string }>(
+export function findRecipeInputIndexById<T extends { id: string }>(
   prev: T[],
   id: string,
 ) {
   return prev.findIndex((i) => i.id === id);
 }
 
-export function insertIntoPrevArray(
-  prev: IngredientWithAllModName[],
+export function insertIntoPrevArray<T>(
+  prev: T[],
   index: number,
-  updatedIngredient: IngredientWithAllModName,
+  updatedIngredient: T,
 ) {
   return [...prev.slice(0, index), updatedIngredient, ...prev.slice(index + 1)];
 }

@@ -1,11 +1,9 @@
-import { IngredientName, IngredientUnit } from '@prisma/client';
+import { IngredientUnit } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
-import LongArrowLeftIcon from 'components/common/icons/LongArrowLeftIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import {
   genEquipment,
-  genId,
   genIngredient,
   genInstruction,
   pickStyles,
@@ -19,6 +17,7 @@ import {
   InstructionWithAll,
   RecipeWithFull,
 } from 'types/models';
+import EquipmentStage from './EquipmentStage';
 import IngredientsStage from './IngredientsStage';
 
 function FlowProgress({ curStage }: { curStage: number }) {
@@ -86,14 +85,23 @@ function FlowController({
           <p className="text-lg font-light">{recipeName}</p>
           <p className="text-2xl font-bold">{stageConfig.get(stage)?.name}</p>
         </div>
-        <GeneralButton
-          styles={{
-            button: 'btn-reg btn-primary',
-          }}
-          onClick={onSave}
-        >
-          Save
-        </GeneralButton>
+        <div className="flex items-center space-x-4">
+          <GeneralButton
+            styles={{
+              button: 'text-xs',
+            }}
+          >
+            tips
+          </GeneralButton>
+          <GeneralButton
+            styles={{
+              button: 'btn-reg btn-primary',
+            }}
+            onClick={onSave}
+          >
+            Save
+          </GeneralButton>
+        </div>
       </div>
       {children(stage)}
       <div className="w-full">
@@ -144,6 +152,13 @@ function initIngredients(
   return [genIngredient(), genIngredient()];
 }
 
+function initEquipment(equipment: EquipmentWithAll[]): EquipmentWithAll[] {
+  if (equipment.length > 0) {
+    return equipment;
+  }
+  return [genEquipment(), genEquipment()];
+}
+
 type ClientInput =
   | Dispatch<SetStateAction<IngredientWithAllModName[]>>
   | Dispatch<SetStateAction<EquipmentWithAll[]>>
@@ -169,7 +184,9 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
     () => initIngredients(recipe.ingredients),
   );
-  const [equipment, setEquipment] = useState<EquipmentWithAll[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentWithAll[]>(() =>
+    initEquipment(recipe.equipment),
+  );
   const [instructions, setInstructions] = useState<InstructionWithAll[]>([]);
   const [info, setInfo] = useState();
 
@@ -219,7 +236,12 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
                 allUnits={allUnits}
               />
             ) : null}
-            {stage === 2 ? <div>Equipment</div> : null}
+            {stage === 2 ? (
+              <EquipmentStage
+                equipment={equipment}
+                raiseEquipment={setEquipment}
+              />
+            ) : null}
             {stage === 3 ? <div>Instructions</div> : null}
           </>
         )}

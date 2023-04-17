@@ -36,6 +36,8 @@ function NewRecipeModal({
     );
   }
 
+  console.log(formValidation)
+
   return (
     <ModalBackdrop>
       <div className="bg-white rounded-sm p-10 w-3/4 h-5/6 flex flex-col">

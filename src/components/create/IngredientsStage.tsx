@@ -1,17 +1,20 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
-  findIngredientIndexById,
+  findRecipeInputIndexById,
   genIngredient,
   genIngredientUnit,
   insertIntoPrevArray,
-  pickStyles,
 } from 'lib/util-client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { TextInput } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { IngredientWithAllModName } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
-import { UpdateIngredientHandlerArgs } from 'types/types';
+import { UpdateRecipeInputHandlerArgs } from 'types/types';
+import StageInputContainer from './StageInputContainer';
+import AddSubstitutes from './AddSubstitutes';
+import NotesInput from 'components/common/NotesInput';
+import OptionalInput from 'components/common/OptionalInput';
 
 function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
@@ -45,15 +48,11 @@ function TipBox() {
               </span>
               <span>
                 <s>Whole Foods</s>{' '}
-                <span className="text-fern font-semibold">
-                  olive oil
-                </span>
+                <span className="text-fern font-semibold">olive oil</span>
               </span>
               <span>
                 <s>grass-fed</s>{' '}
-                <span className="text-fern font-semibold">
-                  85% ground beef
-                </span>
+                <span className="text-fern font-semibold">85% ground beef</span>
               </span>
             </div>
           </div>
@@ -98,19 +97,57 @@ function IngredientsStage({
     });
   }
 
-  console.log(ingredients);
-
-  function updateIngredientHandler({
-    ingredientId,
-    inputName,
-    inputValue,
-  }: UpdateIngredientHandlerArgs) {
+  function addSubsHandler(newSub: string, id: string) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
-      const index = findIngredientIndexById(prev, ingredientId);
+      const index = findRecipeInputIndexById(prev, id);
+      if (index === -1) return prev;
+      const prevSubs = prev[index]?.substitutes;
+      if (!Array.isArray(prevSubs)) return prev;
+      const subExists = prevSubs.find((sub) => sub === newSub);
+      if (subExists || prev.length === 3) return prev;
+      const updatedIngredient = {
+        ...prev[index],
+        substitutes: [...prevSubs, newSub],
+      };
+      const newIngredientArray = insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
+      return newIngredientArray;
+    });
+  }
+
+  function removeSubHandler(subToRemove: string, id: string) {
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      const index = findRecipeInputIndexById(prev, id);
+      if (index === -1) return prev;
+      const prevSubs = prev[index]?.substitutes;
+      if (!Array.isArray(prevSubs)) return prev;
+      const newSubs = prevSubs.filter((s) => s !== subToRemove);
+      const updatedIngredient = {
+        ...prev[index],
+        substitutes: newSubs,
+      };
+      const newIngredientArray = insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
+      return newIngredientArray;
+    });
+  }
+  function updateIngredientHandler({
+    id,
+    name,
+    value,
+  }: UpdateRecipeInputHandlerArgs) {
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      const index = findRecipeInputIndexById(prev, id);
       if (index !== -1) {
         const updatedIngredient = {
           ...prev[index],
-          [inputName]: inputValue,
+          [name]: value,
         };
         const newIngredientsArray = insertIntoPrevArray(
           prev,
@@ -124,15 +161,16 @@ function IngredientsStage({
   }
 
   function updateUnitsHandler({
-    ingredientId,
+    id,
     unitInput,
   }: {
-    ingredientId: string;
+    id: string;
     unitInput: string;
   }) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
-      const index = findIngredientIndexById(prev, ingredientId);
+      const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
+      console.log('unitInput', unitInput);
       const newUnits =
         unitInput === 'clear'
           ? genIngredientUnit()
@@ -153,20 +191,15 @@ function IngredientsStage({
 
   return (
     <div className="flex flex-col pt-10 pb-3 space-y-10 h-full">
-      <TipBox />
-      <div className="flex flex-col space-y-3 border-y p-6">
+      <StageInputContainer>
         {ingredients.map((i, index) => (
           <RecipeFlowInput
             key={i.id}
             id={i.id}
-            curSubs={i.substitutes}
-            curOptional={i.optional}
-            curNotes={i.notes}
             order={index + 1}
-            onRemove={removeIngredientHandler}
-            raiseIngredients={raiseIngredients}
-            onRaiseInput={updateIngredientHandler}
-            columnLabelComponents={
+            optionModes={['substitutes', 'notes']}
+            onRemoveInput={removeIngredientHandler}
+            inputLabelComponents={
               <>
                 <div className="w-72">Ingredients</div>
                 <div className="w-36">Quantity</div>
@@ -178,11 +211,11 @@ function IngredientsStage({
                 <TextInput
                   name="name"
                   value={i.name}
-                  onChange={({ input, name }) =>
+                  onChange={({ value, name }) =>
                     updateIngredientHandler({
-                      inputName: name,
-                      inputValue: input,
-                      ingredientId: i.id,
+                      name,
+                      value,
+                      id: i.id,
                     })
                   }
                   styles={{ input: 'inp-reg inp-primary w-72' }}
@@ -193,9 +226,9 @@ function IngredientsStage({
                   value={i.quantity}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateIngredientHandler({
-                      ingredientId: i.id,
-                      inputName: e.target.name,
-                      inputValue: e.target.value,
+                      id: i.id,
+                      name: e.target.name,
+                      value: e.target.value,
                     })
                   }
                   className="inp-reg inp-primary w-36"
@@ -204,12 +237,13 @@ function IngredientsStage({
                   options={allUnits.map((u) => u.unit)}
                   name="unit"
                   curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
-                  onRaiseInput={({ input, name }) =>
+                  onRaiseInput={({ value, name }) => {
+                    console.log(value, name);
                     updateUnitsHandler({
-                      ingredientId: i.id,
-                      unitInput: input,
-                    })
-                  }
+                      id: i.id,
+                      unitInput: value,
+                    });
+                  }}
                   styles={{
                     button: {
                       root: 'inp-reg focus:outline-fern rounded-sm w-36 flex',
@@ -219,9 +253,38 @@ function IngredientsStage({
                 />
               </>
             }
+            optionalComponent={
+              <OptionalInput
+                id={i.id}
+                curIsOptional={i.optional}
+                onRaiseInput={updateIngredientHandler}
+              />
+            }
+            optionInputComponents={(optionMode) => (
+              <>
+                {optionMode === 'substitutes' ? (
+                  <AddSubstitutes
+                    id={i.id}
+                    curSubs={i.substitutes}
+                    onAddSub={addSubsHandler}
+                    onRemoveSub={removeSubHandler}
+                    styles={{
+                      div: 'flex space-x-4 items-center',
+                    }}
+                  />
+                ) : null}
+                {optionMode === 'notes' ? (
+                  <NotesInput
+                    id={i.id}
+                    curNotes={i.notes}
+                    onRaiseNotes={updateIngredientHandler}
+                  />
+                ) : null}
+              </>
+            )}
           />
         ))}
-      </div>
+      </StageInputContainer>
     </div>
   );
 }

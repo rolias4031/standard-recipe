@@ -1,8 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createNewDraftRecipeMutation, saveRecipeMutation } from './mutations';
 import { newDraftRecipeSchema } from 'validation/schemas';
-import { fetchRecipeById, fetchUserRecipes } from './queries';
 import {
   BaseZodSchema,
   FormValidationState,
@@ -29,7 +26,7 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
 
   function raiseRecipeInputs(args: RaiseInputArgs) {
     setNewDraftRecipeInputs((prevState: NewDraftRecipeInputs) => {
-      const latestInputs = { ...prevState, [args.name]: args.input };
+      const latestInputs = { ...prevState, [args.name]: args.value };
       validateInputs({
         name: args.name,
         schema: formSchema,
@@ -37,7 +34,7 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
       });
       return {
         ...prevState,
-        [args.name]: args.input,
+        [args.name]: args.value,
       };
     });
   }
