@@ -5,24 +5,28 @@ import {
   findRecipeInputIndexById,
   genEquipment,
   insertIntoPrevArray,
+  isZeroLength,
+  pickStyles,
 } from 'lib/util-client';
-import { TextInput } from 'pirate-ui';
+import { GeneralButton, TextInput } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
-import { EquipmentWithAll } from 'types/models';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
-import StageInputContainer from './StageInputContainer';
+import StageFrame from './StageFrame';
+import { Equipment } from '@prisma/client';
+import CogIcon from 'components/common/icons/CogIcon';
+import TrashIcon from 'components/common/icons/TrashIcon';
 
 interface EquipmentStageProps {
-  equipment: EquipmentWithAll[];
-  raiseEquipment: Dispatch<SetStateAction<EquipmentWithAll[]>>;
+  equipment: Equipment[];
+  raiseEquipment: Dispatch<SetStateAction<Equipment[]>>;
 }
 
 function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
   function removeEquipmentHandler(id: string) {
-    raiseEquipment((prev: EquipmentWithAll[]) => {
+    raiseEquipment((prev: Equipment[]) => {
       if (prev.length === 1) return [genEquipment()];
-      const newIngredients = prev.filter((i) => i.id !== id);
-      return newIngredients;
+      const newEquipment = prev.filter((i) => i.id !== id);
+      return newEquipment;
     });
   }
   function updateEquipmentHandler({
@@ -30,7 +34,7 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
     name,
     value,
   }: UpdateRecipeInputHandlerArgs) {
-    raiseEquipment((prev: EquipmentWithAll[]) => {
+    raiseEquipment((prev: Equipment[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const updatedEquipment = {
@@ -42,59 +46,98 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
         index,
         updatedEquipment,
       );
-      return newIngredientsArray as EquipmentWithAll[];
+      return newIngredientsArray as Equipment[];
     });
   }
 
   return (
-    <div className="flex flex-col pt-10 pb-3 space-y-10 h-full">
-      <StageInputContainer>
-        {equipment.map((e, index) => (
-          <RecipeFlowInput
-            key={e.id}
-            id={e.id}
-            order={index + 1}
-            optionModes={['notes']}
-            onRemoveInput={(id) => removeEquipmentHandler(id)}
-            inputLabelComponents={
-              <>
-                <div className="w-80">Equipment</div>
-              </>
-            }
-            inputComponents={
-              <TextInput
-                name="name"
-                value={e.name}
-                onChange={({ value, name }) => {
-                  updateEquipmentHandler({ id: e.id, name, value });
-                }}
-                styles={{
-                  input: 'inp-reg inp-primary w-[350px]',
-                }}
-              />
-            }
-            optionalComponent={
-              <OptionalInput
-                id={e.id}
-                curIsOptional={e.optional}
-                onRaiseInput={updateEquipmentHandler}
-              />
-            }
-            optionInputComponents={(optionMode) => (
-              <>
-                {optionMode === 'notes' ? (
-                  <NotesInput
-                    id={e.id}
-                    curNotes={e.notes}
-                    onRaiseNotes={updateEquipmentHandler}
+    <StageFrame
+      inputComponents={equipment.map((e, index) => (
+        <RecipeFlowInput
+          key={e.id}
+          id={e.id}
+          order={index + 1}
+          optionModes={['notes']}
+          inputLabelComponents={
+            <>
+              <div className="w-80">Equipment</div>
+            </>
+          }
+          inputComponents={() => (
+            <TextInput
+              name="name"
+              value={e.name}
+              onChange={({ value, name }) => {
+                updateEquipmentHandler({ id: e.id, name, value });
+              }}
+              styles={{
+                input: 'inp-reg inp-primary w-[350px]',
+              }}
+            />
+          )}
+          optionalComponent={
+            <OptionalInput
+              id={e.id}
+              curIsOptional={e.optional}
+              onRaiseInput={updateEquipmentHandler}
+            />
+          }
+          optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
+            <div
+              key="1"
+              className="flex flex-grow justify-between items-center fade-in"
+            >
+              <div className="flex items-center space-x-2">
+                <GeneralButton
+                  onClick={() =>
+                    setOptionMode((prev: string | null) =>
+                      prev === null && optionModes[0] ? optionModes[0] : null,
+                    )
+                  }
+                >
+                  <CogIcon
+                    styles={{
+                      icon: pickStyles('w-6 h-6 transition-colors', [
+                        !optionMode,
+                        'text-concrete hover:text-fern',
+                        'text-fern',
+                      ]),
+                    }}
                   />
-                ) : null}
-              </>
-            )}
-          />
-        ))}
-      </StageInputContainer>
-    </div>
+                </GeneralButton>
+              </div>
+              <GeneralButton
+                onClick={() => removeEquipmentHandler(e.id)}
+                styles={{ button: 'h-fit' }}
+              >
+                <TrashIcon
+                  styles={{
+                    icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
+                  }}
+                />
+              </GeneralButton>
+            </div>
+          )}
+          optionOverviewComponents={
+            <>
+              {e.optional ? <span>optional</span> : null}
+              {!isZeroLength(e.notes) ? <span>notes</span> : null}
+            </>
+          }
+          optionInputComponents={(optionMode) => (
+            <>
+              {optionMode === 'notes' ? (
+                <NotesInput
+                  id={e.id}
+                  curNotes={e.notes}
+                  onRaiseNotes={updateEquipmentHandler}
+                />
+              ) : null}
+            </>
+          )}
+        />
+      ))}
+    />
   );
 }
 

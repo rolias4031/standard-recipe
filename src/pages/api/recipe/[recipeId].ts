@@ -36,20 +36,10 @@ export default async function handler(
           name: true,
           unit: true,
           substitutes: true,
-          instructionLinks: true,
         }
       },
-      equipment: {
-        include: {
-          instructionLinks: true,
-        }
-      },
-      instructions: {
-        include: {
-          equipmentLinks: true,
-          ingredientLinks: true
-        }
-      },
+      equipment: true,
+      instructions: true,
     }
   })
 

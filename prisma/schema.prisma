@@ -47,8 +47,6 @@ model Instruction {
   optional        Boolean      @default(false)
   recipe          Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String
-  ingredientLinks Ingredient[]
-  equipmentLinks  Equipment[]
 }
 
 model Equipment {
@@ -58,7 +56,6 @@ model Equipment {
   recipe           Recipe        @relation(fields: [recipeId], references: [id])
   recipeId         String
   optional         Boolean       @default(false)
-  instructionLinks Instruction[]
 }
 
 model Ingredient {
@@ -73,7 +70,6 @@ model Ingredient {
   ingredientNameId String
   notes            String           @default("") @db.VarChar(250)
   substitutes      IngredientName[] @relation("substitutes")
-  instructionLinks Instruction[]
 }
 
 model IngredientUnit {

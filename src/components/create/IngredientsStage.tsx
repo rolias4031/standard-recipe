@@ -4,17 +4,21 @@ import {
   genIngredient,
   genIngredientUnit,
   insertIntoPrevArray,
+  isZeroLength,
+  pickStyles,
 } from 'lib/util-client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
-import { TextInput } from 'pirate-ui';
+import { GeneralButton, TextInput } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { IngredientWithAllModName } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
-import StageInputContainer from './StageInputContainer';
 import AddSubstitutes from './AddSubstitutes';
 import NotesInput from 'components/common/NotesInput';
 import OptionalInput from 'components/common/OptionalInput';
+import StageFrame from './StageFrame';
+import CogIcon from 'components/common/icons/CogIcon';
+import TrashIcon from 'components/common/icons/TrashIcon';
 
 function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
@@ -99,12 +103,18 @@ function IngredientsStage({
 
   function addSubsHandler(newSub: string, id: string) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
+      console.log('addSubs', prev, newSub, id);
       const index = findRecipeInputIndexById(prev, id);
+      console.log('addSubs', index);
       if (index === -1) return prev;
       const prevSubs = prev[index]?.substitutes;
+      console.log(prevSubs);
       if (!Array.isArray(prevSubs)) return prev;
+      console.log('passed');
       const subExists = prevSubs.find((sub) => sub === newSub);
-      if (subExists || prev.length === 3) return prev;
+      console.log(subExists, prevSubs.length);
+      if (subExists || prevSubs.length === 3) return prev;
+      console.log('passed 2');
       const updatedIngredient = {
         ...prev[index],
         substitutes: [...prevSubs, newSub],
@@ -114,6 +124,8 @@ function IngredientsStage({
         index,
         updatedIngredient as IngredientWithAllModName,
       );
+      console.log(updatedIngredient)
+      console.log(newIngredientArray);;
       return newIngredientArray;
     });
   }
@@ -190,102 +202,142 @@ function IngredientsStage({
   }
 
   return (
-    <div className="flex flex-col pt-10 pb-3 space-y-10 h-full">
-      <StageInputContainer>
-        {ingredients.map((i, index) => (
-          <RecipeFlowInput
-            key={i.id}
-            id={i.id}
-            order={index + 1}
-            optionModes={['substitutes', 'notes']}
-            onRemoveInput={removeIngredientHandler}
-            inputLabelComponents={
-              <>
-                <div className="w-72">Ingredients</div>
-                <div className="w-36">Quantity</div>
-                <div className="w-36">Units</div>
-              </>
-            }
-            inputComponents={
-              <>
-                <TextInput
-                  name="name"
-                  value={i.name}
-                  onChange={({ value, name }) =>
-                    updateIngredientHandler({
-                      name,
-                      value,
-                      id: i.id,
-                    })
-                  }
-                  styles={{ input: 'inp-reg inp-primary w-72' }}
-                />
-                <input
-                  type="number"
-                  name="quantity"
-                  value={i.quantity}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    updateIngredientHandler({
-                      id: i.id,
-                      name: e.target.name,
-                      value: e.target.value,
-                    })
-                  }
-                  className="inp-reg inp-primary w-36"
-                />
-                <InputWithPopover
-                  options={allUnits.map((u) => u.unit)}
-                  name="unit"
-                  curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
-                  onRaiseInput={({ value, name }) => {
-                    console.log(value, name);
-                    updateUnitsHandler({
-                      id: i.id,
-                      unitInput: value,
-                    });
-                  }}
-                  styles={{
-                    button: {
-                      root: 'inp-reg focus:outline-fern rounded-sm w-36 flex',
-                      isToggled: ['bg-fern text-white', 'bg-smoke'],
-                    },
-                  }}
-                />
-              </>
-            }
-            optionalComponent={
-              <OptionalInput
-                id={i.id}
-                curIsOptional={i.optional}
-                onRaiseInput={updateIngredientHandler}
+    <StageFrame
+      inputComponents={ingredients.map((i, index) => (
+        <RecipeFlowInput
+          key={i.id}
+          id={i.id}
+          order={index + 1}
+          optionModes={['substitutes', 'notes']}
+          inputLabelComponents={
+            <>
+              <div className="w-72">Ingredient</div>
+              <div className="w-36">Quantity</div>
+              <div className="w-36">Units</div>
+            </>
+          }
+          inputComponents={() => (
+            <>
+              <TextInput
+                name="name"
+                value={i.name}
+                onChange={({ value, name }) =>
+                  updateIngredientHandler({
+                    name,
+                    value,
+                    id: i.id,
+                  })
+                }
+                styles={{ input: 'inp-reg inp-primary w-72' }}
               />
-            }
-            optionInputComponents={(optionMode) => (
-              <>
-                {optionMode === 'substitutes' ? (
-                  <AddSubstitutes
-                    id={i.id}
-                    curSubs={i.substitutes}
-                    onAddSub={addSubsHandler}
-                    onRemoveSub={removeSubHandler}
+              <input
+                type="number"
+                name="quantity"
+                value={i.quantity}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  updateIngredientHandler({
+                    id: i.id,
+                    name: e.target.name,
+                    value: e.target.value,
+                  })
+                }
+                className="inp-reg inp-primary w-36"
+              />
+              <InputWithPopover
+                options={allUnits.map((u) => u.unit)}
+                name="unit"
+                curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
+                onRaiseInput={({ value, name }) => {
+                  console.log(value, name);
+                  updateUnitsHandler({
+                    id: i.id,
+                    unitInput: value,
+                  });
+                }}
+                styles={{
+                  button: {
+                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex',
+                    isToggled: ['bg-fern text-white', 'bg-smoke'],
+                  },
+                }}
+              />
+            </>
+          )}
+          optionalComponent={
+            <OptionalInput
+              id={i.id}
+              curIsOptional={i.optional}
+              onRaiseInput={updateIngredientHandler}
+            />
+          }
+          optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
+            <div
+              key="1"
+              className="flex flex-grow justify-between items-center fade-in"
+            >
+              <div className="flex items-center space-x-2">
+                <GeneralButton
+                  onClick={() =>
+                    setOptionMode((prev: string | null) =>
+                      prev === null && optionModes[0] ? optionModes[0] : null,
+                    )
+                  }
+                >
+                  <CogIcon
                     styles={{
-                      div: 'flex space-x-4 items-center',
+                      icon: pickStyles('w-6 h-6 transition-colors', [
+                        !optionMode,
+                        'text-concrete hover:text-fern',
+                        'text-fern',
+                      ]),
                     }}
                   />
-                ) : null}
-                {optionMode === 'notes' ? (
-                  <NotesInput
-                    id={i.id}
-                    curNotes={i.notes}
-                    onRaiseNotes={updateIngredientHandler}
-                  />
-                ) : null}
-              </>
-            )}
-          />
-        ))}
-      </StageInputContainer>
-    </div>
+                </GeneralButton>
+              </div>
+              <GeneralButton
+                onClick={() => removeIngredientHandler(i.id)}
+                styles={{ button: 'h-fit' }}
+              >
+                <TrashIcon
+                  styles={{
+                    icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
+                  }}
+                />
+              </GeneralButton>
+            </div>
+          )}
+          optionOverviewComponents={
+            <>
+              {i.optional ? <span>optional</span> : null}
+              {!isZeroLength(i.notes) ? <span>notes</span> : null}
+              {!isZeroLength(i.substitutes) ? <span>subs</span> : null}
+            </>
+          }
+          optionInputComponents={(optionMode) => (
+            <>
+              {optionMode === 'substitutes' ? (
+                <AddSubstitutes
+                  id={i.id}
+                  curSubs={i.substitutes}
+                  onAddSub={addSubsHandler}
+                  onRemoveSub={removeSubHandler}
+                  styles={{
+                    div: 'flex space-x-4 items-center',
+                  }}
+                />
+              ) : null}
+              {optionMode === 'notes' ? (
+                <NotesInput
+                  id={i.id}
+                  curNotes={i.notes}
+                  onRaiseNotes={updateIngredientHandler}
+                />
+              ) : null}
+            </>
+          )}
+        />
+      ))}
+    />
   );
 }
 

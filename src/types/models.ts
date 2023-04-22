@@ -1,4 +1,6 @@
 import {
+  Equipment,
+  Instruction,
   Prisma,
 } from '@prisma/client';
 
@@ -16,21 +18,7 @@ const ingredientWithAll = Prisma.validator<Prisma.IngredientArgs>()({
   include: {
     unit: true,
     name: true,
-    instructionLinks: true,
     substitutes: true,
-  },
-});
-
-const equipmentWithAll = Prisma.validator<Prisma.EquipmentArgs>()({
-  include: {
-    instructionLinks: true,
-  },
-});
-
-const instructionWithAll = Prisma.validator<Prisma.InstructionArgs>()({
-  include: {
-    ingredientLinks: true,
-    equipmentLinks: true,
   },
 });
 
@@ -49,18 +37,10 @@ export type IngredientWithAll = Prisma.IngredientGetPayload<
   typeof ingredientWithAll
 >;
 
-export type EquipmentWithAll = Prisma.EquipmentGetPayload<
-  typeof equipmentWithAll
->;
-
-export type InstructionWithAll = Prisma.InstructionGetPayload<
-  typeof instructionWithAll
->;
-
 export type RecipeWithFull = RecipeWithAll & {
   ingredients: IngredientWithAll[],
-  equipment: EquipmentWithAll[],
-  instructions: InstructionWithAll[]
+  equipment: Equipment[],
+  instructions: Instruction[]
 }
 
 // * derived and shallower and custom types

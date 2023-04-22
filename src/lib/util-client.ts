@@ -1,11 +1,10 @@
-import { IngredientUnit } from '@prisma/client';
-import { Dispatch, SetStateAction } from 'react';
-import {
-  EquipmentWithAll,
-  IngredientWithAllModName,
-  InstructionWithAll,
-} from 'types/models';
+import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+import { IngredientWithAllModName } from 'types/models';
 import { ErrorPayload } from 'types/types';
+
+export function isZeroLength(val: string | any[]) {
+  return val.length === 0;
+}
 
 export function genIngredientUnit(): IngredientUnit {
   return {
@@ -27,31 +26,27 @@ export function genIngredient(): IngredientWithAllModName {
     quantity: 0,
     ingredientUnitId: '',
     substitutes: [],
-    instructionLinks: [],
     optional: false,
     notes: '',
   };
 }
 
-export function genEquipment(): EquipmentWithAll {
+export function genEquipment(): Equipment {
   return {
     id: genId(),
     name: '',
     optional: false,
     notes: '',
-    instructionLinks: [],
     recipeId: '',
   };
 }
 
-export function genInstruction(): InstructionWithAll {
+export function genInstruction(): Instruction {
   return {
     id: genId(),
     description: '',
     order: 0,
     optional: false,
-    equipmentLinks: [],
-    ingredientLinks: [],
     recipeId: '',
   };
 }

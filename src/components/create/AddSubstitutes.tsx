@@ -1,6 +1,6 @@
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react';
 
 interface SubTagProps {
   sub: string;
@@ -75,11 +75,15 @@ function AddSubstitutes({
 
       <div className="flex items-start space-x-2">
         {curSubs.map((s) => (
-          <SubTag key={s} sub={s} onRemoveSub={() => onRemoveSub(s, id)} />
+          <SubTag
+            key={`${id}${s}`}
+            sub={s}
+            onRemoveSub={() => onRemoveSub(s, id)}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-export default AddSubstitutes
+export default AddSubstitutes;

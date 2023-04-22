@@ -1,4 +1,4 @@
-import { IngredientUnit } from '@prisma/client';
+import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
@@ -11,14 +11,13 @@ import {
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
-  EquipmentWithAll,
   IngredientWithAll,
   IngredientWithAllModName,
-  InstructionWithAll,
   RecipeWithFull,
 } from 'types/models';
 import EquipmentStage from './EquipmentStage';
 import IngredientsStage from './IngredientsStage';
+import InstructionsStage from './InstructionsStage';
 
 function FlowProgress({ curStage }: { curStage: number }) {
   const dots = [1, 2, 3].map((i) => {
@@ -152,23 +151,27 @@ function initIngredients(
   return [genIngredient(), genIngredient()];
 }
 
-function initEquipment(equipment: EquipmentWithAll[]): EquipmentWithAll[] {
+function initEquipment(equipment: Equipment[]): Equipment[] {
   if (equipment.length > 0) {
     return equipment;
   }
   return [genEquipment(), genEquipment()];
 }
 
+function initInstructions(instructions: Instruction[]): Instruction[] {
+  if (instructions.length > 0) {
+    return instructions;
+  }
+  return [genInstruction(), genInstruction()];
+}
+
 type ClientInput =
   | Dispatch<SetStateAction<IngredientWithAllModName[]>>
-  | Dispatch<SetStateAction<EquipmentWithAll[]>>
-  | Dispatch<SetStateAction<InstructionWithAll[]>>;
+  | Dispatch<SetStateAction<Equipment[]>>
+  | Dispatch<SetStateAction<Instruction[]>>;
 interface StageConfig {
   dispatch: ClientInput;
-  genInput: () =>
-    | IngredientWithAllModName
-    | EquipmentWithAll
-    | InstructionWithAll;
+  genInput: () => IngredientWithAllModName | Equipment | Instruction;
   name: string;
   label: string;
 }
@@ -178,16 +181,17 @@ interface CreateRecipeFlowProps {
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
-  console.log(allUnits);
 
   // state and mutations
   const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
     () => initIngredients(recipe.ingredients),
   );
-  const [equipment, setEquipment] = useState<EquipmentWithAll[]>(() =>
+  const [equipment, setEquipment] = useState<Equipment[]>(() =>
     initEquipment(recipe.equipment),
   );
-  const [instructions, setInstructions] = useState<InstructionWithAll[]>([]);
+  const [instructions, setInstructions] = useState<Instruction[]>(() =>
+    initInstructions(recipe.instructions),
+  );
   const [info, setInfo] = useState();
 
   const stageConfig = new Map<number, StageConfig>([
@@ -242,7 +246,12 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
                 raiseEquipment={setEquipment}
               />
             ) : null}
-            {stage === 3 ? <div>Instructions</div> : null}
+            {stage === 3 ? (
+              <InstructionsStage
+                instructions={instructions}
+                raiseInstructions={setInstructions}
+              />
+            ) : null}
           </>
         )}
       </FlowController>

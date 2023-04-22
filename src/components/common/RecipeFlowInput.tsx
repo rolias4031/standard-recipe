@@ -1,37 +1,48 @@
-import {
-  pickStyles,
-} from 'lib/util-client';
+import { pickStyles } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
-import React, {
-  ReactNode,
-  useState,
-} from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
 import CogIcon from './icons/CogIcon';
 import TrashIcon from './icons/TrashIcon';
 
-type OptionMode = 'substitutes' | 'notes';
-
-interface RecipeFlowInputProps<T> {
-  id: string;
-  order: number;
-  onRemoveInput: (id: string) => void;
+interface OptionBarComponentProps {
+  optionMode: OptionMode | null;
+  setOptionMode: Dispatch<SetStateAction<OptionMode | null>>;
   optionModes: OptionMode[];
-  optionalComponent: ReactNode;
-  inputLabelComponents: ReactNode;
-  inputComponents: ReactNode;
-  optionInputComponents: (optionMode: OptionMode) => ReactNode;
 }
 
-function RecipeFlowInput<T extends { id: string }>({
+type OptionMode = 'substitutes' | 'notes' | 'none';
+
+interface RecipeFlowInputProps {
+  id: string;
+  order: number;
+  optionModes: OptionMode[];
+  optionBarComponent: ({
+    optionMode,
+    setOptionMode,
+    optionModes,
+  }: OptionBarComponentProps) => ReactNode;
+  optionOverviewComponents: ReactNode;
+  optionalComponent: ReactNode;
+  inputLabelComponents: ReactNode;
+  inputComponents: (
+    isInputFocused: boolean,
+    setIsInputFocused: Dispatch<SetStateAction<boolean>>,
+  ) => ReactNode;
+  optionInputComponents?: (optionMode: OptionMode) => ReactNode;
+}
+
+function RecipeFlowInput({
   id,
   order,
   optionModes,
-  onRemoveInput,
   optionalComponent,
   inputLabelComponents,
   inputComponents,
+  optionBarComponent,
   optionInputComponents,
-}: RecipeFlowInputProps<T>) {
+  optionOverviewComponents,
+}: RecipeFlowInputProps) {
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [optionMode, setOptionMode] = useState<OptionMode | null>(null);
   const [isMouseIn, setIsMouseIn] = useState(false);
 
@@ -51,64 +62,39 @@ function RecipeFlowInput<T extends { id: string }>({
         </div>
       ) : null}
       <div className="w-full col-start-2 row-start-2 flex items-stretch space-x-2">
-        {inputComponents}
+        {inputComponents(isInputFocused, setIsInputFocused)}
         {isMouseIn || optionMode ? (
-          <div key="1" className="flex flex-grow justify-between fade-in">
-            <GeneralButton
-              onClick={() =>
-                setOptionMode((prev: string | null) =>
-                  prev === null && optionModes[0] ? optionModes[0] : null,
-                )
-              }
-            >
-              <CogIcon
-                styles={{
-                  icon: pickStyles('w-6 h-6 transition-colors', [
-                    !optionMode,
-                    'text-concrete hover:text-fern',
-                    'text-fern',
-                  ]),
-                }}
-              />
-            </GeneralButton>
-            <GeneralButton onClick={() => onRemoveInput(id)}>
-              <TrashIcon
-                styles={{
-                  icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
-                }}
-              />
-            </GeneralButton>
-          </div>
+          <>{optionBarComponent({ optionMode, setOptionMode, optionModes })}</>
         ) : (
           <div
             key="2"
             className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete fade-in"
           >
-            {/* {curOptional ? <div>optional</div> : null}
-            {curSubs && curSubs.length > 0 ? <div>subs</div> : null}
-            {curNotes.length > 0 ? <div>notes</div> : null} */}
+            {optionOverviewComponents}
           </div>
         )}
       </div>
       {optionMode !== null ? (
         <div className="flex flex-col space-y-2 row-start-3 col-start-2 fade-in">
           <div className="flex items-center space-x-3 text-sm mt-1">
-            {optionModes.map((o) => (
-              <button
-                key={o}
-                type="button"
-                className={pickStyles('btn-sm btn-inverted', [
-                  optionMode === o,
-                  'text-white bg-fern',
-                ])}
-                onClick={() => setOptionMode(o)}
-              >
-                {o}
-              </button>
-            ))}
+            {optionModes.map((o) =>
+              o !== 'none' ? (
+                <button
+                  key={o}
+                  type="button"
+                  className={pickStyles('btn-sm btn-inverted', [
+                    optionMode === o,
+                    'text-white bg-fern',
+                  ])}
+                  onClick={() => setOptionMode(o)}
+                >
+                  {o}
+                </button>
+              ) : null,
+            )}
             {optionalComponent}
           </div>
-          {optionInputComponents(optionMode)}
+          {optionInputComponents ? optionInputComponents(optionMode) : null}
         </div>
       ) : null}
     </div>
