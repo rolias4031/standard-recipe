@@ -214,7 +214,15 @@ function IngredientsStage({
     <StageFrame
       onDragEnd={dragEndHandler}
       droppableId="ingredients"
-      inputComponents={ingredients.map((i, index) => (
+      stageInputLabels={
+        <>
+          <div className="w-72 col-start-1">Ingredient</div>
+          <div className="w-36 col-start-2">Quantity</div>
+          <div className="w-36 col-start-3">Units</div>
+        </>
+      }
+    >
+      {ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
@@ -348,7 +356,7 @@ function IngredientsStage({
           )}
         />
       ))}
-    />
+    </StageFrame>
   );
 }
 
