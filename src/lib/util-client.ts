@@ -1,6 +1,16 @@
 import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+import { DropResult } from '@hello-pangea/dnd';
 import { IngredientWithAllModName } from 'types/models';
 import { ErrorPayload } from 'types/types';
+
+export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
+  const newInputs = [...prev];
+
+  const [movedInput] = newInputs.splice(result.source.index, 1);
+  if (!result.destination?.index || !movedInput) return prev;
+  newInputs.splice(result.destination?.index, 0, movedInput);
+  return newInputs;
+}
 
 export function isZeroLength(val: string | any[]) {
   return val.length === 0;

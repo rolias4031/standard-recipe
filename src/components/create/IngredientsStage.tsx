@@ -6,7 +6,9 @@ import {
   insertIntoPrevArray,
   isZeroLength,
   pickStyles,
+  reorderDraggableInputs,
 } from 'lib/util-client';
+import { DropResult } from '@hello-pangea/dnd';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { GeneralButton, TextInput } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
@@ -124,8 +126,8 @@ function IngredientsStage({
         index,
         updatedIngredient as IngredientWithAllModName,
       );
-      console.log(updatedIngredient)
-      console.log(newIngredientArray);;
+      console.log(updatedIngredient);
+      console.log(newIngredientArray);
       return newIngredientArray;
     });
   }
@@ -201,13 +203,22 @@ function IngredientsStage({
     });
   }
 
+  function dragEndHandler(result: DropResult) {
+    if (!result.destination) return;
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      return reorderDraggableInputs(result, prev);
+    });
+  }
+
   return (
     <StageFrame
+      onDragEnd={dragEndHandler}
+      droppableId="ingredients"
       inputComponents={ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
-          order={index + 1}
+          index={index}
           optionModes={['substitutes', 'notes']}
           inputLabelComponents={
             <>

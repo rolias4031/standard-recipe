@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
+import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
 import { Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
@@ -7,6 +8,7 @@ import {
   genInstruction,
   insertIntoPrevArray,
   pickStyles,
+  reorderDraggableInputs,
 } from 'lib/util-client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import { GeneralButton } from 'pirate-ui';
@@ -52,13 +54,22 @@ function InstructionsStage({
     });
   }
 
+  function dragEndHandler(result: DropResult) {
+    if (!result.destination) return;
+    raiseInstructions((prev: Instruction[]) => {
+      return reorderDraggableInputs(result, prev);
+    });
+  }
+
   return (
     <StageFrame
+      droppableId="instructions"
+      onDragEnd={dragEndHandler}
       inputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
-          order={idx + 1}
+          index={idx}
           optionModes={['none']}
           optionOverviewComponents={
             <>{i.optional ? <span>optional</span> : null}</>

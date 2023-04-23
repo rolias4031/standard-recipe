@@ -1,4 +1,5 @@
 import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
@@ -175,13 +176,14 @@ interface StageConfig {
   name: string;
   label: string;
 }
+
+type AllInputs = IngredientWithAllModName[] | Equipment[] | Instruction[];
 interface CreateRecipeFlowProps {
   recipe: RecipeWithFull;
   allUnits: IngredientUnit[];
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
-
   // state and mutations
   const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
     () => initIngredients(recipe.ingredients),

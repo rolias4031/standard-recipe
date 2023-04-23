@@ -7,9 +7,11 @@ import {
   insertIntoPrevArray,
   isZeroLength,
   pickStyles,
+  reorderDraggableInputs,
 } from 'lib/util-client';
 import { GeneralButton, TextInput } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
+import { DropResult } from '@hello-pangea/dnd';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
 import { Equipment } from '@prisma/client';
@@ -50,13 +52,22 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
     });
   }
 
+  function dragEndHandler(result: DropResult) {
+    if (!result.destination) return;
+    raiseEquipment((prev: Equipment[]) => {
+      return reorderDraggableInputs(result, prev);
+    });
+  }
+
   return (
     <StageFrame
+      onDragEnd={dragEndHandler}
+      droppableId="equipment"
       inputComponents={equipment.map((e, index) => (
         <RecipeFlowInput
           key={e.id}
           id={e.id}
-          order={index + 1}
+          index={index}
           optionModes={['notes']}
           inputLabelComponents={
             <>
