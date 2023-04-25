@@ -7,7 +7,12 @@ export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
   const newInputs = [...prev];
 
   const [movedInput] = newInputs.splice(result.source.index, 1);
-  if (!result.destination?.index || !movedInput) return prev;
+  if (
+    result.destination?.index === null ||
+    result.destination?.index === undefined ||
+    !movedInput
+  )
+    return prev;
   newInputs.splice(result.destination?.index, 0, movedInput);
   return newInputs;
 }

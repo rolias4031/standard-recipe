@@ -205,6 +205,7 @@ function IngredientsStage({
 
   function dragEndHandler(result: DropResult) {
     if (!result.destination) return;
+    console.log(result);
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       return reorderDraggableInputs(result, prev);
     });
@@ -216,13 +217,12 @@ function IngredientsStage({
       droppableId="ingredients"
       stageInputLabels={
         <>
-          <div className="w-72 col-start-1">Ingredient</div>
-          <div className="w-36 col-start-2">Quantity</div>
-          <div className="w-36 col-start-3">Units</div>
+          <div className="w-72 col-start-1 font-mono text-sm">Ingredient</div>
+          <div className="w-36 col-start-2 font-mono text-sm">Quantity</div>
+          <div className="w-36 col-start-3 font-mono text-sm">Units</div>
         </>
       }
-    >
-      {ingredients.map((i, index) => (
+      stageInputComponents={ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
@@ -356,7 +356,7 @@ function IngredientsStage({
           )}
         />
       ))}
-    </StageFrame>
+    />
   );
 }
 

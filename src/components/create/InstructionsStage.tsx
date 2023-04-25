@@ -1,12 +1,13 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
-import { Instruction } from '@prisma/client';
+import { Equipment, Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
   findRecipeInputIndexById,
   genInstruction,
   insertIntoPrevArray,
+  isZeroLength,
   pickStyles,
   reorderDraggableInputs,
 } from 'lib/util-client';
@@ -15,14 +16,54 @@ import { GeneralButton } from 'pirate-ui';
 import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
+import { IngredientWithAllModName } from 'types/models';
+
+function CurrentIngredientsPanel({
+  ingredients,
+}: {
+  ingredients: IngredientWithAllModName[];
+}) {
+  if (isZeroLength(ingredients)) {
+    return null;
+  }
+  return (
+    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
+      {ingredients.map((i) => {
+        return (
+          <div key={i.id} className="flex justify-between">
+            <span>{i.name}</span>
+            <div className="flex">
+              <span>{i.quantity}</span>
+              <span>{i.unit.unit}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CurrentEquipmentPanel({ equipment }: { equipment: Equipment[] }) {
+  return (
+    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
+      {equipment.map((e) => {
+        return <div key={e.id}>{e.name}</div>;
+      })}
+    </div>
+  );
+}
 
 interface InstructionsStageProps {
   instructions: Instruction[];
+  ingredients: IngredientWithAllModName[];
+  equipment: Equipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
 }
 
 function InstructionsStage({
   instructions,
+  ingredients,
+  equipment,
   raiseInstructions,
 }: InstructionsStageProps) {
   function removeInstructionHandler(id: string) {
@@ -65,7 +106,10 @@ function InstructionsStage({
     <StageFrame
       droppableId="instructions"
       onDragEnd={dragEndHandler}
-      inputComponents={instructions.map((i, idx) => (
+      stageInputLabels={
+        <div className="w-full font-mono text-sm">Instructions</div>
+      }
+      stageInputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
@@ -147,7 +191,12 @@ function InstructionsStage({
           )}
         />
       ))}
-    />
+    >
+      <div className="flex space-x-5 w-5/6 mx-auto">
+        <CurrentIngredientsPanel ingredients={ingredients} />
+        <CurrentEquipmentPanel equipment={equipment} />
+      </div>
+    </StageFrame>
   );
 }
 

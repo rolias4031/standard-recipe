@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
+import FlowInputFrame from './FlowInputFrame';
 
 function InputsContainer({ children }: { children: ReactNode }) {
   return <div className="flex flex-col space-y-3 border-y p-7">{children}</div>;
@@ -18,12 +19,14 @@ function InputLabelsRow({ children }: { children: ReactNode }) {
 
 interface StageFrameProps {
   stageInputLabels: ReactNode;
-  children: ReactNode[];
+  stageInputComponents: ReactNode[];
+  children?: ReactNode;
   droppableId: string;
   onDragEnd: (result: DropResult) => void;
 }
 
 function StageFrame({
+  stageInputComponents,
   children,
   stageInputLabels,
   droppableId,
@@ -31,9 +34,10 @@ function StageFrame({
 }: StageFrameProps) {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <section className="flex flex-col pt-10 pb-3 space-y-10 h-full">
-        <div className="flex flex-col border-y space-y-1 p-5 py-10">
-          <InputLabelsRow>{stageInputLabels}</InputLabelsRow>
+      <section className="flex flex-col pt-10 pb-3 space-y-5 h-full">
+        {children}
+        <div className="flex flex-col border-y space-y-1 px-5 py-10">
+          <FlowInputFrame row1col2={stageInputLabels} />
           <Droppable droppableId={droppableId}>
             {(provided) => (
               <div
@@ -41,7 +45,7 @@ function StageFrame({
                 {...provided.droppableProps}
                 className="flex flex-col space-y-3"
               >
-                {children}
+                {stageInputComponents}
                 {provided.placeholder}
               </div>
             )}

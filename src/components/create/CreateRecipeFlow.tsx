@@ -251,6 +251,8 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
             {stage === 3 ? (
               <InstructionsStage
                 instructions={instructions}
+                ingredients={ingredients}
+                equipment={equipment}
                 raiseInstructions={setInstructions}
               />
             ) : null}

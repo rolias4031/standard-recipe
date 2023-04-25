@@ -61,9 +61,14 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
 
   return (
     <StageFrame
+      stageInputLabels={
+        <>
+          <div className="font-mono text-sm w-full">Equipment</div>
+        </>
+      }
       onDragEnd={dragEndHandler}
       droppableId="equipment"
-      inputComponents={equipment.map((e, index) => (
+      stageInputComponents={equipment.map((e, index) => (
         <RecipeFlowInput
           key={e.id}
           id={e.id}
