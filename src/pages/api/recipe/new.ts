@@ -38,11 +38,14 @@ export default async function handler(
     },
     select: {
       name: true,
-    }
-  })
+    },
+  });
 
   const valid = validateClientInputs([
-    { schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)), inputs: recipe },
+    {
+      schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)),
+      inputs: recipe,
+    },
   ]);
   if (!valid) {
     return res.status(400).json({

@@ -1,10 +1,11 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction } from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
 import { Equipment, Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
   findRecipeInputIndexById,
+  genId,
   genInstruction,
   insertIntoPrevArray,
   isZeroLength,
@@ -17,6 +18,88 @@ import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { IngredientWithAllModName } from 'types/models';
+import TextWithTooltip from 'components/common/TextWithTooltip';
+
+type IngredientTooltipProps = Pick<
+  IngredientWithAllModName,
+  'quantity' | 'unit' | 'substitutes' | 'notes' | 'optional'
+>;
+
+function IngredientTooltip({
+  quantity,
+  unit,
+  substitutes,
+  notes,
+}: IngredientTooltipProps) {
+  return (
+    <div className="bg-white p-2 text-sm rounded-sm border-2 border-fern">
+      <span>{quantity}</span>
+      <span>{unit.unit}</span>
+      <span>{notes}</span>
+    </div>
+  );
+}
+
+function renderInstructionTags(
+  description: string,
+  ingredients: IngredientWithAllModName[],
+): Array<ReactNode> {
+  const highlightedDescription: Array<ReactNode> = [];
+  const descriptionWords = description.split(' ');
+
+  for (let i = 0; i < descriptionWords.length; i++) {
+    const currentWord = descriptionWords[i];
+    let matchFound = false;
+
+    ingredients.forEach((ingredient) => {
+      const ingredientWords = ingredient.name.split(' ');
+      if (ingredientWords.length === 1 && currentWord === ingredient.name) {
+        highlightedDescription.push(
+          <TextWithTooltip
+            key={`${ingredient.id}${genId()}`}
+            text={ingredient.name}
+            tooltipElement={
+              <IngredientTooltip
+                quantity={ingredient.quantity}
+                unit={ingredient.unit}
+                substitutes={ingredient.substitutes}
+                notes={ingredient.notes}
+                optional={ingredient.optional}
+              />
+            }
+          />,
+        );
+        matchFound = true;
+      } else if (
+        descriptionWords.slice(i, i + ingredientWords.length).join(' ') ===
+        ingredient.name
+      ) {
+        highlightedDescription.push(
+          <TextWithTooltip
+            key={`${ingredient.id}${genId()}`}
+            text={ingredient.name}
+            tooltipElement={
+              <IngredientTooltip
+                quantity={ingredient.quantity}
+                unit={ingredient.unit}
+                substitutes={ingredient.substitutes}
+                notes={ingredient.notes}
+                optional={ingredient.optional}
+              />
+            }
+          />,
+        );
+        i += ingredientWords.length - 1;
+        matchFound = true;
+      }
+    });
+
+    if (!matchFound && currentWord) highlightedDescription.push(currentWord);
+    if (i !== descriptionWords.length - 1) highlightedDescription.push(' ');
+  }
+
+  return highlightedDescription;
+}
 
 function CurrentIngredientsPanel({
   ingredients,
@@ -118,11 +201,6 @@ function InstructionsStage({
           optionOverviewComponents={
             <>{i.optional ? <span>optional</span> : null}</>
           }
-          inputLabelComponents={
-            <>
-              <div className="w-full">Instruction</div>
-            </>
-          }
           inputComponents={(isInputFocused, setIsInputFocused) => (
             <>
               {isInputFocused ? (
@@ -143,10 +221,10 @@ function InstructionsStage({
                 />
               ) : (
                 <div
-                  className="h-20 rounded-sm w-5/6 bg-smoke"
+                  className="min-h-[25px] rounded-sm w-5/6 px-2 py-1 bg-smoke"
                   onClick={() => setIsInputFocused(true)}
                 >
-                  {i.description}
+                  {renderInstructionTags(i.description, ingredients)}
                 </div>
               )}
             </>

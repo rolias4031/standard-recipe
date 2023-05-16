@@ -11,6 +11,33 @@ const VALIDATION_ERRORS = {
   },
 };
 
+export const unitSchema = z.object({
+  id: z.string(),
+  unit: z.string().min(1),
+  abbreviation: z.string(),
+  description: z.string(),
+  property: z.string(),
+});
+
+export const newIngredientSchema = z.object({
+  name: z.string().min(1).max(100),
+  quantity: z.number().gt(0),
+  unit: unitSchema,
+  optional: z.boolean(),
+  notes: z.string().nullable(),
+  substitutes: z.array(z.string()),
+});
+
+export const newEquipmentSchema = z.object({
+  name: z.string().min(1).max(100),
+  notes: z.string().max(250).nullable(),
+  optional: z.boolean(),
+});
+
+export const newInstructionSchema = z.object({
+  order: z.number(),
+});
+
 export function newDraftRecipeSchema(existingDraftNames: string[]) {
   return z.object({
     name: z

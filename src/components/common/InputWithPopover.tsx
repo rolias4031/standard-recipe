@@ -65,27 +65,6 @@ function InputWithPopover({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const getPopoverPosition = () => {
-    if (!buttonRef.current) return;
-    const buttonRect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = 36 * 16; // Assuming w-36 and 1rem = 16px
-    const availableSpaceRight = window.innerWidth - buttonRect.right;
-    const availableSpaceLeft = buttonRect.left;
-
-    let leftPosition = buttonRect.right + window.scrollX + 8;
-
-    if (
-      availableSpaceRight < popoverWidth &&
-      availableSpaceLeft > popoverWidth
-    ) {
-      leftPosition = buttonRect.left - popoverWidth - 8;
-    }
-
-    const topPosition = buttonRect.top + window.scrollY;
-
-    return { left: leftPosition, top: topPosition };
-  };
-
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);

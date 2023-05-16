@@ -23,7 +23,6 @@ interface RecipeFlowInputProps {
   }: OptionBarComponentProps) => ReactNode;
   optionOverviewComponents: ReactNode;
   optionalComponent: ReactNode;
-  inputLabelComponents: ReactNode;
   inputComponents: (
     isInputFocused: boolean,
     setIsInputFocused: Dispatch<SetStateAction<boolean>>,

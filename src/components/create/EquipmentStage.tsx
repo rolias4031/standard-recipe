@@ -74,11 +74,6 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
           id={e.id}
           index={index}
           optionModes={['notes']}
-          inputLabelComponents={
-            <>
-              <div className="w-80">Equipment</div>
-            </>
-          }
           inputComponents={() => (
             <TextInput
               name="name"

@@ -17,8 +17,8 @@ export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
   return newInputs;
 }
 
-export function isZeroLength(val: string | any[]) {
-  return val.length === 0;
+export function isZeroLength(val: string | any[] | null) {
+  return val ? val.length === 0 : true;
 }
 
 export function genIngredientUnit(): IngredientUnit {
@@ -97,7 +97,7 @@ type InputArray = [boolean, string, string?];
 type Input = InputArray | string;
 
 export function pickStyles(...inputItems: Input[]): string {
-  let combinedStringArray: string[] = [];
+  const combinedStringArray: string[] = [];
 
   inputItems.forEach((inputItem) => {
     if (Array.isArray(inputItem)) {

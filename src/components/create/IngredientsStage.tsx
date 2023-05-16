@@ -184,7 +184,6 @@ function IngredientsStage({
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
-      console.log('unitInput', unitInput);
       const newUnits =
         unitInput === 'clear'
           ? genIngredientUnit()
@@ -228,13 +227,6 @@ function IngredientsStage({
           id={i.id}
           index={index}
           optionModes={['substitutes', 'notes']}
-          inputLabelComponents={
-            <>
-              <div className="w-72">Ingredient</div>
-              <div className="w-36">Quantity</div>
-              <div className="w-36">Units</div>
-            </>
-          }
           inputComponents={() => (
             <>
               <TextInput
@@ -257,7 +249,7 @@ function IngredientsStage({
                   updateIngredientHandler({
                     id: i.id,
                     name: e.target.name,
-                    value: e.target.value,
+                    value: parseFloat(e.target.value),
                   })
                 }
                 className="inp-reg inp-primary w-36"

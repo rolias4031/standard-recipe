@@ -41,21 +41,21 @@ model Favorite {
 }
 
 model Instruction {
-  id              String       @id @default(cuid())
-  order           Int
-  description     String       @db.VarChar(500)
-  optional        Boolean      @default(false)
-  recipe          Recipe       @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId        String
+  id          String  @id @default(cuid())
+  order       Int
+  description String  @db.VarChar(500)
+  optional    Boolean @default(false)
+  recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId    String
 }
 
 model Equipment {
-  id               String        @id @default(cuid())
-  name             String
-  notes            String        @default("") @db.VarChar(250)
-  recipe           Recipe        @relation(fields: [recipeId], references: [id])
-  recipeId         String
-  optional         Boolean       @default(false)
+  id       String  @id @default(cuid())
+  name     String
+  notes    String? @db.VarChar(250)
+  recipe   Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId String
+  optional Boolean @default(false)
 }
 
 model Ingredient {
@@ -68,7 +68,7 @@ model Ingredient {
   ingredientUnitId String
   name             IngredientName   @relation(fields: [ingredientNameId], references: [id])
   ingredientNameId String
-  notes            String           @default("") @db.VarChar(250)
+  notes            String?          @db.VarChar(250)
   substitutes      IngredientName[] @relation("substitutes")
 }
 

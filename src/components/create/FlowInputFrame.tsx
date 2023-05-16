@@ -1,4 +1,8 @@
-import { DraggableProvidedDragHandleProps, DraggableProvidedDraggableProps } from '@hello-pangea/dnd';
+import React from 'react';
+import {
+  DraggableProvidedDragHandleProps,
+  DraggableProvidedDraggableProps,
+} from '@hello-pangea/dnd';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 
 interface FlowInputFrameProps {
@@ -7,7 +11,7 @@ interface FlowInputFrameProps {
   row2col2?: ReactNode;
   row3col2?: ReactNode;
   innerRef?: (element?: HTMLElement | null | undefined) => void;
-  draggableProps?: DraggableProvidedDraggableProps | null
+  draggableProps?: DraggableProvidedDraggableProps | null;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
   raiseIsMouseIn?: Dispatch<SetStateAction<boolean>>;
 }
