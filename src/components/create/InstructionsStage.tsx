@@ -32,10 +32,23 @@ function IngredientTooltip({
   notes,
 }: IngredientTooltipProps) {
   return (
-    <div className="bg-white p-2 text-sm rounded-sm border-2 border-fern">
-      <span>{quantity}</span>
-      <span>{unit.unit}</span>
-      <span>{notes}</span>
+    <div className="max-w-[250px] p-2 text-xs rounded-md border-2 bg-white border-fern shadow-md shadow-concrete">
+      <div className="flex flex-col space-y-1">
+        <div className="flex font-mono">
+          <span>{`${quantity} ${unit.unit} (${unit.abbreviation})`}</span>
+        </div>
+        {notes ? <div className="text-concrete text-xs">{notes}</div> : null}
+        {substitutes.length > 0 ? (
+          <div className="flex space-x-2 text-xs text-concrete">
+            <span className="text-abyss">subs:</span>
+            {substitutes.map((s) => (
+              <span className="" key={s}>
+                {s}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -221,7 +234,7 @@ function InstructionsStage({
                 />
               ) : (
                 <div
-                  className="min-h-[25px] rounded-sm w-5/6 px-2 py-1 bg-smoke"
+                  className="min-h-[30px] rounded-sm w-5/6 px-2 py-1 bg-smoke"
                   onClick={() => setIsInputFocused(true)}
                 >
                   {renderInstructionTags(i.description, ingredients)}

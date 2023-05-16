@@ -6,6 +6,8 @@ import {
   offset,
   FloatingArrow,
   arrow,
+  useClick,
+  useDismiss,
 } from '@floating-ui/react';
 
 interface TextWithTooltip {
@@ -24,8 +26,14 @@ function TextWithTooltip({ text, tooltipElement }: TextWithTooltip) {
     open: isOpen,
     onOpenChange: setIsOpen,
   });
+  const click = useClick(context);
   const hover = useHover(context);
-  const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+  const dismiss = useDismiss(context);
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    click,
+    dismiss,
+  ]);
   return (
     <>
       <span
