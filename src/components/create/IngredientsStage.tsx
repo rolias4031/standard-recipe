@@ -218,7 +218,7 @@ function IngredientsStage({
         <>
           <div className="w-72 col-start-1 font-mono text-sm">Ingredient</div>
           <div className="w-36 col-start-2 font-mono text-sm">Quantity</div>
-          <div className="w-36 col-start-3 font-mono text-sm">Units</div>
+          <div className="w-36 col-start-3 font-mono text-sm">Unit</div>
         </>
       }
       stageInputComponents={ingredients.map((i, index) => (
@@ -249,7 +249,7 @@ function IngredientsStage({
                   updateIngredientHandler({
                     id: i.id,
                     name: e.target.name,
-                    value: parseFloat(e.target.value),
+                    value: e.target.value ? parseFloat(e.target.value) : '',
                   })
                 }
                 className="inp-reg inp-primary w-36"

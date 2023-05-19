@@ -3,6 +3,55 @@ import { DropResult } from '@hello-pangea/dnd';
 import { IngredientWithAllModName } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
+function sortTagsInDescending(
+  tags: Array<IngredientWithAllModName | Equipment>,
+) {
+  return tags.sort((a, b) => {
+    const aWords = a.name.split(' ').length;
+    const bWords = b.name.split(' ').length;
+
+    return bWords - aWords;
+  });
+}
+
+export function parseInstructionForTags(
+  description: string,
+  tags: Array<IngredientWithAllModName | Equipment>,
+): Array<string | IngredientWithAllModName | Equipment> {
+  // sort tags by number of words in name
+  const sortedTags = sortTagsInDescending(tags);
+  // create a hashmap for quick lookup
+  const tagMap = new Map();
+  tags.forEach((tag) => {
+    tagMap.set(tag.name, tag);
+  });
+  // replace with <markdown>
+  let descriptionWithMarkdown = description;
+  sortedTags.forEach((tag) => {
+    const regex = new RegExp(`(?<![<\\w])${tag.name}(?![>\\w])`, 'g');
+    descriptionWithMarkdown = descriptionWithMarkdown.replace(
+      regex,
+      `<${tag.name}>`,
+    );
+  });
+
+  console.log('descriptionWithMarkdown', descriptionWithMarkdown);
+  // split into array separated by markdown and regular text
+  const splitDescription = descriptionWithMarkdown.split(/(?=<)|(?<=>)/);
+  console.log('parseInstructionsForTags', splitDescription);
+
+  // go over array and replace markdown with tagObject
+  const parsed = splitDescription.map((segment) => {
+    if (segment[0] === '<') {
+      const tagObj = tagMap.get(segment.slice(1, -1));
+      return tagObj ? tagObj : segment;
+    }
+    return segment;
+  });
+
+  return parsed;
+}
+
 export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
   const newInputs = [...prev];
 

@@ -1,4 +1,4 @@
-import React, { Dispatch, ReactNode, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useMemo } from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
 import { Equipment, Instruction } from '@prisma/client';
@@ -19,23 +19,22 @@ import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { IngredientWithAllModName } from 'types/models';
 import TextWithTooltip from 'components/common/TextWithTooltip';
-
-type IngredientTooltipProps = Pick<
-  IngredientWithAllModName,
-  'quantity' | 'unit' | 'substitutes' | 'notes' | 'optional'
->;
+import RenderInstructionTags from 'components/common/RenderInstructionTags';
 
 function IngredientTooltip({
-  quantity,
-  unit,
-  substitutes,
-  notes,
-}: IngredientTooltipProps) {
+  ingredient,
+}: {
+  ingredient: IngredientWithAllModName;
+}) {
+  const { quantity, notes, substitutes } = ingredient;
+  const { unit } = ingredient.unit;
+  const { abbreviation: unitAbbreviation } = ingredient.unit;
+
   return (
     <div className="max-w-[250px] p-2 text-xs rounded-md border-2 bg-white border-fern shadow-md shadow-concrete">
       <div className="flex flex-col space-y-1">
         <div className="flex font-mono">
-          <span>{`${quantity} ${unit.unit} (${unit.abbreviation})`}</span>
+          <span>{`${quantity} ${unit} (${unitAbbreviation})`}</span>
         </div>
         {notes ? <div className="text-concrete text-xs">{notes}</div> : null}
         {substitutes.length > 0 ? (
@@ -53,71 +52,12 @@ function IngredientTooltip({
   );
 }
 
-function renderInstructionTags(
-  description: string,
-  ingredients: IngredientWithAllModName[],
-): Array<ReactNode> {
-  const highlightedDescription: Array<ReactNode> = [];
-  const descriptionWords = description.split(' ');
-
-  for (let i = 0; i < descriptionWords.length; i++) {
-    const currentWord = descriptionWords[i];
-    let matchFound = false;
-
-    ingredients.forEach((ingredient) => {
-      const ingredientWords = ingredient.name.split(' ');
-      if (ingredientWords.length === 1 && currentWord === ingredient.name) {
-        highlightedDescription.push(
-          <TextWithTooltip
-            key={`${ingredient.id}${genId()}`}
-            text={ingredient.name}
-            tooltipElement={
-              <IngredientTooltip
-                quantity={ingredient.quantity}
-                unit={ingredient.unit}
-                substitutes={ingredient.substitutes}
-                notes={ingredient.notes}
-                optional={ingredient.optional}
-              />
-            }
-          />,
-        );
-        matchFound = true;
-      } else if (
-        descriptionWords.slice(i, i + ingredientWords.length).join(' ') ===
-        ingredient.name
-      ) {
-        highlightedDescription.push(
-          <TextWithTooltip
-            key={`${ingredient.id}${genId()}`}
-            text={ingredient.name}
-            tooltipElement={
-              <IngredientTooltip
-                quantity={ingredient.quantity}
-                unit={ingredient.unit}
-                substitutes={ingredient.substitutes}
-                notes={ingredient.notes}
-                optional={ingredient.optional}
-              />
-            }
-          />,
-        );
-        i += ingredientWords.length - 1;
-        matchFound = true;
-      }
-    });
-
-    if (!matchFound && currentWord) highlightedDescription.push(currentWord);
-    if (i !== descriptionWords.length - 1) highlightedDescription.push(' ');
-  }
-
-  return highlightedDescription;
-}
-
 function CurrentIngredientsPanel({
   ingredients,
+  instructionString,
 }: {
   ingredients: IngredientWithAllModName[];
+  instructionString: string;
 }) {
   if (isZeroLength(ingredients)) {
     return null;
@@ -126,9 +66,15 @@ function CurrentIngredientsPanel({
     <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
       {ingredients.map((i) => {
         return (
-          <div key={i.id} className="flex justify-between">
+          <div
+            key={i.id}
+            className={pickStyles('flex justify-between space-x-1', [
+              instructionString.includes(i.name),
+              'text-fern',
+            ])}
+          >
             <span>{i.name}</span>
-            <div className="flex">
+            <div className="flex justify-between space-x-1">
               <span>{i.quantity}</span>
               <span>{i.unit.unit}</span>
             </div>
@@ -139,11 +85,30 @@ function CurrentIngredientsPanel({
   );
 }
 
-function CurrentEquipmentPanel({ equipment }: { equipment: Equipment[] }) {
+function CurrentEquipmentPanel({
+  equipment,
+  instructionString,
+}: {
+  equipment: Equipment[];
+  instructionString: string;
+}) {
+  if (isZeroLength(equipment)) {
+    return null;
+  }
   return (
     <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
       {equipment.map((e) => {
-        return <div key={e.id}>{e.name}</div>;
+        return (
+          <div
+            key={e.id}
+            className={pickStyles('flex justify-between space-x-1', [
+              instructionString.includes(e.name),
+              'text-fern',
+            ])}
+          >
+            {e.name}
+          </div>
+        );
       })}
     </div>
   );
@@ -198,6 +163,11 @@ function InstructionsStage({
     });
   }
 
+  const instructionString = useMemo<string>(
+    () => instructions.map((i) => i.description).join(''),
+    [instructions],
+  );
+
   return (
     <StageFrame
       droppableId="instructions"
@@ -237,7 +207,30 @@ function InstructionsStage({
                   className="min-h-[30px] rounded-sm w-5/6 px-2 py-1 bg-smoke"
                   onClick={() => setIsInputFocused(true)}
                 >
-                  {renderInstructionTags(i.description, ingredients)}
+                  <RenderInstructionTags
+                    description={i.description}
+                    tags={[...ingredients, ...equipment]}
+                    ingredientTagComponent={(ingredient) => (
+                      <TextWithTooltip
+                        key={`${ingredient.id}${genId()}`}
+                        text={ingredient.name}
+                        tooltipElement={
+                          <IngredientTooltip ingredient={ingredient} />
+                        }
+                      />
+                    )}
+                    equipmentTagComponent={(equipment) => (
+                      <TextWithTooltip
+                        key={`${equipment.id}${genId()}`}
+                        text={equipment.name}
+                        tooltipElement={
+                          <div className="max-w-[250px] p-2 text-xs rounded-md border-2 bg-white border-fern shadow-md shadow-concrete">
+                            {equipment.name}
+                          </div>
+                        }
+                      />
+                    )}
+                  />
                 </div>
               )}
             </>
@@ -284,8 +277,14 @@ function InstructionsStage({
       ))}
     >
       <div className="flex space-x-5 w-5/6 mx-auto">
-        <CurrentIngredientsPanel ingredients={ingredients} />
-        <CurrentEquipmentPanel equipment={equipment} />
+        <CurrentIngredientsPanel
+          ingredients={ingredients}
+          instructionString={instructionString}
+        />
+        <CurrentEquipmentPanel
+          equipment={equipment}
+          instructionString={instructionString}
+        />
       </div>
     </StageFrame>
   );
