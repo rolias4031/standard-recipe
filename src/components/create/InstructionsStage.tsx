@@ -18,39 +18,9 @@ import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { IngredientWithAllModName } from 'types/models';
-import TextWithTooltip from 'components/common/TextWithTooltip';
+import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import RenderInstructionTags from 'components/common/RenderInstructionTags';
-
-function IngredientTooltip({
-  ingredient,
-}: {
-  ingredient: IngredientWithAllModName;
-}) {
-  const { quantity, notes, substitutes } = ingredient;
-  const { unit } = ingredient.unit;
-  const { abbreviation: unitAbbreviation } = ingredient.unit;
-
-  return (
-    <div className="max-w-[250px] p-2 text-xs rounded-md border-2 bg-white border-fern shadow-md shadow-concrete">
-      <div className="flex flex-col space-y-1">
-        <div className="flex font-mono">
-          <span>{`${quantity} ${unit} (${unitAbbreviation})`}</span>
-        </div>
-        {notes ? <div className="text-concrete text-xs">{notes}</div> : null}
-        {substitutes.length > 0 ? (
-          <div className="flex space-x-2 text-xs text-concrete">
-            <span className="text-abyss">subs:</span>
-            {substitutes.map((s) => (
-              <span className="" key={s}>
-                {s}
-              </span>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
 
 function CurrentIngredientsPanel({
   ingredients,
