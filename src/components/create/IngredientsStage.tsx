@@ -10,7 +10,7 @@ import {
 } from 'lib/util-client';
 import { DropResult } from '@hello-pangea/dnd';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
-import { GeneralButton, TextInput } from 'pirate-ui';
+import { GeneralButton } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { IngredientWithAllModName } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
@@ -105,18 +105,12 @@ function IngredientsStage({
 
   function addSubsHandler(newSub: string, id: string) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
-      console.log('addSubs', prev, newSub, id);
       const index = findRecipeInputIndexById(prev, id);
-      console.log('addSubs', index);
       if (index === -1) return prev;
       const prevSubs = prev[index]?.substitutes;
-      console.log(prevSubs);
       if (!Array.isArray(prevSubs)) return prev;
-      console.log('passed');
       const subExists = prevSubs.find((sub) => sub === newSub);
-      console.log(subExists, prevSubs.length);
       if (subExists || prevSubs.length === 3) return prev;
-      console.log('passed 2');
       const updatedIngredient = {
         ...prev[index],
         substitutes: [...prevSubs, newSub],
@@ -126,8 +120,6 @@ function IngredientsStage({
         index,
         updatedIngredient as IngredientWithAllModName,
       );
-      console.log(updatedIngredient);
-      console.log(newIngredientArray);
       return newIngredientArray;
     });
   }
@@ -151,6 +143,7 @@ function IngredientsStage({
       return newIngredientArray;
     });
   }
+
   function updateIngredientHandler({
     id,
     name,
@@ -174,7 +167,7 @@ function IngredientsStage({
     });
   }
 
-  function updateUnitsHandler({
+  function updateUnitHandler({
     id,
     unitInput,
   }: {
@@ -202,9 +195,12 @@ function IngredientsStage({
     });
   }
 
+  function cleanNameInput(value: string) {
+    return value.toLowerCase();
+  }
+
   function dragEndHandler(result: DropResult) {
     if (!result.destination) return;
-    console.log(result);
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       return reorderDraggableInputs(result, prev);
     });
@@ -229,17 +225,19 @@ function IngredientsStage({
           optionModes={['substitutes', 'notes']}
           inputComponents={() => (
             <>
-              <TextInput
+              <input
+                type="text"
                 name="name"
                 value={i.name}
-                onChange={({ value, name }) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   updateIngredientHandler({
-                    name,
-                    value,
+                    name: e.target.name,
+                    value: cleanNameInput(e.target.value),
                     id: i.id,
                   })
                 }
-                styles={{ input: 'inp-reg inp-primary w-72' }}
+                className="inp-reg inp-primary w-72"
+                autoComplete="off"
               />
               <input
                 type="number"
@@ -258,9 +256,8 @@ function IngredientsStage({
                 options={allUnits.map((u) => u.unit)}
                 name="unit"
                 curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
-                onRaiseInput={({ value, name }) => {
-                  console.log(value, name);
-                  updateUnitsHandler({
+                onRaiseInput={({ value }) => {
+                  updateUnitHandler({
                     id: i.id,
                     unitInput: value,
                   });
