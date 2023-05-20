@@ -7,7 +7,7 @@ export default function IngredientTooltip({
 }: {
   ingredient: IngredientWithAllModName;
 }) {
-  const { quantity, notes, substitutes } = ingredient;
+  const { quantity, notes, substitutes, optional } = ingredient;
   const { unit } = ingredient.unit;
   
   const abbreviation = ingredient.unit.abbreviation
@@ -32,6 +32,7 @@ export default function IngredientTooltip({
             ))}
           </div>
         ) : null}
+        {optional ? <span className='italic text-concrete'>optional</span> : null}
       </div>
     </TooltipCard>
   );

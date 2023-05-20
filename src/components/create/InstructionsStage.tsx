@@ -1,4 +1,10 @@
-import React, { Dispatch, SetStateAction, useMemo } from 'react';
+import React, {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useMemo,
+  useState,
+} from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
 import { Equipment, Instruction } from '@prisma/client';
@@ -21,6 +27,32 @@ import { IngredientWithAllModName } from 'types/models';
 import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import RenderInstructionTags from 'components/common/RenderInstructionTags';
 import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
+import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
+
+function PanelCard({
+  children,
+  header,
+}: {
+  children: ReactNode;
+  header: string;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded h-fit">
+      <div className="flex justify-between mb-2">
+        <span className="text-abyss text-lg">{header}</span>
+        <button onClick={() => setIsOpen((prev) => !prev)}>
+          <ChevronRightIcon
+            styles={{
+              icon: pickStyles('w-5 h-5 transition', [isOpen, 'rotate-90']),
+            }}
+          />
+        </button>
+      </div>
+      {isOpen ? children : null}
+    </div>
+  );
+}
 
 function CurrentIngredientsPanel({
   ingredients,
@@ -33,7 +65,7 @@ function CurrentIngredientsPanel({
     return null;
   }
   return (
-    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
+    <PanelCard header="Ingredients">
       {ingredients.map((i) => {
         return (
           <div
@@ -51,7 +83,7 @@ function CurrentIngredientsPanel({
           </div>
         );
       })}
-    </div>
+    </PanelCard>
   );
 }
 
@@ -66,7 +98,7 @@ function CurrentEquipmentPanel({
     return null;
   }
   return (
-    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded">
+    <PanelCard header="Equipment">
       {equipment.map((e) => {
         return (
           <div
@@ -80,7 +112,7 @@ function CurrentEquipmentPanel({
           </div>
         );
       })}
-    </div>
+    </PanelCard>
   );
 }
 
