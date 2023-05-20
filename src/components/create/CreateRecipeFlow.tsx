@@ -40,6 +40,26 @@ function FlowProgress({ curStage }: { curStage: number }) {
   return <div className="flex space-x-1 items-center">{dots}</div>;
 }
 
+function StageError({
+  stageName,
+  dispatchIsError,
+}: {
+  stageName?: string;
+  dispatchIsError: Dispatch<SetStateAction<boolean>>;
+}) {
+  return (
+    <div className="flex flex-col p-1 bg-red-400 text-white rounded-sm">
+      <button className="ml-auto" onClick={() => dispatchIsError(false)}>
+        <XIcon styles={{ icon: 'w-4 h-4' }} />
+      </button>
+      <p className="px-3 pb-3">
+        {`One or more of your ${stageName} has missing or invalid info. Recheck each field for errors.
+    `}
+      </p>
+    </div>
+  );
+}
+
 interface FlowControllerProps {
   children: ReactNode;
   onSave: () => void;
@@ -122,17 +142,12 @@ function FlowController({
           <span className="pr-2 pl-1 text-lg">{stageConfig?.label}</span>
         </button>
       </div>
-      <div className="flex flex-col space-y-3 border-concrete bg-white left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
+      <div className="flex flex-col space-y-3 border-concrete left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
         {isError ? (
-          <div className="flex flex-col p-1 bg-red-400 text-white rounded-sm">
-            <button className="ml-auto" onClick={() => setIsError(false)}>
-              <XIcon styles={{ icon: 'w-4 h-4' }} />
-            </button>
-            <p className="px-3 pb-3">
-              {`One or more of your ${stageConfig?.name.toLowerCase()} has missing or invalid info. Recheck each field for errors.
-              `}
-            </p>
-          </div>
+          <StageError
+            stageName={stageConfig?.name.toLowerCase()}
+            dispatchIsError={setIsError}
+          />
         ) : null}
         <div className="flex w-full border-t border-concerete bg-white p-3 justify-between items-center">
           <button
