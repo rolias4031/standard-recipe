@@ -24,7 +24,7 @@ export const newIngredientSchema = z.object({
   quantity: z.number().gt(0),
   unit: unitSchema,
   optional: z.boolean(),
-  notes: z.string().nullable(),
+  notes: z.string().max(250).nullable(),
   substitutes: z.array(z.string()),
 });
 
@@ -36,6 +36,12 @@ export const newEquipmentSchema = z.object({
 
 export const newInstructionSchema = z.object({
   order: z.number(),
+  description: z.string().max(500),
+  optional: z.boolean(),
+});
+
+export const newRecipeGeneralInfoSchema = z.object({
+  description: z.string().max(500),
 });
 
 export function newDraftRecipeSchema(existingDraftNames: string[]) {

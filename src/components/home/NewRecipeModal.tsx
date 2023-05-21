@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import { ModalBackdrop, TextInput, GeneralButton } from 'pirate-ui';
+import { TextInput, GeneralButton } from 'pirate-ui';
+import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import { useNewRecipeModalForm } from 'lib/hooks';
 import { useCreateNewDraftRecipe } from 'lib/mutations';
@@ -36,7 +37,7 @@ function NewRecipeModal({
     );
   }
 
-  console.log(formValidation)
+  console.log(formValidation);
 
   return (
     <ModalBackdrop>

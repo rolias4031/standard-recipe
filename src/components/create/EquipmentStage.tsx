@@ -24,11 +24,13 @@ interface EquipmentStageProps {
 }
 
 function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
+  function cleanEquipmentInput(value: string) {
+    return value.toLowerCase();
+  }
   function removeEquipmentHandler(id: string) {
     raiseEquipment((prev: Equipment[]) => {
       if (prev.length === 1) return [genEquipment()];
-      const newEquipment = prev.filter((i) => i.id !== id);
-      return newEquipment;
+      return prev.filter((i) => i.id !== id);
     });
   }
   function updateEquipmentHandler({
@@ -75,15 +77,19 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
           index={index}
           optionModes={['notes']}
           inputComponents={() => (
-            <TextInput
+            <input
+              type="text"
               name="name"
               value={e.name}
-              onChange={({ value, name }) => {
-                updateEquipmentHandler({ id: e.id, name, value });
-              }}
-              styles={{
-                input: 'inp-reg inp-primary w-[350px]',
-              }}
+              className="inp-reg inp-primary w-[350px]"
+              onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
+                updateEquipmentHandler({
+                  id: e.id,
+                  name: ev.target.name,
+                  value: cleanEquipmentInput(ev.target.value),
+                })
+              }
+              autoComplete="off"
             />
           )}
           optionalComponent={

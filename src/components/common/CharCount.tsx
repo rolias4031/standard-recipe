@@ -1,31 +1,35 @@
+import { pickStyles } from 'lib/util-client';
 import React, { useEffect, useState } from 'react';
 
 interface CharCountProps {
   string: string;
   charLimit: number;
   styles?: {
-    div?: string,
-    spanOne?: string,
-    spanTwo?: string,
-  }
+    div?: string;
+    spanOne?: string;
+    spanTwo?: string;
+  };
 }
 
 function CharCount({ string, charLimit, styles }: CharCountProps) {
-  const [isInvalid, setIsInvalid] = useState(false)
+  const [isInvalid, setIsInvalid] = useState(false);
 
   useEffect(() => {
     if (string.length > charLimit) {
-      setIsInvalid(true)
+      setIsInvalid(true);
     } else {
-      setIsInvalid(false)
+      setIsInvalid(false);
     }
-  }, [string, charLimit])
+  }, [string, charLimit]);
 
-  const divStyle = `${styles?.div} ${isInvalid ? 'text-red-500' : 'text-abyss'} text-sm font-semibold`
+  const divStyle = pickStyles('text-sm font-semibold', [
+    isInvalid,
+    'text-red-500',
+  ]);
 
   return (
     <div className={divStyle}>
-      <span className={isInvalid ? 'text-red-500' : ''}>{string.length}</span> / <span className={styles?.spanTwo}>{charLimit}</span>
+      <span>{string.length}</span> / <span>{charLimit}</span>
     </div>
   );
 }

@@ -26,9 +26,9 @@ function TipBox() {
   const [isTipOpen, setIsTipOpen] = useState(true);
 
   return (
-    <div className="flex flex-col border-y space-y-3 transition-all">
-      <div className="flex justify-between items-center">
-        <p className="font-semibold text-lg">Tips</p>
+    <div className="flex flex-col space-y-3 border-y transition-all">
+      <div className="flex items-center justify-between">
+        <p className="text-lg font-semibold">Tips</p>
         <button
           onClick={() => setIsTipOpen((prev) => !prev)}
           type="button"
@@ -45,20 +45,20 @@ function TipBox() {
                 '1. Be simple. Name your ingredients only by what the recipe depends on'
               }
             </p>
-            <div className="ml-16 flex flex-col mt-2 space-y-1">
+            <div className="ml-16 mt-2 flex flex-col space-y-1">
               <span>
                 <s className="">organic, all-natural,</s>{' '}
-                <span className="text-fern font-semibold">
+                <span className="font-semibold text-fern">
                   sliced fuji apples
                 </span>
               </span>
               <span>
                 <s>Whole Foods</s>{' '}
-                <span className="text-fern font-semibold">olive oil</span>
+                <span className="font-semibold text-fern">olive oil</span>
               </span>
               <span>
                 <s>grass-fed</s>{' '}
-                <span className="text-fern font-semibold">85% ground beef</span>
+                <span className="font-semibold text-fern">85% ground beef</span>
               </span>
             </div>
           </div>
@@ -199,6 +199,10 @@ function IngredientsStage({
     return value.toLowerCase();
   }
 
+  function cleanQuantityInput(value: string) {
+    return value ? parseFloat(value) : '';
+  }
+
   function dragEndHandler(result: DropResult) {
     if (!result.destination) return;
     raiseIngredients((prev: IngredientWithAllModName[]) => {
@@ -212,9 +216,9 @@ function IngredientsStage({
       droppableId="ingredients"
       stageInputLabels={
         <>
-          <div className="w-72 col-start-1 font-mono text-sm">Ingredient</div>
-          <div className="w-36 col-start-2 font-mono text-sm">Quantity</div>
-          <div className="w-36 col-start-3 font-mono text-sm">Unit</div>
+          <div className="col-start-1 w-72 font-mono text-sm">Ingredient</div>
+          <div className="col-start-2 w-36 font-mono text-sm">Quantity</div>
+          <div className="col-start-3 w-36 font-mono text-sm">Unit</div>
         </>
       }
       stageInputComponents={ingredients.map((i, index) => (
@@ -243,11 +247,12 @@ function IngredientsStage({
                 type="number"
                 name="quantity"
                 value={i.quantity}
+                min="0"
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   updateIngredientHandler({
                     id: i.id,
                     name: e.target.name,
-                    value: e.target.value ? parseFloat(e.target.value) : '',
+                    value: cleanQuantityInput(e.target.value),
                   })
                 }
                 className="inp-reg inp-primary w-36"
@@ -281,7 +286,7 @@ function IngredientsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="flex flex-grow justify-between items-center fade-in"
+              className="fade-in flex flex-grow items-center justify-between"
             >
               <div className="flex items-center space-x-2">
                 <GeneralButton

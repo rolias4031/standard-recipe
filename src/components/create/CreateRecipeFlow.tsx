@@ -13,6 +13,7 @@ import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
   IngredientWithAll,
   IngredientWithAllModName,
+  RecipeGeneralInfo,
   RecipeWithFull,
 } from 'types/models';
 import { BaseZodSchema } from 'types/types';
@@ -22,43 +23,9 @@ import {
   newInstructionSchema,
 } from 'validation/schemas';
 import EquipmentStage from './EquipmentStage';
+import InfoStage from './InfoStage';
 import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
-
-function FlowProgress({ curStage }: { curStage: number }) {
-  const dots = [1, 2, 3].map((i) => {
-    return (
-      <div
-        key={i}
-        className={pickStyles('h-3 w-3 rounded-full border-2 border-fern', [
-          i === curStage,
-          'bg-fern',
-        ])}
-      ></div>
-    );
-  });
-  return <div className="flex space-x-1 items-center">{dots}</div>;
-}
-
-function StageError({
-  stageName,
-  dispatchIsError,
-}: {
-  stageName?: string;
-  dispatchIsError: Dispatch<SetStateAction<boolean>>;
-}) {
-  return (
-    <div className="flex flex-col p-1 bg-red-400 text-white rounded-sm">
-      <button className="ml-auto" onClick={() => dispatchIsError(false)}>
-        <XIcon styles={{ icon: 'w-4 h-4' }} />
-      </button>
-      <p className="px-3 pb-3">
-        {`One or more of your ${stageName} has missing or invalid info. Recheck each field for errors.
-    `}
-      </p>
-    </div>
-  );
-}
 
 interface FlowControllerProps {
   children: ReactNode;
@@ -82,7 +49,9 @@ function FlowController({
     const curInputs = stageConfig?.inputs;
     if (!curInputs) return;
     for (const input of curInputs) {
-      const valid = stageConfig?.schema.safeParse(input);
+      const schema = stageConfig.schema;
+      if (!schema) return;
+      const valid = schema.safeParse(input);
       if (!valid.success) {
         setIsError(true);
         return;
@@ -118,8 +87,8 @@ function FlowController({
   }
 
   return (
-    <div className="flex flex-col flex-grow">
-      <div className="flex justify-between items-center space-x-2">
+    <div className="flex flex-grow flex-col">
+      <div className="flex items-center justify-between space-x-2">
         <div className="flex items-end space-x-2">
           <p className="text-lg font-light">{recipeName}</p>
           <p className="text-2xl font-bold">{stageConfig?.name}</p>
@@ -132,38 +101,42 @@ function FlowController({
         </div>
       </div>
       {children}
-      <div className="w-full">
-        <button
-          type="button"
-          className="ml-auto flex items-center w-fit btn-primary btn-reg transition-all"
-          onClick={createNewInputHandler}
-        >
-          <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
-          <span className="pr-2 pl-1 text-lg">{stageConfig?.label}</span>
-        </button>
-      </div>
-      <div className="flex flex-col space-y-3 border-concrete left-10 right-10 justify-between items-center fixed bottom-0 transition-all">
+      {stage !== 4 ? (
+        <div className="w-full">
+          <button
+            type="button"
+            className="btn-primary btn-reg ml-auto flex w-fit items-center transition-all"
+            onClick={createNewInputHandler}
+          >
+            <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
+            <span className="pr-2 pl-1 text-lg">{stageConfig?.label}</span>
+          </button>
+        </div>
+      ) : null}
+      <div className="fixed left-10 right-10 bottom-0 flex flex-col items-center justify-between space-y-3 border-concrete transition-all">
         {isError ? (
           <StageError
             stageName={stageConfig?.name.toLowerCase()}
             dispatchIsError={setIsError}
           />
         ) : null}
-        <div className="flex w-full border-t border-concerete bg-white p-3 justify-between items-center">
+        <ControlPanel>
           <button
-            className="btn-reg btn-primary scale"
+            className="btn-reg btn-primary scale disabled:opacity-0"
             onClick={prevStageHandler}
+            disabled={stage === 1}
           >
             <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-white' }} />
           </button>
-          <FlowProgress curStage={stage} />
+          { stage !==4 ? <FlowProgress curStage={stage} /> : <button>Publish!</button>}
           <button
-            className="btn-reg btn-primary scale"
+            className="btn-reg btn-primary scale disabled:opacity-0"
             onClick={nextStageHandler}
+            disabled={stage === 4}
           >
             <ArrowRightIcon styles={{ icon: 'w-7 h-7 text-white' }} />
           </button>
-        </div>
+        </ControlPanel>
       </div>
     </div>
   );
@@ -196,15 +169,20 @@ function initInstructions(instructions: Instruction[]): Instruction[] {
   return [genInstruction(), genInstruction()];
 }
 
+function initGeneralInfo(recipe: RecipeWithFull): RecipeGeneralInfo {
+  return { name: recipe.name, description: recipe.description };
+}
+
 type StageDispatchFunction =
   | Dispatch<SetStateAction<IngredientWithAllModName[]>>
   | Dispatch<SetStateAction<Equipment[]>>
   | Dispatch<SetStateAction<Instruction[]>>;
 interface StageConfig {
-  inputs: IngredientWithAllModName[] | Equipment[] | Instruction[];
-  dispatch: StageDispatchFunction;
-  genInput: () => IngredientWithAllModName | Equipment | Instruction;
-  schema: BaseZodSchema;
+  component: ReactNode;
+  inputs?: IngredientWithAllModName[] | Equipment[] | Instruction[];
+  dispatch?: StageDispatchFunction;
+  genInput?: () => IngredientWithAllModName | Equipment | Instruction;
+  schema?: BaseZodSchema;
   name: string;
   label: string;
 }
@@ -226,11 +204,21 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [instructions, setInstructions] = useState<Instruction[]>(() =>
     initInstructions(recipe.instructions),
   );
+  const [generalInfo, setGeneralInfo] = useState<RecipeGeneralInfo>(() =>
+    initGeneralInfo(recipe),
+  );
 
   const stageConfig = new Map<number, StageConfig>([
     [
       1,
       {
+        component: (
+          <IngredientsStage
+            ingredients={ingredients}
+            raiseIngredients={setIngredients}
+            allUnits={allUnits}
+          />
+        ),
         name: 'Ingredients',
         inputs: ingredients,
         dispatch: setIngredients,
@@ -242,6 +230,9 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     [
       2,
       {
+        component: (
+          <EquipmentStage equipment={equipment} raiseEquipment={setEquipment} />
+        ),
         name: 'Equipment',
         inputs: equipment,
         dispatch: setEquipment,
@@ -253,12 +244,33 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     [
       3,
       {
+        component: (
+          <InstructionsStage
+            instructions={instructions}
+            ingredients={ingredients}
+            equipment={equipment}
+            raiseInstructions={setInstructions}
+          />
+        ),
         name: 'Instructions',
         inputs: instructions,
         dispatch: setInstructions,
         genInput: genInstruction,
         schema: newInstructionSchema,
         label: 'Instruction',
+      },
+    ],
+    [
+      4,
+      {
+        component: (
+          <InfoStage
+            generalInfo={generalInfo}
+            raiseGeneralInfo={setGeneralInfo}
+          />
+        ),
+        name: 'Info',
+        label: 'Info',
       },
     ],
   ]);
@@ -272,26 +284,52 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
         setStage={setStage}
         stage={stage}
       >
-        {stage === 1 ? (
-          <IngredientsStage
-            ingredients={ingredients}
-            raiseIngredients={setIngredients}
-            allUnits={allUnits}
-          />
-        ) : null}
-        {stage === 2 ? (
-          <EquipmentStage equipment={equipment} raiseEquipment={setEquipment} />
-        ) : null}
-        {stage === 3 ? (
-          <InstructionsStage
-            instructions={instructions}
-            ingredients={ingredients}
-            equipment={equipment}
-            raiseInstructions={setInstructions}
-          />
-        ) : null}
+        {stageConfig.get(stage)?.component}
       </FlowController>
     </>
+  );
+}
+
+function ControlPanel({ children }: { children: ReactNode }) {
+  return (
+    <div className="border-concerete flex w-full items-center justify-between border-t bg-white p-3">
+      {children}
+    </div>
+  );
+}
+
+function FlowProgress({ curStage }: { curStage: number }) {
+  const dots = [1, 2, 3].map((i) => {
+    return (
+      <div
+        key={i}
+        className={pickStyles('h-3 w-3 rounded-full border-2 border-fern', [
+          i === curStage,
+          'bg-fern',
+        ])}
+      />
+    );
+  });
+  return <div className="flex items-center space-x-1">{dots}</div>;
+}
+
+function StageError({
+  stageName,
+  dispatchIsError,
+}: {
+  stageName?: string;
+  dispatchIsError: Dispatch<SetStateAction<boolean>>;
+}) {
+  return (
+    <div className="flex flex-col rounded-sm bg-red-400 p-1 text-white">
+      <button className="ml-auto" onClick={() => dispatchIsError(false)}>
+        <XIcon styles={{ icon: 'w-4 h-4' }} />
+      </button>
+      <p className="px-3 pb-3">
+        {`One or more of your ${stageName} has missing or invalid info. Recheck each field for errors.
+    `}
+      </p>
+    </div>
   );
 }
 
