@@ -128,7 +128,11 @@ function FlowController({
           >
             <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-white' }} />
           </button>
-          { stage !==4 ? <FlowProgress curStage={stage} /> : <button>Publish!</button>}
+          {stage !== 4 ? (
+            <FlowProgress curStage={stage} />
+          ) : (
+            <button>Publish!</button>
+          )}
           <button
             className="btn-reg btn-primary scale disabled:opacity-0"
             onClick={nextStageHandler}
@@ -193,8 +197,9 @@ interface CreateRecipeFlowProps {
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
+  // state
   const [stage, setStage] = useState<number>(1);
-  // state and mutations
+
   const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
     () => initIngredients(recipe.ingredients),
   );
@@ -207,6 +212,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [generalInfo, setGeneralInfo] = useState<RecipeGeneralInfo>(() =>
     initGeneralInfo(recipe),
   );
+  // mutations
 
   const stageConfig = new Map<number, StageConfig>([
     [
@@ -214,6 +220,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       {
         component: (
           <IngredientsStage
+            recipeId={recipe.id}
             ingredients={ingredients}
             raiseIngredients={setIngredients}
             allUnits={allUnits}

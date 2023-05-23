@@ -1,7 +1,11 @@
 import { NextApiRequest } from 'next';
 import { z } from 'zod';
-import { IngredientUnit, Recipe } from '@prisma/client';
-import { RecipeWithFull } from './models';
+import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
+import {
+  IngredientWithAllModName,
+  RecipeWithAll,
+  RecipeWithFull,
+} from './models';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -48,12 +52,14 @@ export interface CustomError extends Error {
 // queries and mutations
 
 export interface AllUnitsQueryPayload extends BasePayload {
-  units: IngredientUnit[]
+  units: IngredientUnit[];
 }
 
-export interface SaveRecipeMutationInputs {
-  saveRecipeMutationInputs: SaveRecipeInputs;
+export interface UpdateRecipeIngredientMutationBody {
+  recipeId: Recipe['id'];
+  ingredient: IngredientWithAllModName;
 }
+
 export interface NewDraftRecipeMutationInputs {
   newDraftRecipeInputs: NewDraftRecipeInputs;
 }

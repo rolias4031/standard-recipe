@@ -34,7 +34,7 @@ export type IngredientWithAll = Prisma.IngredientGetPayload<
 
 export interface RecipeGeneralInfo {
   name: string;
-  description: RecipeWithAll['description']
+  description: RecipeWithAll['description'];
 }
 
 export type RecipeWithFull = RecipeWithAll & {

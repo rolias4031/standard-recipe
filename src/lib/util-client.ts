@@ -139,7 +139,7 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
 }
 
 export function genId() {
-  return (Math.random() + Math.random()).toString();
+  return 'CLIENT' + Math.random().toString().slice(1);
 }
 
 type InputArray = [boolean, string, string?];

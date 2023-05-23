@@ -6,7 +6,7 @@ import {
   MutateConfig,
   NewDraftRecipeMutationInputs,
   NewDraftRecipeMutationPayload,
-  SaveRecipeMutationInputs,
+  UpdateRecipeIngredientMutationBody,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
@@ -38,12 +38,12 @@ export async function createNewDraftRecipeMutation(
   });
 }
 
-export async function saveRecipeMutation(
-  body: SaveRecipeMutationInputs,
+export async function updateRecipeIngredientMutation(
+  body: UpdateRecipeIngredientMutationBody,
 ): Promise<BasePayload> {
-  return mutateWithBody<SaveRecipeMutationInputs, BasePayload>({
+  return mutateWithBody<UpdateRecipeIngredientMutationBody, BasePayload>({
     method: 'POST',
-    apiRoute: 'api/recipe/save',
+    apiRoute: 'api/recipe/update/ingredient',
     body,
   });
 }
@@ -52,6 +52,6 @@ export const useCreateNewDraftRecipe = () => {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
 };
 
-export const useSaveRecipe = () => {
-  return useMutation({ mutationFn: saveRecipeMutation });
+export const useUpdateRecipeIngredient = () => {
+  return useMutation({ mutationFn: updateRecipeIngredientMutation });
 };

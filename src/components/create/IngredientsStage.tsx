@@ -1,4 +1,11 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import debounce from 'lodash.debounce';
 import {
   findRecipeInputIndexById,
   genIngredient,
@@ -21,80 +28,51 @@ import OptionalInput from 'components/common/OptionalInput';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
-
-function TipBox() {
-  const [isTipOpen, setIsTipOpen] = useState(true);
-
-  return (
-    <div className="flex flex-col space-y-3 border-y transition-all">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-semibold">Tips</p>
-        <button
-          onClick={() => setIsTipOpen((prev) => !prev)}
-          type="button"
-          className="btn-text-primary"
-        >
-          {isTipOpen ? 'hide' : 'show'}
-        </button>
-      </div>
-      {isTipOpen ? (
-        <div className="flex flex-col space-y-5">
-          <div className="">
-            <p>
-              {
-                '1. Be simple. Name your ingredients only by what the recipe depends on'
-              }
-            </p>
-            <div className="ml-16 mt-2 flex flex-col space-y-1">
-              <span>
-                <s className="">organic, all-natural,</s>{' '}
-                <span className="font-semibold text-fern">
-                  sliced fuji apples
-                </span>
-              </span>
-              <span>
-                <s>Whole Foods</s>{' '}
-                <span className="font-semibold text-fern">olive oil</span>
-              </span>
-              <span>
-                <s>grass-fed</s>{' '}
-                <span className="font-semibold text-fern">85% ground beef</span>
-              </span>
-            </div>
-          </div>
-          <p>
-            {
-              '2. Add substitutes, mark an ingredient as optional, and more from the options tab'
-            }
-          </p>
-
-          <p>
-            {
-              "3. Start typing an ingredient name for autocomplete. If it's not there, that means you're the first to type it!"
-            }
-          </p>
-          <p>
-            {
-              "4. Ingredients get sorted automatically, so don't worry about the order"
-            }
-          </p>
-        </div>
-      ) : null}
-    </div>
-  );
-}
+import { useUpdateRecipeIngredient } from 'lib/mutations';
+import { newIngredientSchema } from 'validation/schemas';
 
 interface IngredientStageProps {
+  recipeId: string;
   ingredients: IngredientWithAllModName[];
   raiseIngredients: Dispatch<SetStateAction<IngredientWithAllModName[]>>;
   allUnits: IngredientUnit[];
 }
 
 function IngredientsStage({
+  recipeId,
   ingredients,
   raiseIngredients,
   allUnits,
 }: IngredientStageProps) {
+  const { mutate: updateIngredient, status } = useUpdateRecipeIngredient();
+  const [ingredientIdToUpdate, setIngredientIdToUpdate] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (!ingredientIdToUpdate) return;
+
+    debouncedValidateAndUpdate(
+      ingredients.find((i) => i.id === ingredientIdToUpdate),
+    );
+    return () => {
+      debouncedValidateAndUpdate.cancel();
+    };
+  }, [ingredientIdToUpdate, ingredients]);
+
+  const debouncedValidateAndUpdate = useCallback(
+    debounce((ingredient: IngredientWithAllModName | undefined) => {
+      console.log('other', ingredient);
+      if (!ingredient) return;
+      const valid = newIngredientSchema.safeParse(ingredient);
+      if (!valid.success) return;
+      console.log('debouncedMutation', valid);
+      // mutate
+      updateIngredient({ recipeId, ingredient });
+    }, 2000),
+    [],
+  );
+
   function removeIngredientHandler(id: string) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       if (prev.length === 1) return [genIngredient()];
@@ -151,20 +129,18 @@ function IngredientsStage({
   }: UpdateRecipeInputHandlerArgs) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       const index = findRecipeInputIndexById(prev, id);
-      if (index !== -1) {
-        const updatedIngredient = {
-          ...prev[index],
-          [name]: value,
-        };
-        const newIngredientsArray = insertIntoPrevArray(
-          prev,
-          index,
-          updatedIngredient as IngredientWithAllModName,
-        );
-        return newIngredientsArray;
-      }
-      return prev;
+      if (index === -1) return prev;
+      const updatedIngredient = {
+        ...prev[index],
+        [name]: value,
+      };
+      return insertIntoPrevArray(
+        prev,
+        index,
+        updatedIngredient as IngredientWithAllModName,
+      );
     });
+    setIngredientIdToUpdate(id);
   }
 
   function updateUnitHandler({
@@ -185,14 +161,13 @@ function IngredientsStage({
         ...prev[index],
         unit: newUnits,
       };
-      const newIngredientsArray = insertIntoPrevArray(
+      return insertIntoPrevArray(
         prev,
         index,
         updatedIngredient as IngredientWithAllModName,
       );
-
-      return newIngredientsArray;
     });
+    setIngredientIdToUpdate(id);
   }
 
   function cleanNameInput(value: string) {
