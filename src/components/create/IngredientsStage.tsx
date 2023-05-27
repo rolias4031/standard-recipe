@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
 import {
   findRecipeInputIndexById,
@@ -44,32 +45,89 @@ function IngredientsStage({
   raiseIngredients,
   allUnits,
 }: IngredientStageProps) {
+  const client = useQueryClient();
   const { mutate: updateIngredient, status } = useUpdateRecipeIngredient();
-  const [ingredientIdToUpdate, setIngredientIdToUpdate] = useState<
-    string | null
-  >(null);
+  const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
+    [],
+  );
+
+  console.log(ingredients);
+
+  console.log('ingredientIdsToUpdate', ingredientIdsToUpdate);
+
+  function pushIdToUpdateList(id: string) {
+    setIngredientIdsToUpdate((prev: string[]) => {
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
+    });
+  }
 
   useEffect(() => {
-    if (!ingredientIdToUpdate) return;
-
-    debouncedValidateAndUpdate(
-      ingredients.find((i) => i.id === ingredientIdToUpdate),
+    console.log('fired useEffect');
+    if (ingredientIdsToUpdate.length === 0) return;
+    console.log('before mutation', ingredientIdsToUpdate);
+    debouncedUpdateValidIngredients(
+      ingredients.filter((i) => ingredientIdsToUpdate.includes(i.id)),
     );
     return () => {
-      debouncedValidateAndUpdate.cancel();
+      debouncedUpdateValidIngredients.cancel();
     };
-  }, [ingredientIdToUpdate, ingredients]);
+  }, [ingredients]);
 
-  const debouncedValidateAndUpdate = useCallback(
-    debounce((ingredient: IngredientWithAllModName | undefined) => {
-      console.log('other', ingredient);
-      if (!ingredient) return;
-      const valid = newIngredientSchema.safeParse(ingredient);
-      if (!valid.success) return;
-      console.log('debouncedMutation', valid);
+  function replaceIngredientIds(idPairs: { newId: string; oldId: string }[]) {
+    raiseIngredients((prev: IngredientWithAllModName[]) => {
+      let prevIng = [...prev];
+      idPairs.forEach((pair) => {
+        console.log('replace ids', pair);
+        if (pair.newId === pair.oldId) return;
+        console.log('diff');
+        const index = findRecipeInputIndexById(prevIng, pair.oldId);
+        if (index === -1) return;
+        console.log('found', index);
+        const ingredientWithNewId = { ...prevIng[index], id: pair.newId };
+        prevIng = insertIntoPrevArray(
+          prevIng,
+          index,
+          ingredientWithNewId as IngredientWithAllModName,
+        );
+        console.log(prevIng);
+      });
+      return prevIng;
+    });
+  }
+
+  function filterValidIngredients(ingredients: IngredientWithAllModName[]) {
+    const validIngredients = [];
+    for (const i of ingredients) {
+      const valid = newIngredientSchema.safeParse(i);
+      if (valid.success) {
+        validIngredients.push(i);
+      }
+    }
+    return validIngredients;
+  }
+
+  const debouncedUpdateValidIngredients = useCallback(
+    debounce((ingredients: IngredientWithAllModName[]) => {
+      console.log('other', ingredients);
+      if (isZeroLength(ingredients)) return;
+      const validIngredients = filterValidIngredients(ingredients);
+      if (isZeroLength(validIngredients)) return;
+      console.log('debouncedMutation', validIngredients);
       // mutate
-      updateIngredient({ recipeId, ingredient });
-    }, 2000),
+      updateIngredient(
+        { recipeId, ingredients },
+        {
+          onSuccess: (data) => {
+            // clear updated ids.
+            setIngredientIdsToUpdate([]);
+            // swap ids
+            console.log(data.ingredientIdPairs);
+            replaceIngredientIds(data.ingredientIdPairs);
+          },
+        },
+      );
+    }, 4000),
     [],
   );
 
@@ -100,6 +158,7 @@ function IngredientsStage({
       );
       return newIngredientArray;
     });
+    pushIdToUpdateList(id);
   }
 
   function removeSubHandler(subToRemove: string, id: string) {
@@ -120,6 +179,7 @@ function IngredientsStage({
       );
       return newIngredientArray;
     });
+    pushIdToUpdateList(id);
   }
 
   function updateIngredientHandler({
@@ -140,7 +200,7 @@ function IngredientsStage({
         updatedIngredient as IngredientWithAllModName,
       );
     });
-    setIngredientIdToUpdate(id);
+    pushIdToUpdateList(id);
   }
 
   function updateUnitHandler({
@@ -148,7 +208,7 @@ function IngredientsStage({
     unitInput,
   }: {
     id: string;
-    unitInput: string;
+    unitInput: string | null;
   }) {
     raiseIngredients((prev: IngredientWithAllModName[]) => {
       const index = findRecipeInputIndexById(prev, id);
@@ -159,7 +219,7 @@ function IngredientsStage({
           : allUnits.find((u) => u.unit === unitInput);
       const updatedIngredient = {
         ...prev[index],
-        unit: newUnits,
+        unit: !unitInput ? unitInput : newUnits,
       };
       return insertIntoPrevArray(
         prev,
@@ -167,7 +227,7 @@ function IngredientsStage({
         updatedIngredient as IngredientWithAllModName,
       );
     });
-    setIngredientIdToUpdate(id);
+    pushIdToUpdateList(id);
   }
 
   function cleanNameInput(value: string) {
@@ -202,7 +262,7 @@ function IngredientsStage({
           id={i.id}
           index={index}
           optionModes={['substitutes', 'notes']}
-          inputComponents={() => (
+          mainInputComponents={() => (
             <>
               <input
                 type="text"
@@ -230,12 +290,13 @@ function IngredientsStage({
                     value: cleanQuantityInput(e.target.value),
                   })
                 }
-                className="inp-reg inp-primary w-36"
+                className="inp-reg inp-primary w-36 disabled:bg-concrete disabled:text-concrete"
+                disabled={!i.unit}
               />
               <InputWithPopover
                 options={allUnits.map((u) => u.unit)}
                 name="unit"
-                curValue={i.unit.unit === '' ? 'Select' : i.unit.unit}
+                curValue={i.unit && i.unit.unit}
                 onRaiseInput={({ value }) => {
                   updateUnitHandler({
                     id: i.id,
@@ -244,19 +305,48 @@ function IngredientsStage({
                 }}
                 styles={{
                   button: {
-                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex',
+                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex disabled:bg-concrete disabled:text-concrete',
                     isToggled: ['bg-fern text-white', 'bg-smoke'],
                   },
                 }}
               />
             </>
           )}
-          optionalComponent={
-            <OptionalInput
-              id={i.id}
-              curIsOptional={i.optional}
-              onRaiseInput={updateIngredientHandler}
-            />
+          auxiliaryComponents={
+            <>
+              <OptionalInput
+                id={i.id}
+                curIsOptional={i.optional}
+                onRaiseInput={updateIngredientHandler}
+              />
+              <div className="flex items-center space-x-1">
+                <input
+                  id={`no units-${i.id}`}
+                  name="unit"
+                  type="checkbox"
+                  className="h-4 w-4 cursor-pointer accent-fern"
+                  checked={i.unit === null}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    updateUnitHandler({
+                      id: i.id,
+                      unitInput: e.target.checked ? null : 'clear',
+                    });
+                    if (!e.target.checked) return;
+                    updateIngredientHandler({
+                      id: i.id,
+                      name: 'quantity',
+                      value: 0,
+                    });
+                  }}
+                />
+                <label
+                  htmlFor={`no units-${i.id}`}
+                  className="cursor-pointer text-xs"
+                >
+                  No Units
+                </label>
+              </div>
+            </>
           }
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
@@ -294,7 +384,7 @@ function IngredientsStage({
               </GeneralButton>
             </div>
           )}
-          optionOverviewComponents={
+          overviewComponents={
             <>
               {i.optional ? <span>optional</span> : null}
               {!isZeroLength(i.notes) ? <span>notes</span> : null}

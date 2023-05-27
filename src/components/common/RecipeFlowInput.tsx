@@ -21,9 +21,9 @@ interface RecipeFlowInputProps {
     setOptionMode,
     optionModes,
   }: OptionBarComponentProps) => ReactNode;
-  optionOverviewComponents: ReactNode;
-  optionalComponent: ReactNode;
-  inputComponents: (
+  overviewComponents: ReactNode;
+  auxiliaryComponents: ReactNode;
+  mainInputComponents: (
     isInputFocused: boolean,
     setIsInputFocused: Dispatch<SetStateAction<boolean>>,
   ) => ReactNode;
@@ -34,11 +34,11 @@ function RecipeFlowInput({
   id,
   index,
   optionModes,
-  optionalComponent,
-  inputComponents,
+  auxiliaryComponents,
+  mainInputComponents,
   optionBarComponent,
   optionInputComponents,
-  optionOverviewComponents,
+  overviewComponents,
 }: RecipeFlowInputProps) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [optionMode, setOptionMode] = useState<OptionMode | null>(null);
@@ -71,7 +71,7 @@ function RecipeFlowInput({
           row1col1={index + 1}
           row1col2={
             <>
-              {inputComponents(isInputFocused, setIsInputFocused)}
+              {mainInputComponents(isInputFocused, setIsInputFocused)}
               {isMouseIn || optionMode ? (
                 optionBarComponent({
                   optionMode,
@@ -83,7 +83,7 @@ function RecipeFlowInput({
                   key="2"
                   className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete fade-in"
                 >
-                  {optionOverviewComponents}
+                  {overviewComponents}
                 </div>
               )}
             </>
@@ -92,7 +92,7 @@ function RecipeFlowInput({
             optionMode !== null ? (
               <>
                 {optionButtons}
-                {optionalComponent}
+                {auxiliaryComponents}
               </>
             ) : null
           }

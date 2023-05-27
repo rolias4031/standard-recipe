@@ -1,4 +1,5 @@
 import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 import { DropResult } from '@hello-pangea/dnd';
 import { IngredientWithAllModName } from 'types/models';
 import { ErrorPayload } from 'types/types';
@@ -82,7 +83,7 @@ export function genIngredientUnit(): IngredientUnit {
 
 export function genIngredient(): IngredientWithAllModName {
   return {
-    id: genId(),
+    id: uuidv4(),
     recipeId: '',
     name: '',
     unit: genIngredientUnit(),

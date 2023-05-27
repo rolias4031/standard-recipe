@@ -12,10 +12,9 @@ datasource db {
 }
 
 // standard recipe models, in order of parent - child
-
 model Recipe {
   id           String        @id @default(cuid())
-  name         String        @unique
+  name         String
   description  String?       @db.VarChar(500)
   status       RecipeStatus  @default(draft)
   instructions Instruction[]
@@ -60,14 +59,14 @@ model Equipment {
 
 model Ingredient {
   id               String           @id @default(cuid())
-  quantity         Float
+  quantity         Float            @default(0)
   optional         Boolean          @default(false)
-  recipe           Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe           Recipe           @relation(fields: [recipeId], references: [id])
   recipeId         String
-  unit             IngredientUnit   @relation(fields: [ingredientUnitId], references: [id])
-  ingredientUnitId String
   name             IngredientName   @relation(fields: [ingredientNameId], references: [id])
   ingredientNameId String
+  unit             IngredientUnit?  @relation(fields: [ingredientUnitId], references: [id])
+  ingredientUnitId String?
   notes            String?          @db.VarChar(250)
   substitutes      IngredientName[] @relation("substitutes")
 }

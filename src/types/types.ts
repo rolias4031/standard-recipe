@@ -57,7 +57,11 @@ export interface AllUnitsQueryPayload extends BasePayload {
 
 export interface UpdateRecipeIngredientMutationBody {
   recipeId: Recipe['id'];
-  ingredient: IngredientWithAllModName;
+  ingredients: IngredientWithAllModName[];
+}
+
+export interface UpdateRecipeIngredientMutationPayload extends BasePayload {
+  ingredientIdPairs: { newId: string; oldId: string }[];
 }
 
 export interface NewDraftRecipeMutationInputs {

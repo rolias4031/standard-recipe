@@ -5,16 +5,43 @@ import { validateClientInputs } from 'lib/util';
 import { NextApiResponse } from 'next';
 import { newIngredientSchema } from 'validation/schemas';
 import {
-  BasePayload,
   ErrorPayload,
   UpdateRecipeIngredientMutationBody,
   StandardRecipeApiRequest,
+  UpdateRecipeIngredientMutationPayload,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
+import { IngredientWithAllModName } from 'types/models';
+
+/*
+    - this route creates/updates an array of ingredients and attaches it to recipe
+
+    - returns the old ingredient ids (from client) and new ingredient ids (from server) so that we can replace old with new. this needs to happen because inserting an ingredient doesn't sync client id and server id (can't use client id for db). So updating an ingredient after creating without refetching will create a duplicate, because client id gets sent again which db doesn't have. So, we send both back and replace with new in state.
+  */
+
+function connectUnit(ingredientUnit: IngredientWithAllModName['unit']) {
+  if (ingredientUnit) {
+    return {
+      connect: {
+        id: ingredientUnit.id,
+      },
+    };
+  }
+  return undefined;
+}
+
+function connectOrDisconnectUnit(
+  ingredientUnit: IngredientWithAllModName['unit'],
+) {
+  if (ingredientUnit) {
+    return connectUnit(ingredientUnit);
+  }
+  return { disconnect: true };
+}
 
 export default async function handler(
   req: StandardRecipeApiRequest<UpdateRecipeIngredientMutationBody>,
-  res: NextApiResponse<BasePayload | ErrorPayload>,
+  res: NextApiResponse<UpdateRecipeIngredientMutationPayload | ErrorPayload>,
 ) {
   const session = getAuth(req);
   if (!session || !session.userId) {
@@ -24,80 +51,116 @@ export default async function handler(
     });
   }
 
-  const { recipeId, ingredient } = req.body;
+  const { recipeId, ingredients } = req.body;
+  const ingredientIdPairs: UpdateRecipeIngredientMutationPayload['ingredientIdPairs'] =
+    [];
 
-  console.log('edit/ingredients', ingredient, recipeId);
+  console.log('edit/ingredients ingredients', ingredients, recipeId);
 
-  const success = validateClientInputs([
-    {
-      schema: newIngredientSchema,
-      inputs: ingredient,
-    },
-  ]);
+  for (const ingredient of ingredients) {
+    const success = validateClientInputs([
+      {
+        schema: newIngredientSchema,
+        inputs: ingredient,
+      },
+    ]);
+    if (!success) {
+      return res.status(400).json({
+        message: 'failure',
+        errors: [ERRORS.INVALID_INPUT],
+      });
+    }
 
-  console.log(!success);
-  if (!success) {
-    return res.status(400).json({
-      message: 'failure',
-      errors: [ERRORS.INVALID_INPUT],
+    // get existing substitutes
+    const ingredientWithSubs = await prisma.ingredient.findUnique({
+      where: {
+        id: ingredient.id,
+      },
+      include: {
+        substitutes: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
+
+    // subs to add
+    const connectOrCreateSubstitutes = ingredient.substitutes.map((s) => ({
+      where: { name: s },
+      create: { name: s },
+    }));
+
+    // subs to disconnect, existing minus to add
+    const disconnectSubstitutes = ingredientWithSubs?.substitutes
+      .filter((sub) => !ingredient.substitutes.includes(sub.name))
+      .map((s) => ({ name: s.name }));
+
+    // upsert object to be spread into create and update objects
+    const ingredientUpsertObject = {
+      name: {
+        connectOrCreate: {
+          where: {
+            name: ingredient.name,
+          },
+          create: {
+            name: ingredient.name,
+          },
+        },
+      },
+      quantity: ingredient.quantity,
+      notes: ingredient.notes,
+      optional: ingredient.optional,
+    };
+
+    // create object
+    const ingredientCreateObject: Prisma.IngredientCreateInput = {
+      ...ingredientUpsertObject,
+      unit: connectUnit(ingredient.unit),
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+      },
+      recipe: {
+        connect: {
+          id: recipeId,
+        },
+      },
+    };
+
+    // update object
+    const ingredientUpdateObject: Prisma.IngredientUpdateInput = {
+      ...ingredientUpsertObject,
+      unit: connectOrDisconnectUnit(ingredient.unit),
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+        disconnect: disconnectSubstitutes,
+      },
+    };
+
+    const newOrUpdatedIngredient = await prisma.ingredient.upsert({
+      where: {
+        id: ingredient.id,
+      },
+      update: ingredientUpdateObject,
+      create: ingredientCreateObject,
+      include: {
+        name: true,
+        unit: true,
+      },
+    });
+
+    ingredientIdPairs.push({
+      oldId: ingredient.id,
+      newId: newOrUpdatedIngredient.id,
+    });
+
+    console.log('edit/ingredient new ingredient', newOrUpdatedIngredient);
   }
 
-  // * overview
-  // this route needs to attach an ingredient to a recipe.
-  // this means you have to create an ingredient and connect it to the recipe.
-  // in creating the ingredient, you need to c/c the name, and connect the selected unit.
-  // * steps:
-  // check if ingredient exists. Do this by checking if id has CLIENT prepended. C/U
-  // check if name exists. C/U actually dont need, can just create or connect.
-
-  const ingredientCreateObject: Prisma.IngredientCreateInput = {
-    name: {
-      connectOrCreate: {
-        where: {
-          name: ingredient.name,
-        },
-        create: {
-          name: ingredient.name,
-        },
-      },
-    },
-    unit: {
-      connect: {
-        id: ingredient.unit.id,
-      },
-    },
-    substitutes: {
-      connectOrCreate: ingredient.substitutes.map((s) => ({
-        where: { name: s },
-        create: { name: s },
-      })),
-    },
-    quantity: ingredient.quantity,
-    notes: ingredient.notes,
-    optional: ingredient.optional,
-    recipe: {
-      connect: {
-        id: recipeId,
-      },
-    },
-  };
-
-  const ingredientUpdateObject: Prisma.IngredientUpdateInput = {
-    ...ingredientCreateObject,
-  };
-
-  const newOrUpdatedIngredient = await prisma.ingredient.upsert({
-    where: {
-      id: ingredient.id,
-    },
-    update: ingredientUpdateObject,
-    create: ingredientCreateObject,
-  });
-
-  console.log('edit/ingredient', newOrUpdatedIngredient);
+  // as you cycle through ingredients, track which didn't have matching ids. store these in an array of objs. can use these ids to erase from ingredientIdsToUpdate.
 
   return res.status(200).json({
     message: 'success',
+    ingredientIdPairs,
   });
 }

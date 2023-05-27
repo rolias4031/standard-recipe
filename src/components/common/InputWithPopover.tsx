@@ -33,7 +33,7 @@ function PopoverOption({
           raiseIsOpen(false);
         }
       }}
-      className="px-2 p-1 w-full text-left hover:bg-neutral-100 transition-colors"
+      className="w-full p-1 px-2 text-left transition-colors hover:bg-neutral-100"
     >
       {name}
     </button>
@@ -42,7 +42,7 @@ function PopoverOption({
 
 interface InputWithPopoverProps {
   name: string;
-  curValue: string;
+  curValue: string | null;
   onRaiseInput: ({ value, name }: RaiseInputArgs) => void;
   options: string[];
   styles: {
@@ -114,13 +114,14 @@ function InputWithPopover({
         onClick={() => {
           setIsOpen(true);
         }}
+        disabled={curValue === null}
       >
-        <span>{curValue === '' ? 'Select' : curValue}</span>
+        <span>{curValue ? curValue : 'Select'}</span>
       </button>
       {isOpen && buttonRef.current
         ? createPortal(
             <div
-              className="flex flex-col items-center border border-fern rounded-sm bg-white text-sm w-36 shadow-md shadow-concrete"
+              className="flex w-36 flex-col items-center rounded-sm border border-fern bg-white text-sm shadow-md shadow-concrete"
               style={{
                 position: 'absolute',
                 top:
@@ -142,7 +143,7 @@ function InputWithPopover({
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSearchText(e.target.value)
                   }
-                  className="w-full text-white px-1 bg-transparent appearance-none outline-none placeholder-white"
+                  className="w-full appearance-none bg-transparent px-1 text-white placeholder-white outline-none"
                 />
                 <button
                   name="clear"
@@ -155,7 +156,7 @@ function InputWithPopover({
                 </button>
               </div>
 
-              <div className="flex flex-col w-full items-center max-h-64 overflow-auto">
+              <div className="flex max-h-64 w-full flex-col items-center overflow-auto">
                 {content.length === 0 ? (
                   <PopoverOption name={'No Matches'} />
                 ) : (

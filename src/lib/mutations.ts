@@ -1,12 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
 import {
-  BasePayload,
   CustomError,
   ErrorPayload,
   MutateConfig,
   NewDraftRecipeMutationInputs,
   NewDraftRecipeMutationPayload,
   UpdateRecipeIngredientMutationBody,
+  UpdateRecipeIngredientMutationPayload,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
@@ -22,6 +22,7 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
     error.errors = result.errors;
     throw error;
   }
+  console.log('mutateWithBody', result);
   return result as K;
 }
 
@@ -40,8 +41,11 @@ export async function createNewDraftRecipeMutation(
 
 export async function updateRecipeIngredientMutation(
   body: UpdateRecipeIngredientMutationBody,
-): Promise<BasePayload> {
-  return mutateWithBody<UpdateRecipeIngredientMutationBody, BasePayload>({
+): Promise<UpdateRecipeIngredientMutationPayload> {
+  return mutateWithBody<
+    UpdateRecipeIngredientMutationBody,
+    UpdateRecipeIngredientMutationPayload
+  >({
     method: 'POST',
     apiRoute: 'api/recipe/update/ingredient',
     body,

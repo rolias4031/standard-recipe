@@ -21,8 +21,8 @@ export const unitSchema = z.object({
 
 export const newIngredientSchema = z.object({
   name: z.string().min(1).max(100),
-  quantity: z.number().gt(0),
-  unit: unitSchema,
+  quantity: z.number(),
+  unit: unitSchema.nullable(),
   optional: z.boolean(),
   notes: z.string().max(250).nullable(),
   substitutes: z.array(z.string()),

@@ -151,8 +151,9 @@ function initIngredients(
 ): IngredientWithAllModName[] {
   if (ingredients.length > 0) {
     const ingredientsWithFlatName = ingredients.map((i) => {
-      const flatSubs = i.substitutes.map((s) => s.name);
-      return { ...i, name: i.name.name, substitutes: flatSubs };
+      const substituteNames = i.substitutes.map((s) => s.name);
+      const name = i.name ? i.name.name : '';
+      return { ...i, name, substitutes: substituteNames };
     });
     return ingredientsWithFlatName;
   }
