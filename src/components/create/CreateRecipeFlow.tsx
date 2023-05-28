@@ -12,7 +12,7 @@ import {
 import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
   IngredientWithAll,
-  IngredientWithAllModName,
+  FlowIngredient,
   RecipeGeneralInfo,
   RecipeWithFull,
 } from 'types/models';
@@ -148,12 +148,14 @@ function FlowController({
 
 function initIngredients(
   ingredients: IngredientWithAll[],
-): IngredientWithAllModName[] {
+): FlowIngredient[] {
   if (ingredients.length > 0) {
     const ingredientsWithFlatName = ingredients.map((i) => {
       const substituteNames = i.substitutes.map((s) => s.name);
-      const name = i.name ? i.name.name : '';
-      return { ...i, name, substitutes: substituteNames };
+      const name = i.name.name;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { ingredientNameId, ingredientUnitId, ...keep } = i;
+      return { ...keep, name, substitutes: substituteNames };
     });
     return ingredientsWithFlatName;
   }
@@ -179,14 +181,14 @@ function initGeneralInfo(recipe: RecipeWithFull): RecipeGeneralInfo {
 }
 
 type StageDispatchFunction =
-  | Dispatch<SetStateAction<IngredientWithAllModName[]>>
+  | Dispatch<SetStateAction<FlowIngredient[]>>
   | Dispatch<SetStateAction<Equipment[]>>
   | Dispatch<SetStateAction<Instruction[]>>;
 interface StageConfig {
   component: ReactNode;
-  inputs?: IngredientWithAllModName[] | Equipment[] | Instruction[];
+  inputs?: FlowIngredient[] | Equipment[] | Instruction[];
   dispatch?: StageDispatchFunction;
-  genInput?: () => IngredientWithAllModName | Equipment | Instruction;
+  genInput?: () => FlowIngredient | Equipment | Instruction;
   schema?: BaseZodSchema;
   name: string;
   label: string;
@@ -201,7 +203,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   // state
   const [stage, setStage] = useState<number>(1);
 
-  const [ingredients, setIngredients] = useState<IngredientWithAllModName[]>(
+  const [ingredients, setIngredients] = useState<FlowIngredient[]>(
     () => initIngredients(recipe.ingredients),
   );
   const [equipment, setEquipment] = useState<Equipment[]>(() =>

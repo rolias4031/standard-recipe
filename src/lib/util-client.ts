@@ -1,11 +1,11 @@
 import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { DropResult } from '@hello-pangea/dnd';
-import { IngredientWithAllModName } from 'types/models';
+import { FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
 function sortTagsInDescending(
-  tags: Array<IngredientWithAllModName | Equipment>,
+  tags: Array<FlowIngredient | Equipment>,
 ) {
   return tags.sort((a, b) => {
     const aWords = a.name.split(' ').length;
@@ -17,8 +17,8 @@ function sortTagsInDescending(
 
 export function parseInstructionForTags(
   description: string,
-  tags: Array<IngredientWithAllModName | Equipment>,
-): Array<string | IngredientWithAllModName | Equipment> {
+  tags: Array<FlowIngredient | Equipment>,
+): Array<string | FlowIngredient | Equipment> {
   // sort tags by number of words in name
   const sortedTags = sortTagsInDescending(tags);
   // create a hashmap for quick lookup
@@ -81,15 +81,13 @@ export function genIngredientUnit(): IngredientUnit {
   };
 }
 
-export function genIngredient(): IngredientWithAllModName {
+export function genIngredient(): FlowIngredient {
   return {
     id: uuidv4(),
     recipeId: '',
     name: '',
     unit: genIngredientUnit(),
-    ingredientNameId: '',
     quantity: 0,
-    ingredientUnitId: '',
     substitutes: [],
     optional: false,
     notes: '',
@@ -98,7 +96,7 @@ export function genIngredient(): IngredientWithAllModName {
 
 export function genEquipment(): Equipment {
   return {
-    id: genId(),
+    id: uuidv4(),
     name: '',
     optional: false,
     notes: '',
@@ -108,7 +106,7 @@ export function genEquipment(): Equipment {
 
 export function genInstruction(): Instruction {
   return {
-    id: genId(),
+    id: uuidv4(),
     description: '',
     order: 0,
     optional: false,

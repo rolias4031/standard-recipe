@@ -1,11 +1,11 @@
 import React from 'react';
-import { IngredientWithAllModName } from 'types/models';
+import { FlowIngredient } from 'types/models';
 import TooltipCard from './TooltipCard';
 
 export default function IngredientTooltip({
   ingredient,
 }: {
-  ingredient: IngredientWithAllModName;
+  ingredient: FlowIngredient;
 }) {
   const { quantity, notes, substitutes, optional } = ingredient;
   const { unit } = ingredient.unit;

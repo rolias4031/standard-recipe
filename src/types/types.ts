@@ -1,11 +1,7 @@
 import { NextApiRequest } from 'next';
 import { z } from 'zod';
 import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
-import {
-  IngredientWithAllModName,
-  RecipeWithAll,
-  RecipeWithFull,
-} from './models';
+import { FlowIngredient, RecipeWithAll, RecipeWithFull } from './models';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -55,9 +51,13 @@ export interface AllUnitsQueryPayload extends BasePayload {
   units: IngredientUnit[];
 }
 
+export interface DeleteIngredientMutationBody {
+  id: string;
+}
+
 export interface UpdateRecipeIngredientMutationBody {
   recipeId: Recipe['id'];
-  ingredients: IngredientWithAllModName[];
+  ingredients: FlowIngredient[];
 }
 
 export interface UpdateRecipeIngredientMutationPayload extends BasePayload {

@@ -45,17 +45,17 @@ export type RecipeWithFull = RecipeWithAll & {
 
 // * derived and shallower and custom types
 
-export interface IngredientWithAllModName
-  extends Omit<IngredientWithAll, 'name' | 'substitutes'> {
+export interface FlowIngredient
+  extends Omit<IngredientWithAll, 'name' | 'substitutes' | 'ingredientNameId' | 'ingredientUnitId'> {
   name: string;
   substitutes: string[];
 }
 
 // * typeguard functions is<Type>Type
 
-export function isIngredientWithAllModNameType(
+export function isFlowIngredientType(
   obj: any,
-): obj is IngredientWithAllModName {
+): obj is FlowIngredient {
   return 'unit' in obj && typeof obj.name === 'string';
 }
 

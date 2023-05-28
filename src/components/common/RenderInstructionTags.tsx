@@ -2,15 +2,15 @@ import { Equipment } from '@prisma/client';
 import { parseInstructionForTags } from 'lib/util-client';
 import React, { ReactNode } from 'react';
 import {
-  IngredientWithAllModName,
+  FlowIngredient,
   isEquipmentType,
-  isIngredientWithAllModNameType,
+  isFlowIngredientType,
 } from 'types/models';
 
 interface RenderInstructionTags {
   description: string;
-  tags: Array<IngredientWithAllModName | Equipment>;
-  ingredientTagComponent: (ingredient: IngredientWithAllModName) => ReactNode;
+  tags: Array<FlowIngredient | Equipment>;
+  ingredientTagComponent: (ingredient: FlowIngredient) => ReactNode;
   equipmentTagComponent: (equipment: Equipment) => ReactNode;
 }
 
@@ -25,7 +25,7 @@ function RenderInstructionTags({
     <div>
       {parsedDescriptionArray.map((segment) => {
         if (typeof segment === 'string') return segment;
-        if (isIngredientWithAllModNameType(segment)) {
+        if (isFlowIngredientType(segment)) {
           return ingredientTagComponent(segment);
         }
         if (isEquipmentType(segment)) {

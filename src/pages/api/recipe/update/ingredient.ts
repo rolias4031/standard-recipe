@@ -11,7 +11,7 @@ import {
   UpdateRecipeIngredientMutationPayload,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
-import { IngredientWithAllModName } from 'types/models';
+import { FlowIngredient } from 'types/models';
 
 /*
     - this route creates/updates an array of ingredients and attaches it to recipe
@@ -19,7 +19,7 @@ import { IngredientWithAllModName } from 'types/models';
     - returns the old ingredient ids (from client) and new ingredient ids (from server) so that we can replace old with new. this needs to happen because inserting an ingredient doesn't sync client id and server id (can't use client id for db). So updating an ingredient after creating without refetching will create a duplicate, because client id gets sent again which db doesn't have. So, we send both back and replace with new in state.
   */
 
-function connectUnit(ingredientUnit: IngredientWithAllModName['unit']) {
+function connectUnit(ingredientUnit: FlowIngredient['unit']) {
   if (ingredientUnit) {
     return {
       connect: {
@@ -31,7 +31,7 @@ function connectUnit(ingredientUnit: IngredientWithAllModName['unit']) {
 }
 
 function connectOrDisconnectUnit(
-  ingredientUnit: IngredientWithAllModName['unit'],
+  ingredientUnit: FlowIngredient['unit'],
 ) {
   if (ingredientUnit) {
     return connectUnit(ingredientUnit);

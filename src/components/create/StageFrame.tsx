@@ -8,6 +8,7 @@ interface StageFrameProps {
   children?: ReactNode;
   droppableId: string;
   onDragEnd: (result: DropResult) => void;
+  mutationStatus: string
 }
 
 function StageFrame({
@@ -16,10 +17,12 @@ function StageFrame({
   stageInputLabels,
   droppableId,
   onDragEnd,
+  mutationStatus,
 }: StageFrameProps) {
   return (
     <StageFrameCard>
       {children}
+      <div>{mutationStatus}</div>
       <div className="flex flex-col border-y space-y-1 px-5 py-10">
         <FlowInputFrame row1col2={stageInputLabels} />
         <DragDropContext onDragEnd={onDragEnd}>

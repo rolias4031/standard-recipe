@@ -23,7 +23,7 @@ import { GeneralButton } from 'pirate-ui';
 import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
-import { IngredientWithAllModName } from 'types/models';
+import { FlowIngredient } from 'types/models';
 import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import RenderInstructionTags from 'components/common/RenderInstructionTags';
 import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
@@ -58,7 +58,7 @@ function CurrentIngredientsPanel({
   ingredients,
   instructionString,
 }: {
-  ingredients: IngredientWithAllModName[];
+  ingredients: FlowIngredient[];
   instructionString: string;
 }) {
   if (isZeroLength(ingredients)) {
@@ -118,7 +118,7 @@ function CurrentEquipmentPanel({
 
 interface InstructionsStageProps {
   instructions: Instruction[];
-  ingredients: IngredientWithAllModName[];
+  ingredients: FlowIngredient[];
   equipment: Equipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
 }

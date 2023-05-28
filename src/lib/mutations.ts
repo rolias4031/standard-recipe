@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import {
+  BasePayload,
   CustomError,
+  DeleteIngredientMutationBody,
   ErrorPayload,
   MutateConfig,
   NewDraftRecipeMutationInputs,
@@ -51,6 +53,19 @@ export async function updateRecipeIngredientMutation(
     body,
   });
 }
+
+export async function deleteIngredientMutation(
+  body: DeleteIngredientMutationBody,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody<
+    DeleteIngredientMutationBody,
+    BasePayload | ErrorPayload
+  >({ method: 'POST', apiRoute: 'api/ingredient/delete', body });
+}
+
+export const useDeleteIngredient = () => {
+  return useMutation({ mutationFn: deleteIngredientMutation });
+};
 
 export const useCreateNewDraftRecipe = () => {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });

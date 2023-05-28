@@ -20,7 +20,7 @@ import { DropResult } from '@hello-pangea/dnd';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { GeneralButton } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
-import { IngredientWithAllModName } from 'types/models';
+import { FlowIngredient } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import AddSubstitutes from './AddSubstitutes';
@@ -29,13 +29,13 @@ import OptionalInput from 'components/common/OptionalInput';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
-import { useUpdateRecipeIngredient } from 'lib/mutations';
+import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
 import { newIngredientSchema } from 'validation/schemas';
 
 interface IngredientStageProps {
   recipeId: string;
-  ingredients: IngredientWithAllModName[];
-  raiseIngredients: Dispatch<SetStateAction<IngredientWithAllModName[]>>;
+  ingredients: FlowIngredient[];
+  raiseIngredients: Dispatch<SetStateAction<FlowIngredient[]>>;
   allUnits: IngredientUnit[];
 }
 
@@ -46,7 +46,10 @@ function IngredientsStage({
   allUnits,
 }: IngredientStageProps) {
   const client = useQueryClient();
-  const { mutate: updateIngredient, status } = useUpdateRecipeIngredient();
+  const { mutate: updateIngredient, status: updateStatus } =
+    useUpdateRecipeIngredient();
+  const { mutate: deleteIngredient, status: deleteStatus } =
+    useDeleteIngredient();
   const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
     [],
   );
@@ -75,7 +78,7 @@ function IngredientsStage({
   }, [ingredients]);
 
   function replaceIngredientIds(idPairs: { newId: string; oldId: string }[]) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       let prevIng = [...prev];
       idPairs.forEach((pair) => {
         console.log('replace ids', pair);
@@ -88,7 +91,7 @@ function IngredientsStage({
         prevIng = insertIntoPrevArray(
           prevIng,
           index,
-          ingredientWithNewId as IngredientWithAllModName,
+          ingredientWithNewId as FlowIngredient,
         );
         console.log(prevIng);
       });
@@ -96,7 +99,7 @@ function IngredientsStage({
     });
   }
 
-  function filterValidIngredients(ingredients: IngredientWithAllModName[]) {
+  function filterValidIngredients(ingredients: FlowIngredient[]) {
     const validIngredients = [];
     for (const i of ingredients) {
       const valid = newIngredientSchema.safeParse(i);
@@ -108,7 +111,7 @@ function IngredientsStage({
   }
 
   const debouncedUpdateValidIngredients = useCallback(
-    debounce((ingredients: IngredientWithAllModName[]) => {
+    debounce((ingredients: FlowIngredient[]) => {
       console.log('other', ingredients);
       if (isZeroLength(ingredients)) return;
       const validIngredients = filterValidIngredients(ingredients);
@@ -132,15 +135,17 @@ function IngredientsStage({
   );
 
   function removeIngredientHandler(id: string) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       if (prev.length === 1) return [genIngredient()];
       const newIngredients = prev.filter((i) => i.id !== id);
       return newIngredients;
     });
+    // mutate
+    deleteIngredient({ id });
   }
 
   function addSubsHandler(newSub: string, id: string) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const prevSubs = prev[index]?.substitutes;
@@ -154,7 +159,7 @@ function IngredientsStage({
       const newIngredientArray = insertIntoPrevArray(
         prev,
         index,
-        updatedIngredient as IngredientWithAllModName,
+        updatedIngredient as FlowIngredient,
       );
       return newIngredientArray;
     });
@@ -162,7 +167,7 @@ function IngredientsStage({
   }
 
   function removeSubHandler(subToRemove: string, id: string) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const prevSubs = prev[index]?.substitutes;
@@ -175,7 +180,7 @@ function IngredientsStage({
       const newIngredientArray = insertIntoPrevArray(
         prev,
         index,
-        updatedIngredient as IngredientWithAllModName,
+        updatedIngredient as FlowIngredient,
       );
       return newIngredientArray;
     });
@@ -187,7 +192,7 @@ function IngredientsStage({
     name,
     value,
   }: UpdateRecipeInputHandlerArgs) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const updatedIngredient = {
@@ -197,7 +202,7 @@ function IngredientsStage({
       return insertIntoPrevArray(
         prev,
         index,
-        updatedIngredient as IngredientWithAllModName,
+        updatedIngredient as FlowIngredient,
       );
     });
     pushIdToUpdateList(id);
@@ -210,7 +215,7 @@ function IngredientsStage({
     id: string;
     unitInput: string | null;
   }) {
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const newUnits =
@@ -224,7 +229,7 @@ function IngredientsStage({
       return insertIntoPrevArray(
         prev,
         index,
-        updatedIngredient as IngredientWithAllModName,
+        updatedIngredient as FlowIngredient,
       );
     });
     pushIdToUpdateList(id);
@@ -240,7 +245,7 @@ function IngredientsStage({
 
   function dragEndHandler(result: DropResult) {
     if (!result.destination) return;
-    raiseIngredients((prev: IngredientWithAllModName[]) => {
+    raiseIngredients((prev: FlowIngredient[]) => {
       return reorderDraggableInputs(result, prev);
     });
   }
@@ -256,6 +261,7 @@ function IngredientsStage({
           <div className="col-start-3 w-36 font-mono text-sm">Unit</div>
         </>
       }
+      mutationStatus={updateStatus}
       stageInputComponents={ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
@@ -290,7 +296,7 @@ function IngredientsStage({
                     value: cleanQuantityInput(e.target.value),
                   })
                 }
-                className="inp-reg inp-primary w-36 disabled:bg-concrete disabled:text-concrete"
+                className="inp-reg inp-primary w-36 disabled:text-concrete"
                 disabled={!i.unit}
               />
               <InputWithPopover
@@ -305,7 +311,7 @@ function IngredientsStage({
                 }}
                 styles={{
                   button: {
-                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex disabled:bg-concrete disabled:text-concrete',
+                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex disabled:text-concrete',
                     isToggled: ['bg-fern text-white', 'bg-smoke'],
                   },
                 }}
