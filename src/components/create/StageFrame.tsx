@@ -1,6 +1,7 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import FlowInputFrame from './FlowInputFrame';
+import LoadingSpinner from 'components/common/LoadingSpinner';
 
 interface StageFrameProps {
   stageInputLabels: ReactNode;
@@ -8,7 +9,7 @@ interface StageFrameProps {
   children?: ReactNode;
   droppableId: string;
   onDragEnd: (result: DropResult) => void;
-  mutationStatus: string
+  mutationStatus: string;
 }
 
 function StageFrame({
@@ -22,8 +23,10 @@ function StageFrame({
   return (
     <StageFrameCard>
       {children}
-      <div>{mutationStatus}</div>
-      <div className="flex flex-col border-y space-y-1 px-5 py-10">
+      <div className="ml-auto py-1">
+        <InlineStatusDisplay status={mutationStatus} />
+      </div>
+      <div className="flex flex-col space-y-1 border-y px-5 py-10">
         <FlowInputFrame row1col2={stageInputLabels} />
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId={droppableId}>
@@ -46,10 +49,22 @@ function StageFrame({
 
 export function StageFrameCard({ children }: { children: ReactNode }) {
   return (
-    <section className="flex flex-col pt-10 pb-3 space-y-5 h-full">
-      {children}
-    </section>
+    <section className="flex h-full flex-col pt-10 pb-3">{children}</section>
   );
+}
+
+export function InlineStatusDisplay({ status }: { status: string }) {
+  const statusDisplayConfig = useMemo(
+    () =>
+      new Map<string, ReactNode>([
+        ['loading', <span className='text-fade-in' key="1">autosaving</span>],
+        ['success', <span key="2">saved</span>],
+        ['error', <span key="2">error</span>],
+        ['idle', null],
+      ]),
+    [],
+  );
+  return <div className='text-concrete text-xs'>{statusDisplayConfig.get(status)}</div>;
 }
 
 export default StageFrame;

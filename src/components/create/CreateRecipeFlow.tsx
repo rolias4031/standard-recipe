@@ -95,9 +95,6 @@ function FlowController({
         </div>
         <div className="flex items-center space-x-4">
           <button className="text-xs">tips</button>
-          <button className="btn-reg btn-primary" onClick={onSave}>
-            Save
-          </button>
         </div>
       </div>
       {children}
@@ -146,9 +143,7 @@ function FlowController({
   );
 }
 
-function initIngredients(
-  ingredients: IngredientWithAll[],
-): FlowIngredient[] {
+function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
   if (ingredients.length > 0) {
     const ingredientsWithFlatName = ingredients.map((i) => {
       const substituteNames = i.substitutes.map((s) => s.name);
@@ -203,8 +198,8 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   // state
   const [stage, setStage] = useState<number>(1);
 
-  const [ingredients, setIngredients] = useState<FlowIngredient[]>(
-    () => initIngredients(recipe.ingredients),
+  const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
+    initIngredients(recipe.ingredients),
   );
   const [equipment, setEquipment] = useState<Equipment[]>(() =>
     initEquipment(recipe.equipment),

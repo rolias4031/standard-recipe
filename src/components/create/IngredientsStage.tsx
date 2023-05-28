@@ -50,6 +50,7 @@ function IngredientsStage({
     useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
+  const [aggregateStatus, setAggregateStatus] = useState('idle');
   const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
     [],
   );
@@ -130,7 +131,7 @@ function IngredientsStage({
           },
         },
       );
-    }, 4000),
+    }, 2500),
     [],
   );
 
