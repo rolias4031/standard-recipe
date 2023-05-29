@@ -1,5 +1,5 @@
 import { getAuth } from '@clerk/nextjs/server';
-import prisma from 'lib/prismadb';
+import { prisma } from 'lib/prismadb';
 import { ERRORS } from 'lib/constants';
 import { validateClientInputs } from 'lib/util';
 import { NextApiResponse } from 'next';
@@ -30,9 +30,7 @@ function connectUnit(ingredientUnit: FlowIngredient['unit']) {
   return undefined;
 }
 
-function connectOrDisconnectUnit(
-  ingredientUnit: FlowIngredient['unit'],
-) {
+function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
   if (ingredientUnit) {
     return connectUnit(ingredientUnit);
   }

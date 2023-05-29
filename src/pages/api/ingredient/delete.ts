@@ -1,5 +1,5 @@
 import { getAuth } from '@clerk/nextjs/server';
-import prisma from 'lib/prismadb';
+import { prisma } from 'lib/prismadb';
 import { ERRORS } from 'lib/constants';
 import { NextApiResponse } from 'next';
 import {

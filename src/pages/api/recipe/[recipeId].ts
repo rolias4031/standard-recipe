@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from 'lib/prismadb';
+import { prisma } from 'lib/prismadb';
 import { ErrorPayload, RecipeQueryPayload } from 'types/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';
@@ -16,19 +16,19 @@ export default async function handler(
     });
   }
 
-  const { recipeId } = req.query
-  console.log(recipeId)
+  const { recipeId } = req.query;
+  console.log(recipeId);
 
   if (!recipeId || Array.isArray(recipeId)) {
     return res.status(500).json({
       message: 'failure',
-      errors: ['Missing or invalid recipeId']
-    })
+      errors: ['Missing or invalid recipeId'],
+    });
   }
 
   const recipe = await prisma.recipe.findUnique({
     where: {
-      id: recipeId
+      id: recipeId,
     },
     include: {
       ingredients: {
@@ -36,24 +36,24 @@ export default async function handler(
           name: true,
           unit: true,
           substitutes: true,
-        }
+        },
       },
       equipment: true,
       instructions: true,
-    }
-  })
+    },
+  });
 
-  console.log(recipe)
+  console.log(recipe);
 
   if (!recipe) {
     return res.status(400).json({
       message: 'failure',
-      errors: [ERRORS.NOT_FOUND('Recipe')]
-    })
+      errors: [ERRORS.NOT_FOUND('Recipe')],
+    });
   }
 
   return res.status(200).json({
     message: 'success',
-    recipe
+    recipe,
   });
 }

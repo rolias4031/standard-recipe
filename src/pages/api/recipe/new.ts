@@ -7,7 +7,7 @@ import {
   StandardRecipeApiRequest,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
-import prisma from 'lib/prismadb';
+import { prisma } from 'lib/prismadb';
 import { newDraftRecipeSchema } from 'validation/schemas';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';

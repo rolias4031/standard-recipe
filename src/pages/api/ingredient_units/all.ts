@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from 'lib/prismadb';
+import { prisma } from 'lib/prismadb';
 import { AllUnitsQueryPayload, ErrorPayload } from 'types/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';

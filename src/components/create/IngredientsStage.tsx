@@ -131,7 +131,7 @@ function IngredientsStage({
           },
         },
       );
-    }, 2500),
+    }, 3000),
     [],
   );
 
