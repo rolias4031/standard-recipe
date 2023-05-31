@@ -29,7 +29,6 @@ import InstructionsStage from './InstructionsStage';
 
 interface FlowControllerProps {
   children: ReactNode;
-  onSave: () => void;
   stage: number;
   setStage: Dispatch<SetStateAction<number>>;
   recipeName: string;
@@ -38,12 +37,12 @@ interface FlowControllerProps {
 
 function FlowController({
   children,
-  onSave,
   setStage,
   stage,
   recipeName,
   stageConfig,
 }: FlowControllerProps) {
+
   const [isError, setIsError] = useState<boolean>(false);
   function nextStageHandler() {
     const curInputs = stageConfig?.inputs;
@@ -179,6 +178,7 @@ type StageDispatchFunction =
   | Dispatch<SetStateAction<FlowIngredient[]>>
   | Dispatch<SetStateAction<Equipment[]>>
   | Dispatch<SetStateAction<Instruction[]>>;
+
 interface StageConfig {
   component: ReactNode;
   inputs?: FlowIngredient[] | Equipment[] | Instruction[];
@@ -210,7 +210,6 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [generalInfo, setGeneralInfo] = useState<RecipeGeneralInfo>(() =>
     initGeneralInfo(recipe),
   );
-  // mutations
 
   const stageConfig = new Map<number, StageConfig>([
     [
@@ -283,7 +282,6 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   return (
     <>
       <FlowController
-        onSave={() => {}}
         recipeName={recipe.name}
         stageConfig={stageConfig.get(stage)}
         setStage={setStage}

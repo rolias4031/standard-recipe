@@ -32,6 +32,25 @@ import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
 import { newIngredientSchema } from 'validation/schemas';
 
+function cleanNameInput(value: string) {
+  return value.toLowerCase();
+}
+
+function cleanQuantityInput(value: string) {
+  return value ? parseFloat(value) : '';
+}
+
+function filterValidIngredients(ingredients: FlowIngredient[]) {
+  const validIngredients = [];
+  for (const i of ingredients) {
+    const valid = newIngredientSchema.safeParse(i);
+    if (valid.success) {
+      validIngredients.push(i);
+    }
+  }
+  return validIngredients;
+}
+
 interface IngredientStageProps {
   recipeId: string;
   ingredients: FlowIngredient[];
@@ -52,10 +71,6 @@ function IngredientsStage({
   const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
     [],
   );
-
-  console.log(ingredients);
-
-  console.log('ingredientIdsToUpdate', ingredientIdsToUpdate);
 
   function pushIdToUpdateList(id: string) {
     setIngredientIdsToUpdate((prev: string[]) => {
@@ -80,12 +95,9 @@ function IngredientsStage({
     raiseIngredients((prev: FlowIngredient[]) => {
       let prevIng = [...prev];
       idPairs.forEach((pair) => {
-        console.log('replace ids', pair);
         if (pair.newId === pair.oldId) return;
-        console.log('diff');
         const index = findRecipeInputIndexById(prevIng, pair.oldId);
         if (index === -1) return;
-        console.log('found', index);
         const ingredientWithNewId = { ...prevIng[index], id: pair.newId };
         prevIng = insertIntoPrevArray(
           prevIng,
@@ -96,17 +108,6 @@ function IngredientsStage({
       });
       return prevIng;
     });
-  }
-
-  function filterValidIngredients(ingredients: FlowIngredient[]) {
-    const validIngredients = [];
-    for (const i of ingredients) {
-      const valid = newIngredientSchema.safeParse(i);
-      if (valid.success) {
-        validIngredients.push(i);
-      }
-    }
-    return validIngredients;
   }
 
   const debouncedUpdateValidIngredients = useCallback(
@@ -121,10 +122,7 @@ function IngredientsStage({
         { recipeId, ingredients },
         {
           onSuccess: (data) => {
-            // clear updated ids.
             setIngredientIdsToUpdate([]);
-            // swap ids
-            console.log(data.ingredientIdPairs);
             replaceIngredientIds(data.ingredientIdPairs);
           },
         },
@@ -233,14 +231,6 @@ function IngredientsStage({
       );
     });
     pushIdToUpdateList(id);
-  }
-
-  function cleanNameInput(value: string) {
-    return value.toLowerCase();
-  }
-
-  function cleanQuantityInput(value: string) {
-    return value ? parseFloat(value) : '';
   }
 
   function dragEndHandler(result: DropResult) {

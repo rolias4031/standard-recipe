@@ -8,8 +8,6 @@ import {
 import { RaiseInputArgs } from 'pirate-ui';
 import { ZodError } from 'zod';
 
-
-
 export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
   type ValidationKeys = 'name';
 
