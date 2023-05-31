@@ -4,9 +4,7 @@ import { DropResult } from '@hello-pangea/dnd';
 import { FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
-function sortTagsInDescending(
-  tags: Array<FlowIngredient | Equipment>,
-) {
+function sortTagsInDescending(tags: Array<FlowIngredient | Equipment>) {
   return tags.sort((a, b) => {
     const aWords = a.name.split(' ').length;
     const bWords = b.name.split(' ').length;
@@ -71,6 +69,14 @@ export function isZeroLength(val: string | any[] | null) {
   return val ? val.length === 0 : true;
 }
 
+export function genId() {
+  return 'CLIENT-' + uuidv4();
+}
+
+export function isClientId(id: string) {
+  return id.startsWith('CLIENT-');
+}
+
 export function genIngredientUnit(): IngredientUnit {
   return {
     id: '',
@@ -83,7 +89,7 @@ export function genIngredientUnit(): IngredientUnit {
 
 export function genIngredient(): FlowIngredient {
   return {
-    id: uuidv4(),
+    id: genId(),
     recipeId: '',
     name: '',
     unit: genIngredientUnit(),
@@ -96,7 +102,7 @@ export function genIngredient(): FlowIngredient {
 
 export function genEquipment(): Equipment {
   return {
-    id: uuidv4(),
+    id: genId(),
     name: '',
     optional: false,
     notes: '',
@@ -106,7 +112,7 @@ export function genEquipment(): Equipment {
 
 export function genInstruction(): Instruction {
   return {
-    id: uuidv4(),
+    id: genId(),
     description: '',
     order: 0,
     optional: false,
@@ -135,10 +141,6 @@ export function createApiUrl(route: string): string {
 
 export function isErrorPayload(obj: any): obj is ErrorPayload {
   return obj && typeof obj.message === 'string' && Array.isArray(obj.errors);
-}
-
-export function genId() {
-  return 'CLIENT' + Math.random().toString().slice(1);
 }
 
 type InputArray = [boolean, string, string?];

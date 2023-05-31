@@ -57,14 +57,28 @@ export function InlineStatusDisplay({ status }: { status: string }) {
   const statusDisplayConfig = useMemo(
     () =>
       new Map<string, ReactNode>([
-        ['loading', <span className='text-fade-in' key="1">autosaving</span>],
+        [
+          'loading',
+          <span className="text-fade-in" key="1">
+            autosaving
+          </span>,
+        ],
         ['success', <span key="2">saved</span>],
-        ['error', <span key="2">error</span>],
-        ['idle', null],
+        ['error', <span key="3">error</span>],
+        [
+          'idle',
+          <span className="opacity-0" key="4">
+            null
+          </span>,
+        ],
       ]),
     [],
   );
-  return <div className='text-concrete text-xs'>{statusDisplayConfig.get(status)}</div>;
+  return (
+    <div className="text-xs text-concrete">
+      {statusDisplayConfig.get(status)}
+    </div>
+  );
 }
 
 export default StageFrame;

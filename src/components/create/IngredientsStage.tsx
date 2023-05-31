@@ -5,13 +5,13 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import debounce from 'lodash.debounce';
 import {
   findRecipeInputIndexById,
   genIngredient,
   genIngredientUnit,
   insertIntoPrevArray,
+  isClientId,
   isZeroLength,
   pickStyles,
   reorderDraggableInputs,
@@ -45,12 +45,10 @@ function IngredientsStage({
   raiseIngredients,
   allUnits,
 }: IngredientStageProps) {
-  const client = useQueryClient();
   const { mutate: updateIngredient, status: updateStatus } =
     useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
-  const [aggregateStatus, setAggregateStatus] = useState('idle');
   const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
     [],
   );
@@ -142,6 +140,7 @@ function IngredientsStage({
       return newIngredients;
     });
     // mutate
+    if (isClientId(id)) return;
     deleteIngredient({ id });
   }
 

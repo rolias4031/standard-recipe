@@ -63,10 +63,7 @@ export default async function handler(
       },
     ]);
     if (!success) {
-      return res.status(400).json({
-        message: 'failure',
-        errors: [ERRORS.INVALID_INPUT],
-      });
+      continue;
     }
 
     // get existing substitutes
