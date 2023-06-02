@@ -9,36 +9,69 @@ import {
   pickStyles,
   reorderDraggableInputs,
 } from 'lib/util-client';
-import { GeneralButton, TextInput } from 'pirate-ui';
+import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
-import { Equipment } from '@prisma/client';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
+import { useUpdateRecipeEquipment } from 'lib/mutations';
+import { newEquipmentSchema } from 'validation/schemas';
+import {
+  useDebouncedAutosave,
+} from './utils';
+import { FlowEquipment } from 'types/models';
 
-interface EquipmentStageProps {
-  equipment: Equipment[];
-  raiseEquipment: Dispatch<SetStateAction<Equipment[]>>;
+function cleanEquipmentInput(value: string) {
+  return value.toLowerCase();
 }
 
-function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
-  function cleanEquipmentInput(value: string) {
-    return value.toLowerCase();
-  }
+export function dragEndHandler<T extends { id: string }>(
+  result: DropResult,
+  dispatchInputs: Dispatch<SetStateAction<T[]>>,
+) {
+  if (!result.destination) return;
+  dispatchInputs((prev: T[]) => {
+    return reorderDraggableInputs(result, prev);
+  });
+}
+
+interface EquipmentStageProps {
+  equipment: FlowEquipment[];
+  raiseEquipment: Dispatch<SetStateAction<FlowEquipment[]>>;
+  recipeId: string;
+}
+
+function EquipmentStage({
+  equipment,
+  raiseEquipment,
+  recipeId,
+}: EquipmentStageProps) {
+  const { mutate: updateEquipment, status: updateStatus } =
+    useUpdateRecipeEquipment();
+
+  const { pushIdToUpdateList } = useDebouncedAutosave({
+    recipeId,
+    inputs: equipment,
+    dispatchInputs: raiseEquipment,
+    schema: newEquipmentSchema,
+    updateInputsMutation: updateEquipment,
+  });
+
   function removeEquipmentHandler(id: string) {
-    raiseEquipment((prev: Equipment[]) => {
+    raiseEquipment((prev: FlowEquipment[]) => {
       if (prev.length === 1) return [genEquipment()];
       return prev.filter((i) => i.id !== id);
     });
   }
+
   function updateEquipmentHandler({
     id,
     name,
     value,
   }: UpdateRecipeInputHandlerArgs) {
-    raiseEquipment((prev: Equipment[]) => {
+    raiseEquipment((prev: FlowEquipment[]) => {
       const index = findRecipeInputIndexById(prev, id);
       if (index === -1) return prev;
       const updatedEquipment = {
@@ -50,25 +83,20 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
         index,
         updatedEquipment,
       );
-      return newIngredientsArray as Equipment[];
+      return newIngredientsArray as FlowEquipment[];
     });
-  }
-
-  function dragEndHandler(result: DropResult) {
-    if (!result.destination) return;
-    raiseEquipment((prev: Equipment[]) => {
-      return reorderDraggableInputs(result, prev);
-    });
+    pushIdToUpdateList(id);
   }
 
   return (
     <StageFrame
       stageInputLabels={
         <>
-          <div className="font-mono text-sm w-full">Equipment</div>
+          <div className="w-full font-mono text-sm">Equipment</div>
         </>
       }
-      onDragEnd={dragEndHandler}
+      mutationStatus={updateStatus}
+      onDragEnd={(result) => dragEndHandler(result, raiseEquipment)}
       droppableId="equipment"
       stageInputComponents={equipment.map((e, index) => (
         <RecipeFlowInput
@@ -76,7 +104,7 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
           id={e.id}
           index={index}
           optionModes={['notes']}
-          inputComponents={() => (
+          mainInputComponents={() => (
             <input
               type="text"
               name="name"
@@ -92,7 +120,7 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
               autoComplete="off"
             />
           )}
-          optionalComponent={
+          auxiliaryComponents={
             <OptionalInput
               id={e.id}
               curIsOptional={e.optional}
@@ -102,7 +130,7 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="flex flex-grow justify-between items-center fade-in"
+              className="fade-in flex flex-grow items-center justify-between"
             >
               <div className="flex items-center space-x-2">
                 <GeneralButton
@@ -135,7 +163,7 @@ function EquipmentStage({ equipment, raiseEquipment }: EquipmentStageProps) {
               </GeneralButton>
             </div>
           )}
-          optionOverviewComponents={
+          overviewComponents={
             <>
               {e.optional ? <span>optional</span> : null}
               {!isZeroLength(e.notes) ? <span>notes</span> : null}

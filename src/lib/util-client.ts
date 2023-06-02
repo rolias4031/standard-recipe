@@ -1,10 +1,10 @@
 import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { DropResult } from '@hello-pangea/dnd';
-import { FlowIngredient } from 'types/models';
+import { FlowEquipment, FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
-function sortTagsInDescending(tags: Array<FlowIngredient | Equipment>) {
+function sortTagsInDescending(tags: Array<FlowIngredient | FlowEquipment>) {
   return tags.sort((a, b) => {
     const aWords = a.name.split(' ').length;
     const bWords = b.name.split(' ').length;
@@ -15,8 +15,8 @@ function sortTagsInDescending(tags: Array<FlowIngredient | Equipment>) {
 
 export function parseInstructionForTags(
   description: string,
-  tags: Array<FlowIngredient | Equipment>,
-): Array<string | FlowIngredient | Equipment> {
+  tags: Array<FlowIngredient | FlowEquipment>,
+): Array<string | FlowIngredient | FlowEquipment> {
   // sort tags by number of words in name
   const sortedTags = sortTagsInDescending(tags);
   // create a hashmap for quick lookup
@@ -100,7 +100,7 @@ export function genIngredient(): FlowIngredient {
   };
 }
 
-export function genEquipment(): Equipment {
+export function genEquipment(): FlowEquipment {
   return {
     id: genId(),
     name: '',

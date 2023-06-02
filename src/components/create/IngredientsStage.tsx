@@ -1,11 +1,4 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
-import debounce from 'lodash.debounce';
+import React, { Dispatch, SetStateAction } from 'react';
 import {
   findRecipeInputIndexById,
   genIngredient,
@@ -31,6 +24,8 @@ import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
 import { newIngredientSchema } from 'validation/schemas';
+import { useDebouncedAutosave } from './utils';
+import { dragEndHandler } from './EquipmentStage';
 
 function cleanNameInput(value: string) {
   return value.toLowerCase();
@@ -38,17 +33,6 @@ function cleanNameInput(value: string) {
 
 function cleanQuantityInput(value: string) {
   return value ? parseFloat(value) : '';
-}
-
-function filterValidIngredients(ingredients: FlowIngredient[]) {
-  const validIngredients = [];
-  for (const i of ingredients) {
-    const valid = newIngredientSchema.safeParse(i);
-    if (valid.success) {
-      validIngredients.push(i);
-    }
-  }
-  return validIngredients;
 }
 
 interface IngredientStageProps {
@@ -68,68 +52,14 @@ function IngredientsStage({
     useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
-  const [ingredientIdsToUpdate, setIngredientIdsToUpdate] = useState<string[]>(
-    [],
-  );
 
-  function pushIdToUpdateList(id: string) {
-    setIngredientIdsToUpdate((prev: string[]) => {
-      if (prev.includes(id)) return prev;
-      return [...prev, id];
-    });
-  }
-
-  useEffect(() => {
-    console.log('fired useEffect');
-    if (ingredientIdsToUpdate.length === 0) return;
-    console.log('before mutation', ingredientIdsToUpdate);
-    debouncedUpdateValidIngredients(
-      ingredients.filter((i) => ingredientIdsToUpdate.includes(i.id)),
-    );
-    return () => {
-      debouncedUpdateValidIngredients.cancel();
-    };
-  }, [ingredients]);
-
-  function replaceIngredientIds(idPairs: { newId: string; oldId: string }[]) {
-    raiseIngredients((prev: FlowIngredient[]) => {
-      let prevIng = [...prev];
-      idPairs.forEach((pair) => {
-        if (pair.newId === pair.oldId) return;
-        const index = findRecipeInputIndexById(prevIng, pair.oldId);
-        if (index === -1) return;
-        const ingredientWithNewId = { ...prevIng[index], id: pair.newId };
-        prevIng = insertIntoPrevArray(
-          prevIng,
-          index,
-          ingredientWithNewId as FlowIngredient,
-        );
-        console.log(prevIng);
-      });
-      return prevIng;
-    });
-  }
-
-  const debouncedUpdateValidIngredients = useCallback(
-    debounce((ingredients: FlowIngredient[]) => {
-      console.log('other', ingredients);
-      if (isZeroLength(ingredients)) return;
-      const validIngredients = filterValidIngredients(ingredients);
-      if (isZeroLength(validIngredients)) return;
-      console.log('debouncedMutation', validIngredients);
-      // mutate
-      updateIngredient(
-        { recipeId, ingredients },
-        {
-          onSuccess: (data) => {
-            setIngredientIdsToUpdate([]);
-            replaceIngredientIds(data.ingredientIdPairs);
-          },
-        },
-      );
-    }, 3000),
-    [],
-  );
+  const { pushIdToUpdateList } = useDebouncedAutosave({
+    recipeId,
+    inputs: ingredients,
+    dispatchInputs: raiseIngredients,
+    schema: newIngredientSchema,
+    updateInputsMutation: updateIngredient,
+  });
 
   function removeIngredientHandler(id: string) {
     raiseIngredients((prev: FlowIngredient[]) => {
@@ -137,7 +67,6 @@ function IngredientsStage({
       const newIngredients = prev.filter((i) => i.id !== id);
       return newIngredients;
     });
-    // mutate
     if (isClientId(id)) return;
     deleteIngredient({ id });
   }
@@ -233,16 +162,9 @@ function IngredientsStage({
     pushIdToUpdateList(id);
   }
 
-  function dragEndHandler(result: DropResult) {
-    if (!result.destination) return;
-    raiseIngredients((prev: FlowIngredient[]) => {
-      return reorderDraggableInputs(result, prev);
-    });
-  }
-
   return (
     <StageFrame
-      onDragEnd={dragEndHandler}
+      onDragEnd={(result) => dragEndHandler(result, raiseIngredients)}
       droppableId="ingredients"
       stageInputLabels={
         <>

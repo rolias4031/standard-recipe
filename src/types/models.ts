@@ -18,6 +18,12 @@ const ingredientWithAll = Prisma.validator<Prisma.IngredientArgs>()({
   },
 });
 
+const equipmentWithAll = Prisma.validator<Prisma.EquipmentArgs>()({
+  include: {
+    name: true,
+  },
+});
+
 /*
  * general type naming:
  * - With(relation) = base type with relations
@@ -32,6 +38,10 @@ export type IngredientWithAll = Prisma.IngredientGetPayload<
   typeof ingredientWithAll
 >;
 
+export type EquipmentWithAll = Prisma.EquipmentGetPayload<
+  typeof equipmentWithAll
+>;
+
 export interface RecipeGeneralInfo {
   name: string;
   description: RecipeWithAll['description'];
@@ -39,23 +49,29 @@ export interface RecipeGeneralInfo {
 
 export type RecipeWithFull = RecipeWithAll & {
   ingredients: IngredientWithAll[];
-  equipment: Equipment[];
+  equipment: EquipmentWithAll[];
   instructions: Instruction[];
 };
 
 // * derived and shallower and custom types
 
 export interface FlowIngredient
-  extends Omit<IngredientWithAll, 'name' | 'substitutes' | 'ingredientNameId' | 'ingredientUnitId'> {
+  extends Omit<
+    IngredientWithAll,
+    'name' | 'substitutes' | 'ingredientNameId' | 'ingredientUnitId'
+  > {
   name: string;
   substitutes: string[];
 }
 
+export interface FlowEquipment
+  extends Omit<EquipmentWithAll, 'name' | 'equipmentNameId'> {
+  name: string;
+}
+
 // * typeguard functions is<Type>Type
 
-export function isFlowIngredientType(
-  obj: any,
-): obj is FlowIngredient {
+export function isFlowIngredientType(obj: any): obj is FlowIngredient {
   return 'unit' in obj && typeof obj.name === 'string';
 }
 

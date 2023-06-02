@@ -1,7 +1,7 @@
 import { NextApiRequest } from 'next';
 import { z } from 'zod';
 import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
-import { FlowIngredient, RecipeWithAll, RecipeWithFull } from './models';
+import { FlowIngredient, RecipeWithFull } from './models';
 
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
@@ -17,6 +17,10 @@ export interface ValidationPayload {
 export type FormValidationState<T extends string> = {
   [key in T | 'form']: ValidationPayload;
 };
+
+export type InputIdPairs = { oldId: string; newId: string }[];
+
+export type AllRecipeInputs = FlowIngredient[] | Equipment[] | Instruction[];
 
 // interfaces
 export interface MutateConfig<T> {
@@ -47,6 +51,15 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface UpdateInputMutationBody<T> {
+  recipeId: Recipe['id'];
+  inputs: T[];
+}
+
+export interface UpdateInputMutationPayload extends BasePayload {
+  inputIdPairs: InputIdPairs;
+}
+
 export interface AllUnitsQueryPayload extends BasePayload {
   units: IngredientUnit[];
 }
@@ -61,7 +74,7 @@ export interface UpdateRecipeIngredientMutationBody {
 }
 
 export interface UpdateRecipeIngredientMutationPayload extends BasePayload {
-  ingredientIdPairs: { newId: string; oldId: string }[];
+  ingredientIdPairs: InputIdPairs;
 }
 
 export interface NewDraftRecipeMutationInputs {

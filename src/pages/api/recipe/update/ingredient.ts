@@ -6,9 +6,9 @@ import { NextApiResponse } from 'next';
 import { newIngredientSchema } from 'validation/schemas';
 import {
   ErrorPayload,
-  UpdateRecipeIngredientMutationBody,
   StandardRecipeApiRequest,
-  UpdateRecipeIngredientMutationPayload,
+  UpdateInputMutationBody,
+  UpdateInputMutationPayload,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
 import { FlowIngredient } from 'types/models';
@@ -17,6 +17,8 @@ import { FlowIngredient } from 'types/models';
     - this route creates/updates an array of ingredients and attaches it to recipe
 
     - returns the old ingredient ids (from client) and new ingredient ids (from server) so that we can replace old with new. this needs to happen because inserting an ingredient doesn't sync client id and server id (can't use client id for db). So updating an ingredient after creating without refetching will create a duplicate, because client id gets sent again which db doesn't have. So, we send both back and replace with new in state.
+
+    - this same pattern applies to equipment and instructions in the CreateRecipeFlow.
   */
 
 function connectUnit(ingredientUnit: FlowIngredient['unit']) {
@@ -38,8 +40,8 @@ function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
 }
 
 export default async function handler(
-  req: StandardRecipeApiRequest<UpdateRecipeIngredientMutationBody>,
-  res: NextApiResponse<UpdateRecipeIngredientMutationPayload | ErrorPayload>,
+  req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient>>,
+  res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
   const session = getAuth(req);
   if (!session || !session.userId) {
@@ -49,20 +51,19 @@ export default async function handler(
     });
   }
 
-  const { recipeId, ingredients } = req.body;
-  const ingredientIdPairs: UpdateRecipeIngredientMutationPayload['ingredientIdPairs'] =
-    [];
+  const { recipeId, inputs: ingredients } = req.body;
+  const ingredientIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
   console.log('edit/ingredients ingredients', ingredients, recipeId);
 
   for (const ingredient of ingredients) {
-    const success = validateClientInputs([
+    const valid = validateClientInputs([
       {
         schema: newIngredientSchema,
         inputs: ingredient,
       },
     ]);
-    if (!success) {
+    if (!valid) {
       continue;
     }
 
@@ -156,6 +157,6 @@ export default async function handler(
 
   return res.status(200).json({
     message: 'success',
-    ingredientIdPairs,
+    inputIdPairs: ingredientIdPairs,
   });
 }

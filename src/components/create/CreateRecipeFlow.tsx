@@ -1,4 +1,5 @@
-import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { IngredientUnit, Instruction } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
@@ -15,6 +16,8 @@ import {
   FlowIngredient,
   RecipeGeneralInfo,
   RecipeWithFull,
+  FlowEquipment,
+  EquipmentWithAll,
 } from 'types/models';
 import { BaseZodSchema } from 'types/types';
 import {
@@ -42,7 +45,6 @@ function FlowController({
   recipeName,
   stageConfig,
 }: FlowControllerProps) {
-
   const [isError, setIsError] = useState<boolean>(false);
   function nextStageHandler() {
     const curInputs = stageConfig?.inputs;
@@ -147,7 +149,6 @@ function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
     const ingredientsWithFlatName = ingredients.map((i) => {
       const substituteNames = i.substitutes.map((s) => s.name);
       const name = i.name.name;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { ingredientNameId, ingredientUnitId, ...keep } = i;
       return { ...keep, name, substitutes: substituteNames };
     });
@@ -156,9 +157,14 @@ function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
   return [genIngredient(), genIngredient()];
 }
 
-function initEquipment(equipment: Equipment[]): Equipment[] {
+function initEquipment(equipment: EquipmentWithAll[]): FlowEquipment[] {
   if (equipment.length > 0) {
-    return equipment;
+    const flowEquipment = equipment.map((e) => {
+      const name = e.name.name;
+      const { equipmentNameId, ...keep } = e;
+      return { ...keep, name };
+    });
+    return flowEquipment;
   }
   return [genEquipment(), genEquipment()];
 }
@@ -176,14 +182,14 @@ function initGeneralInfo(recipe: RecipeWithFull): RecipeGeneralInfo {
 
 type StageDispatchFunction =
   | Dispatch<SetStateAction<FlowIngredient[]>>
-  | Dispatch<SetStateAction<Equipment[]>>
+  | Dispatch<SetStateAction<FlowEquipment[]>>
   | Dispatch<SetStateAction<Instruction[]>>;
 
 interface StageConfig {
   component: ReactNode;
-  inputs?: FlowIngredient[] | Equipment[] | Instruction[];
+  inputs?: FlowIngredient[] | FlowEquipment[] | Instruction[];
   dispatch?: StageDispatchFunction;
-  genInput?: () => FlowIngredient | Equipment | Instruction;
+  genInput?: () => FlowIngredient | FlowEquipment | Instruction;
   schema?: BaseZodSchema;
   name: string;
   label: string;
@@ -201,7 +207,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
     initIngredients(recipe.ingredients),
   );
-  const [equipment, setEquipment] = useState<Equipment[]>(() =>
+  const [equipment, setEquipment] = useState<FlowEquipment[]>(() =>
     initEquipment(recipe.equipment),
   );
   const [instructions, setInstructions] = useState<Instruction[]>(() =>
@@ -235,7 +241,11 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       2,
       {
         component: (
-          <EquipmentStage equipment={equipment} raiseEquipment={setEquipment} />
+          <EquipmentStage
+            equipment={equipment}
+            raiseEquipment={setEquipment}
+            recipeId={recipe.id}
+          />
         ),
         name: 'Equipment',
         inputs: equipment,
