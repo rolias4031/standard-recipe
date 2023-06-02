@@ -7,9 +7,7 @@ import {
   isClientId,
   isZeroLength,
   pickStyles,
-  reorderDraggableInputs,
 } from 'lib/util-client';
-import { DropResult } from '@hello-pangea/dnd';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { GeneralButton } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
@@ -25,7 +23,7 @@ import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
 import { newIngredientSchema } from 'validation/schemas';
 import { useDebouncedAutosave } from './utils';
-import { dragEndHandler } from './EquipmentStage';
+import { dragEndHandler } from './utils';
 
 function cleanNameInput(value: string) {
   return value.toLowerCase();

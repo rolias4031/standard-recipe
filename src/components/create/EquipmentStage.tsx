@@ -5,36 +5,23 @@ import {
   findRecipeInputIndexById,
   genEquipment,
   insertIntoPrevArray,
+  isClientId,
   isZeroLength,
   pickStyles,
-  reorderDraggableInputs,
 } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
-import { DropResult } from '@hello-pangea/dnd';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
-import { useUpdateRecipeEquipment } from 'lib/mutations';
+import { useDeleteEquipment, useUpdateRecipeEquipment } from 'lib/mutations';
 import { newEquipmentSchema } from 'validation/schemas';
-import {
-  useDebouncedAutosave,
-} from './utils';
+import { dragEndHandler, useDebouncedAutosave } from './utils';
 import { FlowEquipment } from 'types/models';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
-}
-
-export function dragEndHandler<T extends { id: string }>(
-  result: DropResult,
-  dispatchInputs: Dispatch<SetStateAction<T[]>>,
-) {
-  if (!result.destination) return;
-  dispatchInputs((prev: T[]) => {
-    return reorderDraggableInputs(result, prev);
-  });
 }
 
 interface EquipmentStageProps {
@@ -50,6 +37,8 @@ function EquipmentStage({
 }: EquipmentStageProps) {
   const { mutate: updateEquipment, status: updateStatus } =
     useUpdateRecipeEquipment();
+  const { mutate: deleteEquipment, status: deleteStatus } =
+    useDeleteEquipment();
 
   const { pushIdToUpdateList } = useDebouncedAutosave({
     recipeId,
@@ -64,6 +53,8 @@ function EquipmentStage({
       if (prev.length === 1) return [genEquipment()];
       return prev.filter((i) => i.id !== id);
     });
+    if (isClientId(id)) return;
+    deleteEquipment({ id });
   }
 
   function updateEquipmentHandler({

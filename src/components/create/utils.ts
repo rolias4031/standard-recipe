@@ -1,4 +1,4 @@
-import { Equipment, Instruction } from '@prisma/client';
+import { DropResult } from '@hello-pangea/dnd';
 import { UseMutateFunction } from '@tanstack/react-query';
 import {
   findRecipeInputIndexById,
@@ -121,5 +121,29 @@ export function replaceRecipeInputIds<T extends { id: string }>(
       console.log(prevIng);
     });
     return prevIng;
+  });
+}
+
+export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
+  const newInputs = [...prev];
+
+  const [movedInput] = newInputs.splice(result.source.index, 1);
+  if (
+    result.destination?.index === null ||
+    result.destination?.index === undefined ||
+    !movedInput
+  )
+    return prev;
+  newInputs.splice(result.destination?.index, 0, movedInput);
+  return newInputs;
+}
+
+export function dragEndHandler<T extends { id: string }>(
+  result: DropResult,
+  dispatchInputs: Dispatch<SetStateAction<T[]>>,
+) {
+  if (!result.destination) return;
+  dispatchInputs((prev: T[]) => {
+    return reorderDraggableInputs(result, prev);
   });
 }

@@ -1,4 +1,4 @@
-import { Equipment, IngredientUnit, Instruction } from '@prisma/client';
+import { IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { DropResult } from '@hello-pangea/dnd';
 import { FlowEquipment, FlowIngredient } from 'types/models';
@@ -49,20 +49,6 @@ export function parseInstructionForTags(
   });
 
   return parsed;
-}
-
-export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
-  const newInputs = [...prev];
-
-  const [movedInput] = newInputs.splice(result.source.index, 1);
-  if (
-    result.destination?.index === null ||
-    result.destination?.index === undefined ||
-    !movedInput
-  )
-    return prev;
-  newInputs.splice(result.destination?.index, 0, movedInput);
-  return newInputs;
 }
 
 export function isZeroLength(val: string | any[] | null) {

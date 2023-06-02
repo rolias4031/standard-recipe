@@ -64,17 +64,8 @@ export interface AllUnitsQueryPayload extends BasePayload {
   units: IngredientUnit[];
 }
 
-export interface DeleteIngredientMutationBody {
+export interface DeleteRecipeInputMutationBody {
   id: string;
-}
-
-export interface UpdateRecipeIngredientMutationBody {
-  recipeId: Recipe['id'];
-  ingredients: FlowIngredient[];
-}
-
-export interface UpdateRecipeIngredientMutationPayload extends BasePayload {
-  ingredientIdPairs: InputIdPairs;
 }
 
 export interface NewDraftRecipeMutationInputs {

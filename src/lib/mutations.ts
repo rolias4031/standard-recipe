@@ -1,10 +1,9 @@
-import { Equipment } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import {
   BasePayload,
   CustomError,
-  DeleteIngredientMutationBody,
+  DeleteRecipeInputMutationBody,
   ErrorPayload,
   MutateConfig,
   NewDraftRecipeMutationInputs,
@@ -53,13 +52,14 @@ export async function updateRecipeIngredientMutation(
   });
 }
 
-export async function deleteIngredientMutation(
-  body: DeleteIngredientMutationBody,
+export async function deleteRecipeIngredientMutation(
+  body: DeleteRecipeInputMutationBody,
 ): Promise<BasePayload | ErrorPayload> {
-  return mutateWithBody<
-    DeleteIngredientMutationBody,
-    BasePayload | ErrorPayload
-  >({ method: 'DELETE', apiRoute: 'api/ingredient/delete', body });
+  return mutateWithBody({
+    method: 'DELETE',
+    apiRoute: 'api/ingredient/delete',
+    body,
+  });
 }
 
 export async function updateRecipeEquipmentMutation(
@@ -72,8 +72,22 @@ export async function updateRecipeEquipmentMutation(
   });
 }
 
+export async function deleteRecipeEquipmentMutation(
+  body: DeleteRecipeInputMutationBody,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/equipment/delete',
+    body,
+  });
+}
+
+export const useDeleteEquipment = () => {
+  return useMutation({ mutationFn: deleteRecipeEquipmentMutation });
+};
+
 export const useDeleteIngredient = () => {
-  return useMutation({ mutationFn: deleteIngredientMutation });
+  return useMutation({ mutationFn: deleteRecipeIngredientMutation });
 };
 
 export const useCreateNewDraftRecipe = () => {
