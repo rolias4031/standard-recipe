@@ -50,6 +50,7 @@ export default async function handler(
           },
         },
       },
+      order: equipment.order,
       notes: equipment.notes,
       optional: equipment.optional,
     };

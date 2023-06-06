@@ -1,7 +1,7 @@
-import { Equipment } from '@prisma/client';
 import { parseInstructionForTags } from 'lib/util-client';
 import React, { ReactNode } from 'react';
 import {
+  FlowEquipment,
   FlowIngredient,
   isEquipmentType,
   isFlowIngredientType,
@@ -9,9 +9,9 @@ import {
 
 interface RenderInstructionTags {
   description: string;
-  tags: Array<FlowIngredient | Equipment>;
+  tags: Array<FlowIngredient | FlowEquipment>;
   ingredientTagComponent: (ingredient: FlowIngredient) => ReactNode;
-  equipmentTagComponent: (equipment: Equipment) => ReactNode;
+  equipmentTagComponent: (equipment: FlowEquipment) => ReactNode;
 }
 
 function RenderInstructionTags({

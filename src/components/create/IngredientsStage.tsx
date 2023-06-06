@@ -46,6 +46,7 @@ function IngredientsStage({
   raiseIngredients,
   allUnits,
 }: IngredientStageProps) {
+  console.log(ingredients);
   const { mutate: updateIngredient, status: updateStatus } =
     useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =

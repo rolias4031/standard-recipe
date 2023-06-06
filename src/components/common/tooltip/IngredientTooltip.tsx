@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { FlowIngredient } from 'types/models';
 import TooltipCard from './TooltipCard';
+
+function renderUnits(ingredientUnit: FlowIngredient['unit'], quantity: number) {
+  console.log(ingredientUnit);
+  let content: ReactNode = <span>No Units</span>;
+  if (!ingredientUnit) return content;
+  content = (
+    <>
+      <span>{`${quantity} ${ingredientUnit.unit}`}</span>
+      <span>{`(${ingredientUnit.abbreviation})`}</span>
+    </>
+  );
+  return content;
+}
 
 export default function IngredientTooltip({
   ingredient,
@@ -8,20 +21,14 @@ export default function IngredientTooltip({
   ingredient: FlowIngredient;
 }) {
   const { quantity, notes, substitutes, optional } = ingredient;
-  const { unit } = ingredient.unit;
-  
-  const abbreviation = ingredient.unit.abbreviation
-    ? `(${ingredient.unit.abbreviation})`
-    : null;
+
+  const unitContent = renderUnits(ingredient.unit, quantity);
 
   return (
     <TooltipCard>
       <div className="flex flex-col space-y-1">
-        <div className="flex font-mono space-x-1">
-          <span>{`${quantity} ${unit}`}</span>
-          <span>{abbreviation}</span>
-        </div>
-        {notes ? <div className="text-concrete text-xs">{notes}</div> : null}
+        <div className="flex space-x-1 font-mono">{unitContent}</div>
+        {notes ? <div className="text-xs">{notes}</div> : null}
         {substitutes.length > 0 ? (
           <div className="flex space-x-2 text-xs text-concrete">
             <span className="text-abyss">subs:</span>
@@ -32,7 +39,9 @@ export default function IngredientTooltip({
             ))}
           </div>
         ) : null}
-        {optional ? <span className='italic text-concrete'>optional</span> : null}
+        {optional ? (
+          <span className="italic text-smoke">optional</span>
+        ) : null}
       </div>
     </TooltipCard>
   );

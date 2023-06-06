@@ -132,8 +132,9 @@ export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
     result.destination?.index === null ||
     result.destination?.index === undefined ||
     !movedInput
-  )
+  ) {
     return prev;
+  }
   newInputs.splice(result.destination?.index, 0, movedInput);
   return newInputs;
 }
@@ -144,6 +145,9 @@ export function dragEndHandler<T extends { id: string }>(
 ) {
   if (!result.destination) return;
   dispatchInputs((prev: T[]) => {
-    return reorderDraggableInputs(result, prev);
+    const reorderedInputs = reorderDraggableInputs(result, prev);
+    return reorderedInputs.map((input, index) => {
+      return { ...input, order: index + 1 };
+    });
   });
 }

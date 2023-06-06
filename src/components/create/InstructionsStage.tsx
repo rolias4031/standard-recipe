@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
-import { Equipment, Instruction } from '@prisma/client';
+import { Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
   findRecipeInputIndexById,
@@ -16,7 +16,6 @@ import {
   insertIntoPrevArray,
   isZeroLength,
   pickStyles,
-  reorderDraggableInputs,
 } from 'lib/util-client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import { GeneralButton } from 'pirate-ui';
@@ -28,6 +27,8 @@ import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import RenderInstructionTags from 'components/common/RenderInstructionTags';
 import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
+import { dragEndHandler } from './utils';
+import EquipmentTooltip from 'components/common/tooltip/EquipmentTooltip';
 
 function PanelCard({
   children,
@@ -38,9 +39,9 @@ function PanelCard({
 }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
-    <div className="flex flex-col basis-1/2 text-concrete p-5 border rounded h-fit">
-      <div className="flex justify-between mb-2">
-        <span className="text-abyss text-lg">{header}</span>
+    <div className="flex h-fit basis-1/2 flex-col rounded border p-5 text-concrete">
+      <div className="mb-2 flex justify-between">
+        <span className="text-lg text-abyss">{header}</span>
         <button onClick={() => setIsOpen((prev) => !prev)}>
           <ChevronRightIcon
             styles={{
@@ -77,8 +78,12 @@ function CurrentIngredientsPanel({
           >
             <span>{i.name}</span>
             <div className="flex justify-between space-x-1">
-              <span>{i.quantity}</span>
-              <span>{i.unit.unit}</span>
+              {i.unit ? (
+                <>
+                  <span>{i.quantity}</span>
+                  <span>{i.unit.unit}</span>
+                </>
+              ) : null}
             </div>
           </div>
         );
@@ -157,14 +162,7 @@ function InstructionsStage({
       return newInstructionArray as Instruction[];
     });
   }
-
-  function dragEndHandler(result: DropResult) {
-    if (!result.destination) return;
-    raiseInstructions((prev: Instruction[]) => {
-      return reorderDraggableInputs(result, prev);
-    });
-  }
-
+  
   const instructionString = useMemo<string>(
     () => instructions.map((i) => i.description).join(''),
     [instructions],
@@ -173,27 +171,26 @@ function InstructionsStage({
   return (
     <StageFrame
       droppableId="instructions"
-      onDragEnd={dragEndHandler}
+      onDragEnd={(result) => dragEndHandler(result, raiseInstructions)}
       stageInputLabels={
         <div className="w-full font-mono text-sm">Instructions</div>
       }
+      mutationStatus=""
       stageInputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}
           id={i.id}
           index={idx}
           optionModes={['none']}
-          optionOverviewComponents={
-            <>{i.optional ? <span>optional</span> : null}</>
-          }
-          inputComponents={(isInputFocused, setIsInputFocused) => (
+          overviewComponents={<>{i.optional ? <span>optional</span> : null}</>}
+          mainInputComponents={(isInputFocused, setIsInputFocused) => (
             <>
               {isInputFocused ? (
                 <textarea
                   autoFocus
                   name="description"
                   value={i.description}
-                  className="inp-primary inp-reg resize-none w-5/6"
+                  className="inp-primary inp-reg w-5/6 resize-none"
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                     updateInstructionHandler({
                       id: i.id,
@@ -206,7 +203,7 @@ function InstructionsStage({
                 />
               ) : (
                 <div
-                  className="min-h-[30px] rounded-sm w-5/6 px-2 py-1 bg-smoke"
+                  className="min-h-[30px] w-5/6 rounded-sm bg-smoke px-2 py-1"
                   onClick={() => setIsInputFocused(true)}
                 >
                   <RenderInstructionTags
@@ -226,9 +223,7 @@ function InstructionsStage({
                         key={`${equipment.id}${genId()}`}
                         text={equipment.name}
                         tooltipElement={
-                          <div className="max-w-[250px] p-2 text-xs rounded-md border-2 bg-white border-fern shadow-md shadow-concrete">
-                            {equipment.name}
-                          </div>
+                          <EquipmentTooltip equipment={equipment} />
                         }
                       />
                     )}
@@ -237,7 +232,7 @@ function InstructionsStage({
               )}
             </>
           )}
-          optionalComponent={
+          auxiliaryComponents={
             <OptionalInput
               id={i.id}
               curIsOptional={i.optional}
@@ -247,7 +242,7 @@ function InstructionsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="flex flex-grow justify-between items-center fade-in"
+              className="fade-in flex flex-grow items-center justify-between"
             >
               <GeneralButton
                 onClick={() =>
@@ -278,7 +273,7 @@ function InstructionsStage({
         />
       ))}
     >
-      <div className="flex space-x-5 w-5/6 mx-auto">
+      <div className="mx-auto flex w-5/6 space-x-5">
         <CurrentIngredientsPanel
           ingredients={ingredients}
           instructionString={instructionString}

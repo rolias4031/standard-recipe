@@ -104,6 +104,7 @@ export default async function handler(
           },
         },
       },
+      order: ingredient.order,
       quantity: ingredient.quantity,
       notes: ingredient.notes,
       optional: ingredient.optional,
