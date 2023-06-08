@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import {
   findRecipeInputIndexById,
   genIngredient,
@@ -22,7 +22,7 @@ import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
 import { newIngredientSchema } from 'validation/schemas';
-import { useDebouncedAutosave } from './utils';
+import { addSubHandler, removeSubHandler, useDebouncedAutosave } from './utils';
 import { dragEndHandler } from './utils';
 
 function cleanNameInput(value: string) {
@@ -46,7 +46,8 @@ function IngredientsStage({
   raiseIngredients,
   allUnits,
 }: IngredientStageProps) {
-  console.log(ingredients);
+  console.log('IngredientStage', ingredients);
+
   const { mutate: updateIngredient, status: updateStatus } =
     useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =
@@ -60,6 +61,16 @@ function IngredientsStage({
     updateInputsMutation: updateIngredient,
   });
 
+  function addIngredientSubHandler(subValue: string, id: string) {
+    addSubHandler({ subValue, id, raiseInput: raiseIngredients });
+    pushIdToUpdateList(id);
+  }
+
+  function removeIngredientSubHandler(subValue: string, id: string) {
+    removeSubHandler({ subValue, id, raiseInput: raiseIngredients });
+    pushIdToUpdateList(id);
+  }
+
   function removeIngredientHandler(id: string) {
     raiseIngredients((prev: FlowIngredient[]) => {
       if (prev.length === 1) return [genIngredient()];
@@ -68,49 +79,6 @@ function IngredientsStage({
     });
     if (isClientId(id)) return;
     deleteIngredient({ id });
-  }
-
-  function addSubsHandler(newSub: string, id: string) {
-    raiseIngredients((prev: FlowIngredient[]) => {
-      const index = findRecipeInputIndexById(prev, id);
-      if (index === -1) return prev;
-      const prevSubs = prev[index]?.substitutes;
-      if (!Array.isArray(prevSubs)) return prev;
-      const subExists = prevSubs.find((sub) => sub === newSub);
-      if (subExists || prevSubs.length === 3) return prev;
-      const updatedIngredient = {
-        ...prev[index],
-        substitutes: [...prevSubs, newSub],
-      };
-      const newIngredientArray = insertIntoPrevArray(
-        prev,
-        index,
-        updatedIngredient as FlowIngredient,
-      );
-      return newIngredientArray;
-    });
-    pushIdToUpdateList(id);
-  }
-
-  function removeSubHandler(subToRemove: string, id: string) {
-    raiseIngredients((prev: FlowIngredient[]) => {
-      const index = findRecipeInputIndexById(prev, id);
-      if (index === -1) return prev;
-      const prevSubs = prev[index]?.substitutes;
-      if (!Array.isArray(prevSubs)) return prev;
-      const newSubs = prevSubs.filter((s) => s !== subToRemove);
-      const updatedIngredient = {
-        ...prev[index],
-        substitutes: newSubs,
-      };
-      const newIngredientArray = insertIntoPrevArray(
-        prev,
-        index,
-        updatedIngredient as FlowIngredient,
-      );
-      return newIngredientArray;
-    });
-    pushIdToUpdateList(id);
   }
 
   function updateIngredientHandler({
@@ -178,7 +146,7 @@ function IngredientsStage({
           key={i.id}
           id={i.id}
           index={index}
-          optionModes={['substitutes', 'notes']}
+          optionModes={['notes', 'substitutes']}
           mainInputComponents={() => (
             <>
               <input
@@ -314,8 +282,8 @@ function IngredientsStage({
                 <AddSubstitutes
                   id={i.id}
                   curSubs={i.substitutes}
-                  onAddSub={addSubsHandler}
-                  onRemoveSub={removeSubHandler}
+                  onAddSub={addIngredientSubHandler}
+                  onRemoveSub={removeIngredientSubHandler}
                   styles={{
                     div: 'flex space-x-4 items-center',
                   }}

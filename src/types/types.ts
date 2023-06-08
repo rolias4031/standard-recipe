@@ -1,4 +1,4 @@
-import { NextApiRequest } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
 import { FlowIngredient, RecipeWithFull } from './models';
@@ -39,6 +39,11 @@ export type NewDraftRecipeInputs = Pick<Recipe, 'name'>;
 export type SaveRecipeInputs = Pick<Recipe, 'description' | 'id'>;
 
 // server
+
+export type StandardRecipeApiHandler<T, K> = (
+  req: StandardRecipeApiRequest<T>,
+  res: NextApiResponse<K | ErrorPayload>,
+) => unknown | Promise<unknown>;
 
 export interface StandardRecipeApiRequest<T>
   extends Omit<NextApiRequest, 'body'> {

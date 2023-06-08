@@ -146,13 +146,13 @@ function FlowController({
 
 function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
   if (ingredients.length > 0) {
-    const ingredientsWithFlatName = ingredients.map((i) => {
+    const flowIngredient = ingredients.map((i) => {
       const substituteNames = i.substitutes.map((s) => s.name);
       const name = i.name.name;
       const { ingredientNameId, ingredientUnitId, ...keep } = i;
       return { ...keep, name, substitutes: substituteNames };
     });
-    return ingredientsWithFlatName;
+    return flowIngredient;
   }
   return [genIngredient(), genIngredient()];
 }
@@ -160,9 +160,10 @@ function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
 function initEquipment(equipment: EquipmentWithAll[]): FlowEquipment[] {
   if (equipment.length > 0) {
     const flowEquipment = equipment.map((e) => {
+      const substituteNames = e.substitutes.map((s) => s.name);
       const name = e.name.name;
       const { equipmentNameId, ...keep } = e;
-      return { ...keep, name };
+      return { ...keep, name, substitutes: substituteNames };
     });
     return flowEquipment;
   }

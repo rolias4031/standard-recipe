@@ -21,6 +21,7 @@ const ingredientWithAll = Prisma.validator<Prisma.IngredientArgs>()({
 const equipmentWithAll = Prisma.validator<Prisma.EquipmentArgs>()({
   include: {
     name: true,
+    substitutes: true,
   },
 });
 
@@ -65,8 +66,9 @@ export interface FlowIngredient
 }
 
 export interface FlowEquipment
-  extends Omit<EquipmentWithAll, 'name' | 'equipmentNameId'> {
+  extends Omit<EquipmentWithAll, 'name' | 'substitutes' | 'equipmentNameId'> {
   name: string;
+  substitutes: string[];
 }
 
 // * typeguard functions is<Type>Type

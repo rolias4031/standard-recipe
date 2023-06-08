@@ -1,7 +1,11 @@
 import { getAuth } from '@clerk/nextjs/server';
 import { prisma } from 'lib/prismadb';
 import { ERRORS } from 'lib/constants';
-import { validateClientInputs } from 'lib/util';
+import {
+  prepareSubsForUpsert,
+  validateClientInputs,
+  apiHandler,
+} from 'lib/util';
 import { NextApiResponse } from 'next';
 import { newIngredientSchema } from 'validation/schemas';
 import {
@@ -39,7 +43,7 @@ function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
   return { disconnect: true };
 }
 
-export default async function handler(
+async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient>>,
   res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
@@ -81,16 +85,11 @@ export default async function handler(
       },
     });
 
-    // subs to add
-    const connectOrCreateSubstitutes = ingredient.substitutes.map((s) => ({
-      where: { name: s },
-      create: { name: s },
-    }));
-
-    // subs to disconnect, existing minus to add
-    const disconnectSubstitutes = ingredientWithSubs?.substitutes
-      .filter((sub) => !ingredient.substitutes.includes(sub.name))
-      .map((s) => ({ name: s.name }));
+    const { disconnectSubstitutes, connectOrCreateSubstitutes } =
+      prepareSubsForUpsert(
+        ingredientWithSubs?.substitutes.map((s) => s.name),
+        ingredient.substitutes,
+      );
 
     // upsert object to be spread into create and update objects
     const ingredientUpsertObject = {
@@ -161,3 +160,5 @@ export default async function handler(
     inputIdPairs: ingredientIdPairs,
   });
 }
+
+export default apiHandler(handler);

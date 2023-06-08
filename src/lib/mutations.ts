@@ -19,6 +19,7 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(config.body),
   });
+  // you get that doctype error when the server responds with unhandled error, and then response.json() doesn't get json.
   const result: K | ErrorPayload = await response.json();
   if (!response.ok && isErrorPayload(result)) {
     const error = new Error() as CustomError;

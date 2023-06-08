@@ -82,6 +82,7 @@ export function genIngredient(): FlowIngredient {
     quantity: 0,
     substitutes: [],
     optional: false,
+    order: 0,
     notes: '',
   };
 }
@@ -92,6 +93,8 @@ export function genEquipment(): FlowEquipment {
     name: '',
     optional: false,
     notes: '',
+    order: 0,
+    substitutes: [],
     recipeId: '',
   };
 }

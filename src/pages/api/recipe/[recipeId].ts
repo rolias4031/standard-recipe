@@ -41,6 +41,7 @@ export default async function handler(
       equipment: {
         include: {
           name: true,
+          substitutes: true,
         },
       },
       instructions: true,

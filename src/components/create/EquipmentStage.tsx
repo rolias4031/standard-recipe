@@ -17,8 +17,14 @@ import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteEquipment, useUpdateRecipeEquipment } from 'lib/mutations';
 import { newEquipmentSchema } from 'validation/schemas';
-import { dragEndHandler, useDebouncedAutosave } from './utils';
+import {
+  addSubHandler,
+  dragEndHandler,
+  removeSubHandler,
+  useDebouncedAutosave,
+} from './utils';
 import { FlowEquipment } from 'types/models';
+import AddSubstitutes from './AddSubstitutes';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
@@ -39,6 +45,8 @@ function EquipmentStage({
     useUpdateRecipeEquipment();
   const { mutate: deleteEquipment, status: deleteStatus } =
     useDeleteEquipment();
+
+  console.log('equipment', equipment);
 
   const { pushIdToUpdateList } = useDebouncedAutosave({
     recipeId,
@@ -79,6 +87,16 @@ function EquipmentStage({
     pushIdToUpdateList(id);
   }
 
+  function addEquipmentSubHandler(subValue: string, id: string) {
+    addSubHandler({ subValue, id, raiseInput: raiseEquipment });
+    pushIdToUpdateList(id);
+  }
+
+  function removeEquipmentSubHandler(subValue: string, id: string) {
+    removeSubHandler({ subValue, id, raiseInput: raiseEquipment });
+    pushIdToUpdateList(id);
+  }
+
   return (
     <StageFrame
       stageInputLabels={
@@ -94,7 +112,7 @@ function EquipmentStage({
           key={e.id}
           id={e.id}
           index={index}
-          optionModes={['notes']}
+          optionModes={['notes', 'substitutes']}
           mainInputComponents={() => (
             <input
               type="text"
@@ -167,6 +185,17 @@ function EquipmentStage({
                   id={e.id}
                   curNotes={e.notes}
                   onRaiseNotes={updateEquipmentHandler}
+                />
+              ) : null}
+              {optionMode === 'substitutes' ? (
+                <AddSubstitutes
+                  id={e.id}
+                  curSubs={e.substitutes}
+                  onAddSub={addEquipmentSubHandler}
+                  onRemoveSub={removeEquipmentSubHandler}
+                  styles={{
+                    div: 'flex space-x-4 items-center',
+                  }}
                 />
               ) : null}
             </>

@@ -2,7 +2,11 @@ import { getAuth } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
 import { ERRORS } from 'lib/constants';
 import { prisma } from 'lib/prismadb';
-import { validateClientInputs } from 'lib/util';
+import {
+  apiHandler,
+  prepareSubsForUpsert,
+  validateClientInputs,
+} from 'lib/util';
 import { NextApiResponse } from 'next';
 import { FlowEquipment } from 'types/models';
 import {
@@ -13,7 +17,7 @@ import {
 } from 'types/types';
 import { newEquipmentSchema } from 'validation/schemas';
 
-export default async function handler(
+async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment>>,
   res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
@@ -39,6 +43,26 @@ export default async function handler(
       continue;
     }
 
+    // get existing equipment substitutes
+    const equipmentWithSubs = await prisma.equipment.findUnique({
+      where: {
+        id: equipment.id,
+      },
+      include: {
+        substitutes: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const { disconnectSubstitutes, connectOrCreateSubstitutes } =
+      prepareSubsForUpsert(
+        equipmentWithSubs?.substitutes.map((s) => s.name),
+        equipment.substitutes,
+      );
+
     const equipmentUpsertObject = {
       name: {
         connectOrCreate: {
@@ -57,6 +81,9 @@ export default async function handler(
 
     const equipmentCreateObject: Prisma.EquipmentCreateInput = {
       ...equipmentUpsertObject,
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+      },
       recipe: {
         connect: {
           id: recipeId,
@@ -66,6 +93,10 @@ export default async function handler(
 
     const equipmentUpateObject: Prisma.EquipmentUpdateInput = {
       ...equipmentUpsertObject,
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+        disconnect: disconnectSubstitutes,
+      },
     };
 
     const newOrUpdatedEquipment = await prisma.equipment.upsert({
@@ -87,3 +118,5 @@ export default async function handler(
     inputIdPairs: equipmentIdPairs,
   });
 }
+
+export default apiHandler(handler);

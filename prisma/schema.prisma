@@ -49,20 +49,22 @@ model Instruction {
 }
 
 model Equipment {
-  id              String        @id @default(cuid())
-  name            EquipmentName @relation(fields: [equipmentNameId], references: [id])
+  id              String          @id @default(cuid())
+  name            EquipmentName   @relation(fields: [equipmentNameId], references: [id])
   equipmentNameId String
-  notes           String?       @db.VarChar(250)
-  recipe          Recipe        @relation(fields: [recipeId], references: [id])
+  notes           String?         @db.VarChar(250)
+  recipe          Recipe          @relation(fields: [recipeId], references: [id])
   recipeId        String
-  optional        Boolean       @default(false)
-  order           Int           @default(0)
+  substitutes     EquipmentName[] @relation("substitutes")
+  optional        Boolean         @default(false)
+  order           Int             @default(0)
 }
 
 model EquipmentName {
-  id        String      @id @default(cuid())
-  name      String      @unique
-  equipment Equipment[]
+  id            String      @id @default(cuid())
+  name          String      @unique
+  equipment     Equipment[]
+  substituteFor Equipment[] @relation("substitutes")
 }
 
 model Ingredient {

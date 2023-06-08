@@ -13,7 +13,7 @@ function SubTag({ sub, onRemoveSub }: SubTagProps) {
   return (
     <div
       key={sub}
-      className="text-abyss text-sm border border-abyss rounded-full flex items-center space-x-2 py-1 px-2"
+      className="flex items-center space-x-2 rounded-full border border-abyss py-1 px-2 text-sm text-abyss"
       onMouseEnter={() => setIsMouseOver(true)}
       onMouseLeave={() => setIsMouseOver(false)}
     >
@@ -51,7 +51,7 @@ function AddSubstitutes({
         <input
           ref={inputRef}
           type="text"
-          className="w-48 inp-primary inp-reg"
+          className="inp-primary inp-reg w-48"
           disabled={curSubs.length >= 3}
           placeholder={
             curSubs.length >= 3 ? 'limit reached' : 'Add Substitutes'

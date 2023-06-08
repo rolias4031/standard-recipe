@@ -33,6 +33,57 @@ interface UseDebounceControllerArgs<T extends { id: string }> {
   >;
 }
 
+interface SubHandlerArgs<T> {
+  subValue: string;
+  id: string;
+  raiseInput: Dispatch<SetStateAction<T[]>>;
+}
+
+export function addSubHandler<
+  T extends { id: string; substitutes: string[] },
+>({ subValue, id, raiseInput }: SubHandlerArgs<T>) {
+  raiseInput((prev: T[]) => {
+    const index = findRecipeInputIndexById(prev, id);
+    if (index === -1) return prev;
+    const prevSubs = prev[index]?.substitutes;
+    if (!Array.isArray(prevSubs)) return prev;
+    const subExists = prevSubs.find((sub) => sub === subValue);
+    if (subExists || prevSubs.length === 3) return prev;
+    const updatedIngredient = {
+      ...prev[index],
+      substitutes: [...prevSubs, subValue],
+    };
+    const newIngredientArray = insertIntoPrevArray(
+      prev,
+      index,
+      updatedIngredient as T,
+    );
+    return newIngredientArray;
+  });
+}
+
+export function removeSubHandler<
+  T extends { id: string; substitutes: string[] },
+>({ subValue, id, raiseInput }: SubHandlerArgs<T>) {
+  raiseInput((prev: T[]) => {
+    const index = findRecipeInputIndexById(prev, id);
+    if (index === -1) return prev;
+    const prevSubs = prev[index]?.substitutes;
+    if (!Array.isArray(prevSubs)) return prev;
+    const newSubs = prevSubs.filter((s) => s !== subValue);
+    const updatedIngredient = {
+      ...prev[index],
+      substitutes: newSubs,
+    };
+    const newIngredientArray = insertIntoPrevArray(
+      prev,
+      index,
+      updatedIngredient as T,
+    );
+    return newIngredientArray;
+  });
+}
+
 export function useDebouncedAutosave<T extends { id: string }>(
   config: UseDebounceControllerArgs<T>,
 ): { pushIdToUpdateList: (id: string) => void } {
@@ -50,11 +101,11 @@ export function useDebouncedAutosave<T extends { id: string }>(
   const debouncedUpdateValidInputs = useCallback(
     debounce(
       (args: Omit<UseDebounceControllerArgs<T>, 'updateInputsMutation'>) => {
-        console.log('debounced 1', args.inputs);
         if (isZeroLength(args.inputs)) return;
+        console.log('debounced validation', args.inputs);
         const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
         if (isZeroLength(validInputs)) return;
-        console.log('debounced 2', validInputs);
+        console.log('debounced mutation', validInputs);
         updateInputsMutation(
           { recipeId: args.recipeId, inputs: validInputs },
           {
