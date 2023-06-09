@@ -293,6 +293,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   return (
     <>
       <FlowController
+        key={recipe.id}
         recipeName={recipe.name}
         stageConfig={stageConfig.get(stage)}
         setStage={setStage}

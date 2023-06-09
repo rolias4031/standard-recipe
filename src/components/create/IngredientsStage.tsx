@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import {
   findRecipeInputIndexById,
   genIngredient,
@@ -53,7 +53,7 @@ function IngredientsStage({
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
 
-  const { pushIdToUpdateList } = useDebouncedAutosave({
+  const { triggerAutosave } = useDebouncedAutosave({
     recipeId,
     inputs: ingredients,
     dispatchInputs: raiseIngredients,
@@ -63,12 +63,12 @@ function IngredientsStage({
 
   function addIngredientSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   function removeIngredientSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   function removeIngredientHandler(id: string) {
@@ -99,7 +99,7 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   function updateUnitHandler({
@@ -126,7 +126,7 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   return (

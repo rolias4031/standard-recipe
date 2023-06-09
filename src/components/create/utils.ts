@@ -20,28 +20,17 @@ import {
   UpdateInputMutationPayload,
 } from 'types/types';
 
-interface UseDebounceControllerArgs<T extends { id: string }> {
-  recipeId: string;
-  inputs: T[];
-  dispatchInputs: Dispatch<SetStateAction<T[]>>;
-  schema: BaseZodSchema;
-  updateInputsMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
-    unknown,
-    UpdateInputMutationBody<T>,
-    unknown
-  >;
-}
-
 interface SubHandlerArgs<T> {
   subValue: string;
   id: string;
   raiseInput: Dispatch<SetStateAction<T[]>>;
 }
 
-export function addSubHandler<
-  T extends { id: string; substitutes: string[] },
->({ subValue, id, raiseInput }: SubHandlerArgs<T>) {
+export function addSubHandler<T extends { id: string; substitutes: string[] }>({
+  subValue,
+  id,
+  raiseInput,
+}: SubHandlerArgs<T>) {
   raiseInput((prev: T[]) => {
     const index = findRecipeInputIndexById(prev, id);
     if (index === -1) return prev;
@@ -84,54 +73,67 @@ export function removeSubHandler<
   });
 }
 
+interface DebouncedMutationArgs<T> {
+  recipeId: string;
+  inputs: T[];
+  dispatchInputs: Dispatch<SetStateAction<T[]>>;
+  schema: BaseZodSchema;
+}
+
+interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
+  updateInputsMutation: UseMutateFunction<
+    UpdateInputMutationPayload,
+    unknown,
+    UpdateInputMutationBody<T>,
+    unknown
+  >;
+}
+
 export function useDebouncedAutosave<T extends { id: string }>(
   config: UseDebounceControllerArgs<T>,
-): { pushIdToUpdateList: (id: string) => void } {
+): { triggerAutosave: () => void } {
   const { recipeId, inputs, dispatchInputs, schema, updateInputsMutation } =
     config;
-  const [inputIdsToUpdate, setInputIdsToUpdate] = useState<string[]>([]);
+  const [isAutosaveTriggered, setIsAutosaveTriggered] =
+    useState<boolean>(false);
 
-  function pushIdToUpdateList(id: string) {
-    setInputIdsToUpdate((prev: string[]) => {
-      if (prev.includes(id)) return prev;
-      return [...prev, id];
-    });
+  function triggerAutosave() {
+    setIsAutosaveTriggered(true);
+  }
+
+  function clearAutosave() {
+    setIsAutosaveTriggered(false);
   }
 
   const debouncedUpdateValidInputs = useCallback(
-    debounce(
-      (args: Omit<UseDebounceControllerArgs<T>, 'updateInputsMutation'>) => {
-        if (isZeroLength(args.inputs)) return;
-        console.log('debounced validation', args.inputs);
-        const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
-        if (isZeroLength(validInputs)) return;
-        console.log('debounced mutation', validInputs);
-        updateInputsMutation(
-          { recipeId: args.recipeId, inputs: validInputs },
-          {
-            onSuccess: (data) => {
-              setInputIdsToUpdate([]);
-              replaceRecipeInputIds(data.inputIdPairs, args.dispatchInputs);
-            },
+    debounce((args: DebouncedMutationArgs<T>) => {
+      clearAutosave();
+      if (isZeroLength(args.inputs)) return;
+      console.log('debounced validation', args.inputs);
+      const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
+      if (isZeroLength(validInputs)) return;
+      console.log('debounced mutation', validInputs);
+      updateInputsMutation(
+        {
+          recipeId: args.recipeId,
+          inputs: validInputs,
+        },
+        {
+          onSuccess: (data) => {
+            replaceRecipeInputIds(data.inputIdPairs, args.dispatchInputs);
           },
-        );
-      },
-      3000,
-    ),
+        },
+      );
+    }, 3000),
     [],
   );
 
   useEffect(() => {
     console.log('fired useEffect');
-    if (inputIdsToUpdate.length === 0) return;
-    console.log('before mutation', inputIdsToUpdate);
-    const inputsToUpdate = inputs.filter((i) =>
-      inputIdsToUpdate.includes(i.id),
-    );
-    console.log('after filter', inputsToUpdate);
+    if (!isAutosaveTriggered) return;
     debouncedUpdateValidInputs({
       recipeId,
-      inputs: inputsToUpdate,
+      inputs: inputs,
       dispatchInputs,
       schema,
     });
@@ -140,7 +142,7 @@ export function useDebouncedAutosave<T extends { id: string }>(
     };
   }, [inputs]);
 
-  return { pushIdToUpdateList };
+  return { triggerAutosave };
 }
 
 export function filterValidRecipeInputs<T extends { id: string }>(

@@ -91,6 +91,7 @@ export interface NewDraftRecipeMutationPayload extends BasePayload {
 
 export interface BasePayload {
   message: string;
+  timestamp?: string;
 }
 
 export interface ErrorPayload {
