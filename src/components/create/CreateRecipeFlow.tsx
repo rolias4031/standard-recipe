@@ -21,9 +21,9 @@ import {
 } from 'types/models';
 import { BaseZodSchema } from 'types/types';
 import {
-  newEquipmentSchema,
-  newIngredientSchema,
-  newInstructionSchema,
+  equipmentSchema,
+  ingredientSchema,
+  instructionSchema,
 } from 'validation/schemas';
 import EquipmentStage from './EquipmentStage';
 import InfoStage from './InfoStage';
@@ -234,7 +234,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
         inputs: ingredients,
         dispatch: setIngredients,
         genInput: genIngredient,
-        schema: newIngredientSchema,
+        schema: ingredientSchema(allUnits.map((u) => u.id)),
         label: 'Ingredient',
       },
     ],
@@ -252,7 +252,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
         inputs: equipment,
         dispatch: setEquipment,
         genInput: genEquipment,
-        schema: newEquipmentSchema,
+        schema: equipmentSchema,
         label: 'Equipment',
       },
     ],
@@ -271,7 +271,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
         inputs: instructions,
         dispatch: setInstructions,
         genInput: genInstruction,
-        schema: newInstructionSchema,
+        schema: instructionSchema,
         label: 'Instruction',
       },
     ],

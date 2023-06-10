@@ -2,11 +2,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
 import { ERRORS } from 'lib/constants';
 import { prisma } from 'lib/prismadb';
-import {
-  apiHandler,
-  prepareSubsForUpsert,
-  validateClientInputs,
-} from 'lib/util';
+import { apiHandler, prepareSubsForUpsert, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import { FlowEquipment } from 'types/models';
 import {
@@ -15,7 +11,7 @@ import {
   UpdateInputMutationBody,
   UpdateInputMutationPayload,
 } from 'types/types';
-import { newEquipmentSchema } from 'validation/schemas';
+import { equipmentSchema } from 'validation/schemas';
 
 async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment>>,
@@ -36,12 +32,11 @@ async function handler(
   console.log('update/equipment', allEquipment);
 
   for (const equipment of allEquipment) {
-    const valid = validateClientInputs([
-      { schema: newEquipmentSchema, inputs: equipment },
-    ]);
-    if (!valid) {
-      continue;
-    }
+    const isValid = validateOneInput({
+      schema: equipmentSchema,
+      input: equipment,
+    });
+    if (!isValid) continue;
 
     // get existing equipment substitutes
     const equipmentWithSubs = await prisma.equipment.findUnique({

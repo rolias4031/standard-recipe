@@ -3,33 +3,34 @@ import React, { ReactNode } from 'react';
 import {
   FlowEquipment,
   FlowIngredient,
-  isEquipmentType,
+  isFlowEquipmentType,
   isFlowIngredientType,
 } from 'types/models';
 
 interface RenderInstructionTags {
   description: string;
   tags: Array<FlowIngredient | FlowEquipment>;
-  ingredientTagComponent: (ingredient: FlowIngredient) => ReactNode;
-  equipmentTagComponent: (equipment: FlowEquipment) => ReactNode;
+  ingredientTooltipComponent: (ingredient: FlowIngredient) => ReactNode;
+  equipmentTooltipComponent: (equipment: FlowEquipment) => ReactNode;
 }
 
 function RenderInstructionTags({
   description,
   tags,
-  ingredientTagComponent,
-  equipmentTagComponent,
+  ingredientTooltipComponent,
+  equipmentTooltipComponent,
 }: RenderInstructionTags) {
   const parsedDescriptionArray = parseInstructionForTags(description, tags);
   return (
     <div>
       {parsedDescriptionArray.map((segment) => {
+        console.log(segment);
         if (typeof segment === 'string') return segment;
         if (isFlowIngredientType(segment)) {
-          return ingredientTagComponent(segment);
+          return ingredientTooltipComponent(segment);
         }
-        if (isEquipmentType(segment)) {
-          return equipmentTagComponent(segment);
+        if (isFlowEquipmentType(segment)) {
+          return equipmentTooltipComponent(segment);
         }
       })}
     </div>

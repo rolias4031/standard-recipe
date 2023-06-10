@@ -1,4 +1,4 @@
-import { Equipment, Instruction, Prisma } from '@prisma/client';
+import { Instruction, Prisma } from '@prisma/client';
 
 // * objects from prisma validator
 
@@ -77,11 +77,11 @@ export function isFlowIngredientType(obj: any): obj is FlowIngredient {
   return 'unit' in obj && typeof obj.name === 'string';
 }
 
-export function isEquipmentType(obj: any): obj is Equipment {
+export function isFlowEquipmentType(obj: any): obj is FlowEquipment {
   return (
     'name' in obj &&
     !('unit' in obj) &&
     !('description' in obj) &&
-    !('order' in obj)
+    !('quantity' in obj)
   );
 }

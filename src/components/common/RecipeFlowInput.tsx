@@ -81,7 +81,7 @@ function RecipeFlowInput({
               ) : (
                 <div
                   key="2"
-                  className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete fade-in"
+                  className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete"
                 >
                   {overviewComponents}
                 </div>

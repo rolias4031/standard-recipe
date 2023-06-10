@@ -1,4 +1,4 @@
-import { validateClientInputs } from 'lib/util';
+import { validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
   ErrorPayload,
@@ -41,13 +41,11 @@ export default async function handler(
     },
   });
 
-  const valid = validateClientInputs([
-    {
-      schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)),
-      inputs: recipe,
-    },
-  ]);
-  if (!valid) {
+  const isValid = validateOneInput({
+    schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)),
+    input: newDraftRecipeInputs,
+  });
+  if (!isValid) {
     return res.status(400).json({
       message: 'failure',
       errors: [ERRORS.INVALID_INPUT],

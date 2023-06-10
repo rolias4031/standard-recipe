@@ -16,7 +16,7 @@ import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteEquipment, useUpdateRecipeEquipment } from 'lib/mutations';
-import { newEquipmentSchema } from 'validation/schemas';
+import { equipmentSchema } from 'validation/schemas';
 import {
   addSubHandler,
   dragEndHandler,
@@ -48,11 +48,11 @@ function EquipmentStage({
 
   console.log('equipment', equipment);
 
-  const { pushIdToUpdateList } = useDebouncedAutosave({
+  const { triggerAutosave } = useDebouncedAutosave({
     recipeId,
     inputs: equipment,
     dispatchInputs: raiseEquipment,
-    schema: newEquipmentSchema,
+    schema: equipmentSchema,
     updateInputsMutation: updateEquipment,
   });
 
@@ -84,17 +84,17 @@ function EquipmentStage({
       );
       return newIngredientsArray as FlowEquipment[];
     });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   function addEquipmentSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   function removeEquipmentSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    pushIdToUpdateList(id);
+    triggerAutosave();
   }
 
   return (
@@ -139,7 +139,7 @@ function EquipmentStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="fade-in flex flex-grow items-center justify-between"
+              className="flex flex-grow items-center justify-between"
             >
               <div className="flex items-center space-x-2">
                 <GeneralButton

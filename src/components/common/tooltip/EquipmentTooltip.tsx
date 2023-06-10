@@ -1,21 +1,23 @@
+import { isZeroLength } from 'lib/util-client';
 import React from 'react';
 import { FlowEquipment } from 'types/models';
-import TooltipCard from './TooltipCard';
+import { TooltipCard, TooltipNotes, TooltipOptional, TooltipSubs } from '.';
 
 interface EquipmentTooltipProps {
   equipment: FlowEquipment;
 }
 
 function EquipmentTooltip({ equipment }: EquipmentTooltipProps) {
-  const { notes, optional } = equipment;
+  const { notes, optional, substitutes } = equipment;
+
   return (
     <TooltipCard>
-      <div className="flex flex-col space-y-1">
-        {notes ? <div className="text-xs">{notes}</div> : null}
-        {optional ? (
-          <span className="italic text-smoke">optional</span>
-        ) : null}
-      </div>
+      <TooltipNotes notes={notes} />
+      <TooltipSubs substitutes={substitutes} />
+      <TooltipOptional optional={optional} />
+      {!notes && !optional && isZeroLength(substitutes) ? (
+        <span className="italic">nothing important</span>
+      ) : null}
     </TooltipCard>
   );
 }

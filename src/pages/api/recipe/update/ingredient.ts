@@ -1,13 +1,7 @@
-import { getAuth } from '@clerk/nextjs/server';
 import { prisma } from 'lib/prismadb';
-import { ERRORS } from 'lib/constants';
-import {
-  prepareSubsForUpsert,
-  validateClientInputs,
-  apiHandler,
-} from 'lib/util';
+import { prepareSubsForUpsert, validateOneInput, apiHandler } from 'lib/util';
 import { NextApiResponse } from 'next';
-import { newIngredientSchema } from 'validation/schemas';
+import { ingredientSchema } from 'validation/schemas';
 import {
   ErrorPayload,
   StandardRecipeApiRequest,
@@ -47,31 +41,27 @@ async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient>>,
   res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
-  const session = getAuth(req);
-  if (!session || !session.userId) {
-    return res.status(401).json({
-      message: 'unauthorized',
-      errors: [ERRORS.UNAUTHORIZED],
-    });
-  }
-
   const { recipeId, inputs: ingredients } = req.body;
   const ingredientIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
   console.log('edit/ingredients ingredients', ingredients, recipeId);
 
-  for (const ingredient of ingredients) {
-    const valid = validateClientInputs([
-      {
-        schema: newIngredientSchema,
-        inputs: ingredient,
-      },
-    ]);
-    if (!valid) {
-      continue;
-    }
+  const allUnits = await prisma.ingredientUnit.findMany({
+    select: {
+      id: true,
+    },
+  });
 
-    // get existing substitutes
+  for (const ingredient of ingredients) {
+
+    const isValid = validateOneInput({
+      schema: ingredientSchema(allUnits.map((u) => u.id)),
+      input: ingredient,
+    });
+
+    if (!isValid) continue;
+
+    // get existing substitutes and calc what needs connect/disconnect
     const ingredientWithSubs = await prisma.ingredient.findUnique({
       where: {
         id: ingredient.id,
@@ -145,6 +135,7 @@ async function handler(
       },
     });
 
+    // push id pair
     ingredientIdPairs.push({
       oldId: ingredient.id,
       newId: newOrUpdatedIngredient.id,

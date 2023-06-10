@@ -1,6 +1,5 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { DropResult } from '@hello-pangea/dnd';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
@@ -82,7 +81,7 @@ export function genIngredient(): FlowIngredient {
     quantity: 0,
     substitutes: [],
     optional: false,
-    order: 0,
+    order: 1,
     notes: '',
   };
 }
@@ -93,7 +92,7 @@ export function genEquipment(): FlowEquipment {
     name: '',
     optional: false,
     notes: '',
-    order: 0,
+    order: 1,
     substitutes: [],
     recipeId: '',
   };
@@ -103,7 +102,7 @@ export function genInstruction(): Instruction {
   return {
     id: genId(),
     description: '',
-    order: 0,
+    order: 1,
     optional: false,
     recipeId: '',
   };

@@ -1,19 +1,13 @@
-import React, { ReactNode } from 'react';
+import { isZeroLength } from 'lib/util-client';
+import React from 'react';
 import { FlowIngredient } from 'types/models';
-import TooltipCard from './TooltipCard';
-
-function renderUnits(ingredientUnit: FlowIngredient['unit'], quantity: number) {
-  console.log(ingredientUnit);
-  let content: ReactNode = <span>No Units</span>;
-  if (!ingredientUnit) return content;
-  content = (
-    <>
-      <span>{`${quantity} ${ingredientUnit.unit}`}</span>
-      <span>{`(${ingredientUnit.abbreviation})`}</span>
-    </>
-  );
-  return content;
-}
+import {
+  TooltipCard,
+  TooltipNotes,
+  TooltipOptional,
+  TooltipSubs,
+  TooltipUnit,
+} from '.';
 
 export default function IngredientTooltip({
   ingredient,
@@ -22,27 +16,15 @@ export default function IngredientTooltip({
 }) {
   const { quantity, notes, substitutes, optional } = ingredient;
 
-  const unitContent = renderUnits(ingredient.unit, quantity);
-
   return (
     <TooltipCard>
-      <div className="flex flex-col space-y-1">
-        <div className="flex space-x-1 font-mono">{unitContent}</div>
-        {notes ? <div className="text-xs">{notes}</div> : null}
-        {substitutes.length > 0 ? (
-          <div className="flex space-x-2 text-xs text-concrete">
-            <span className="text-abyss">subs:</span>
-            {substitutes.map((s) => (
-              <span className="" key={s}>
-                {s}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        {optional ? (
-          <span className="italic text-smoke">optional</span>
-        ) : null}
-      </div>
+      <TooltipUnit ingredientUnit={ingredient.unit} quantity={quantity} />
+      <TooltipNotes notes={notes} />
+      <TooltipSubs substitutes={substitutes} />
+      <TooltipOptional optional={optional} />
+      {!ingredient.unit && !notes && isZeroLength(substitutes) && !optional ? (
+        <span className="italic">nothing important</span>
+      ) : null}
     </TooltipCard>
   );
 }

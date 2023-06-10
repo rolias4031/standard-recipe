@@ -11,6 +11,16 @@ const VALIDATION_ERRORS = {
   },
 };
 
+export function ingredientUnitSchema(allowedUnitIds: string[]) {
+  return z.object({
+    id: z.string().refine((val) => allowedUnitIds.includes(val)),
+    unit: z.string().min(1),
+    abbreviation: z.string(),
+    description: z.string(),
+    property: z.string(),
+  });
+}
+
 export const unitSchema = z.object({
   id: z.string(),
   unit: z.string().min(1),
@@ -19,22 +29,27 @@ export const unitSchema = z.object({
   property: z.string(),
 });
 
-export const newIngredientSchema = z.object({
+export function ingredientSchema(allowedUnitIds: string[]) {
+  return z.object({
+    name: z.string().min(1).max(100),
+    quantity: z.number().gte(0),
+    unit: ingredientUnitSchema(allowedUnitIds).nullable(),
+    optional: z.boolean(),
+    notes: z.string().max(250).nullable(),
+    order: z.number().gte(1),
+    substitutes: z.array(z.string().min(1)),
+  });
+}
+
+export const equipmentSchema = z.object({
   name: z.string().min(1).max(100),
-  quantity: z.number(),
-  unit: unitSchema.nullable(),
-  optional: z.boolean(),
   notes: z.string().max(250).nullable(),
-  substitutes: z.array(z.string()),
+  substitutes: z.array(z.string().min(1)),
+  order: z.number().gte(1),
+  optional: z.boolean(),
 });
 
-export const newEquipmentSchema = z.object({
-  name: z.string().min(1).max(100),
-  notes: z.string().max(250).nullable(),
-  optional: z.boolean(),
-});
-
-export const newInstructionSchema = z.object({
+export const instructionSchema = z.object({
   order: z.number(),
   description: z.string().max(500),
   optional: z.boolean(),

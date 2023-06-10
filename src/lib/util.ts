@@ -45,7 +45,7 @@ export function prepareSubsForUpsert(
   return { connectOrCreateSubstitutes, disconnectSubstitutes };
 }
 
-export function validateClientInputs(
+export function validateManyInputs(
   schemaInputPairs: {
     schema: BaseZodSchema;
     inputs: Record<string, any>;
@@ -58,4 +58,15 @@ export function validateClientInputs(
     }
   }
   return true;
+}
+
+export function validateOneInput({
+  schema,
+  input,
+}: {
+  schema: BaseZodSchema;
+  input: Record<string, any>;
+}): boolean {
+  const isValid = schema.safeParse(input);
+  return isValid.success;
 }

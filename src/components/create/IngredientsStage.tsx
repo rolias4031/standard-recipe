@@ -21,7 +21,7 @@ import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
-import { newIngredientSchema } from 'validation/schemas';
+import { ingredientSchema } from 'validation/schemas';
 import { addSubHandler, removeSubHandler, useDebouncedAutosave } from './utils';
 import { dragEndHandler } from './utils';
 
@@ -57,7 +57,7 @@ function IngredientsStage({
     recipeId,
     inputs: ingredients,
     dispatchInputs: raiseIngredients,
-    schema: newIngredientSchema,
+    schema: ingredientSchema(allUnits.map((u) => u.id)),
     updateInputsMutation: updateIngredient,
   });
 
@@ -236,7 +236,7 @@ function IngredientsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="fade-in flex flex-grow items-center justify-between"
+              className="flex flex-grow items-center justify-between"
             >
               <div className="flex items-center space-x-2">
                 <GeneralButton

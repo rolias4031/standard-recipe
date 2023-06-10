@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { DropResult } from '@hello-pangea/dnd';
 import StageFrame from './StageFrame';
 import { Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
@@ -209,7 +208,7 @@ function InstructionsStage({
                   <RenderInstructionTags
                     description={i.description}
                     tags={[...ingredients, ...equipment]}
-                    ingredientTagComponent={(ingredient) => (
+                    ingredientTooltipComponent={(ingredient) => (
                       <TextWithTooltip
                         key={`${ingredient.id}${genId()}`}
                         text={ingredient.name}
@@ -218,7 +217,7 @@ function InstructionsStage({
                         }
                       />
                     )}
-                    equipmentTagComponent={(equipment) => (
+                    equipmentTooltipComponent={(equipment) => (
                       <TextWithTooltip
                         key={`${equipment.id}${genId()}`}
                         text={equipment.name}
@@ -242,7 +241,7 @@ function InstructionsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="fade-in flex flex-grow items-center justify-between"
+              className="flex flex-grow items-center justify-between"
             >
               <GeneralButton
                 onClick={() =>
