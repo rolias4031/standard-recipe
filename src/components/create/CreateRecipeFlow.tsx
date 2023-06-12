@@ -144,15 +144,19 @@ function FlowController({
   );
 }
 
+function sortInputByOrder<T extends { order: number }>(inputs: T[]): T[] {
+  return inputs.sort((a, b) => a.order - b.order);
+}
+
 function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
   if (ingredients.length > 0) {
-    const flowIngredient = ingredients.map((i) => {
+    const flowIngredients = ingredients.map((i) => {
       const substituteNames = i.substitutes.map((s) => s.name);
       const name = i.name.name;
       const { ingredientNameId, ingredientUnitId, ...keep } = i;
       return { ...keep, name, substitutes: substituteNames };
     });
-    return flowIngredient;
+    return sortInputByOrder(flowIngredients);
   }
   return [genIngredient(), genIngredient()];
 }
@@ -165,14 +169,14 @@ function initEquipment(equipment: EquipmentWithAll[]): FlowEquipment[] {
       const { equipmentNameId, ...keep } = e;
       return { ...keep, name, substitutes: substituteNames };
     });
-    return flowEquipment;
+    return sortInputByOrder(flowEquipment);
   }
   return [genEquipment(), genEquipment()];
 }
 
 function initInstructions(instructions: Instruction[]): Instruction[] {
   if (instructions.length > 0) {
-    return instructions;
+    return sortInputByOrder(instructions);
   }
   return [genInstruction(), genInstruction()];
 }
