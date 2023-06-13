@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { NextApiResponse } from 'next';
 import {
   BaseZodSchema,
@@ -7,6 +8,21 @@ import {
 } from 'types/types';
 import { ERRORS } from './constants';
 
+function errorHandler(res: NextApiResponse<ErrorPayload>, error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2025') {
+      return res.status(200).json({
+        errors: [ERRORS.DOES_NOT_EXIST()],
+        message: 'failure',
+      });
+    }
+  }
+  return res.status(500).json({
+    errors: [ERRORS.UKNOWN_SERVER],
+    message: 'failure',
+  });
+}
+
 export function apiHandler<T, K>(handler: StandardRecipeApiHandler<T, K>) {
   return async function (
     req: StandardRecipeApiRequest<T>,
@@ -15,11 +31,7 @@ export function apiHandler<T, K>(handler: StandardRecipeApiHandler<T, K>) {
     try {
       await handler(req, res);
     } catch (error) {
-      console.log('ERROR HANDLER', error);
-      return res.status(500).json({
-        errors: [ERRORS.UKNOWN_SERVER],
-        message: 'failure',
-      });
+      return errorHandler(res, error);
     }
   };
 }

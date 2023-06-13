@@ -1,3 +1,4 @@
+import { Instruction } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import {
@@ -53,7 +54,7 @@ export async function updateRecipeIngredientMutation(
   });
 }
 
-export async function deleteRecipeIngredientMutation(
+export async function deleteIngredientMutation(
   body: DeleteRecipeInputMutationBody,
 ): Promise<BasePayload | ErrorPayload> {
   return mutateWithBody({
@@ -73,32 +74,60 @@ export async function updateRecipeEquipmentMutation(
   });
 }
 
-export async function deleteRecipeEquipmentMutation(
+export async function deleteEquipmentMutation(
   body: DeleteRecipeInputMutationBody,
 ): Promise<BasePayload | ErrorPayload> {
   return mutateWithBody({
-    method: 'POST',
+    method: 'DELETE',
     apiRoute: 'api/equipment/delete',
     body,
   });
 }
 
-export const useDeleteEquipment = () => {
-  return useMutation({ mutationFn: deleteRecipeEquipmentMutation });
-};
+export async function updateRecipeInstructionMutation(
+  body: UpdateInputMutationBody<Instruction>,
+): Promise<UpdateInputMutationPayload> {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/recipe/update/instruction',
+    body,
+  });
+}
 
-export const useDeleteIngredient = () => {
-  return useMutation({ mutationFn: deleteRecipeIngredientMutation });
-};
+export async function deleteInstructionMutation(
+  body: DeleteRecipeInputMutationBody,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'DELETE',
+    apiRoute: 'api/instruction/delete',
+    body,
+  });
+}
 
-export const useCreateNewDraftRecipe = () => {
+export function useDeleteInstruction() {
+  return useMutation({ mutationFn: deleteInstructionMutation });
+}
+
+export function useUpdateInstruction() {
+  return useMutation({ mutationFn: updateRecipeInstructionMutation });
+}
+
+export function useDeleteEquipment() {
+  return useMutation({ mutationFn: deleteEquipmentMutation });
+}
+
+export function useDeleteIngredient() {
+  return useMutation({ mutationFn: deleteIngredientMutation });
+}
+
+export function useCreateNewDraftRecipe() {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
-};
+}
 
-export const useUpdateRecipeIngredient = () => {
+export function useUpdateRecipeIngredient() {
   return useMutation({ mutationFn: updateRecipeIngredientMutation });
-};
+}
 
-export const useUpdateRecipeEquipment = () => {
+export function useUpdateRecipeEquipment() {
   return useMutation({ mutationFn: updateRecipeEquipmentMutation });
-};
+}

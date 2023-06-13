@@ -13,6 +13,7 @@ import {
   genId,
   genInstruction,
   insertIntoPrevArray,
+  isClientId,
   isZeroLength,
   pickStyles,
 } from 'lib/util-client';
@@ -26,8 +27,10 @@ import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import RenderInstructionTags from 'components/common/RenderInstructionTags';
 import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
-import { dragEndHandler } from './utils';
+import { dragEndHandler, useDebouncedAutosave } from './utils';
 import EquipmentTooltip from 'components/common/tooltip/EquipmentTooltip';
+import { useDeleteInstruction, useUpdateInstruction } from 'lib/mutations';
+import { instructionSchema } from 'validation/schemas';
 
 function PanelCard({
   children,
@@ -121,6 +124,7 @@ function CurrentEquipmentPanel({
 }
 
 interface InstructionsStageProps {
+  recipeId: string;
   instructions: Instruction[];
   ingredients: FlowIngredient[];
   equipment: FlowEquipment[];
@@ -128,17 +132,33 @@ interface InstructionsStageProps {
 }
 
 function InstructionsStage({
+  recipeId,
   instructions,
   ingredients,
   equipment,
   raiseInstructions,
 }: InstructionsStageProps) {
+  const { mutate: updateInstruction, status: updateStatus } =
+    useUpdateInstruction();
+  const { mutate: deleteInstruction, status: deleteStatus } =
+    useDeleteInstruction();
+
+  const { triggerAutosave } = useDebouncedAutosave({
+    dispatchInputs: raiseInstructions,
+    inputs: instructions,
+    recipeId,
+    schema: instructionSchema,
+    updateInputsMutation: updateInstruction,
+  });
+
   function removeInstructionHandler(id: string) {
     raiseInstructions((prev: Instruction[]) => {
       if (prev.length === 1) return [genInstruction()];
       const newInstructions = prev.filter((i) => i.id !== id);
       return newInstructions;
     });
+    if (isClientId(id)) return;
+    deleteInstruction({ id });
   }
 
   function updateInstructionHandler({
@@ -160,8 +180,9 @@ function InstructionsStage({
       );
       return newInstructionArray as Instruction[];
     });
+    triggerAutosave();
   }
-  
+
   const instructionString = useMemo<string>(
     () => instructions.map((i) => i.description).join(''),
     [instructions],
@@ -174,7 +195,7 @@ function InstructionsStage({
       stageInputLabels={
         <div className="w-full font-mono text-sm">Instructions</div>
       }
-      mutationStatus=""
+      mutationStatus={updateStatus}
       stageInputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}

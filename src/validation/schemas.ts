@@ -11,6 +11,14 @@ const VALIDATION_ERRORS = {
   },
 };
 
+const sharedSchemas = {
+  name: z.string().min(1).max(100),
+  order: z.number().gte(1),
+  optional: z.boolean(),
+  substitutes: z.array(z.string().min(1)),
+  notes: z.string().max(250).nullable(),
+};
+
 export function ingredientUnitSchema(allowedUnitIds: string[]) {
   return z.object({
     id: z.string().refine((val) => allowedUnitIds.includes(val)),
@@ -21,38 +29,30 @@ export function ingredientUnitSchema(allowedUnitIds: string[]) {
   });
 }
 
-export const unitSchema = z.object({
-  id: z.string(),
-  unit: z.string().min(1),
-  abbreviation: z.string(),
-  description: z.string(),
-  property: z.string(),
-});
-
 export function ingredientSchema(allowedUnitIds: string[]) {
   return z.object({
-    name: z.string().min(1).max(100),
+    name: sharedSchemas.name,
     quantity: z.number().gte(0),
     unit: ingredientUnitSchema(allowedUnitIds).nullable(),
-    optional: z.boolean(),
-    notes: z.string().max(250).nullable(),
-    order: z.number().gte(1),
-    substitutes: z.array(z.string().min(1)),
+    optional: sharedSchemas.optional,
+    notes: sharedSchemas.notes,
+    order: sharedSchemas.order,
+    substitutes: sharedSchemas.substitutes
   });
 }
 
 export const equipmentSchema = z.object({
-  name: z.string().min(1).max(100),
-  notes: z.string().max(250).nullable(),
-  substitutes: z.array(z.string().min(1)),
-  order: z.number().gte(1),
-  optional: z.boolean(),
+  name: sharedSchemas.name,
+  notes: sharedSchemas.notes,
+  substitutes: sharedSchemas.substitutes,
+  order: sharedSchemas.order,
+  optional: sharedSchemas.optional,
 });
 
 export const instructionSchema = z.object({
-  order: z.number(),
+  order: sharedSchemas.order,
   description: z.string().max(500),
-  optional: z.boolean(),
+  optional: sharedSchemas.optional,
 });
 
 export const newRecipeGeneralInfoSchema = z.object({

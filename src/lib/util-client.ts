@@ -12,11 +12,33 @@ function sortTagsInDescending(tags: Array<FlowIngredient | FlowEquipment>) {
   });
 }
 
+function createMeasurementRegex(namesToMatch: string[]) {
+  return new RegExp(
+    '\\b\\d+(\\.\\d+)?\\s(' + namesToMatch.join('|') + ')\\b',
+    'gi',
+  );
+}
+
+function createTagRegex(tagName: string) {
+  return new RegExp(`(?<![<\\w])${tagName}(?![>\\w])`, 'g');
+}
+
+export function parseInstructionForFigures(
+  namesToMatch: string[],
+  description: string,
+) {
+  // create regex with names list
+  const regex = createMeasurementRegex(namesToMatch);
+
+  // apply regex to each word in description.
+  const measurementMatches = 
+}
+
 export function parseInstructionForTags(
   description: string,
   tags: Array<FlowIngredient | FlowEquipment>,
 ): Array<string | FlowIngredient | FlowEquipment> {
-  // sort tags by number of words in name
+  // sort tags by number of words in name - largest go first otherwise small will break large.
   const sortedTags = sortTagsInDescending(tags);
   // create a hashmap for quick lookup
   const tagMap = new Map();
@@ -26,12 +48,14 @@ export function parseInstructionForTags(
   // replace with <markdown>
   let descriptionWithMarkdown = description;
   sortedTags.forEach((tag) => {
-    const regex = new RegExp(`(?<![<\\w])${tag.name}(?![>\\w])`, 'g');
+    const regex = createTagRegex(tag.name);
     descriptionWithMarkdown = descriptionWithMarkdown.replace(
       regex,
       `<${tag.name}>`,
     );
   });
+
+  // apply regex for units here
 
   console.log('descriptionWithMarkdown', descriptionWithMarkdown);
   // split into array separated by markdown and regular text
@@ -40,7 +64,7 @@ export function parseInstructionForTags(
 
   // go over array and replace markdown with tagObject
   const parsed = splitDescription.map((segment) => {
-    if (segment[0] === '<') {
+    if (segment.startsWith('<')) {
       const tagObj = tagMap.get(segment.slice(1, -1));
       return tagObj ? tagObj : segment;
     }

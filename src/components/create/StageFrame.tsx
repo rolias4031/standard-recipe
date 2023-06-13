@@ -1,4 +1,4 @@
-import React, { ReactNode, SetStateAction, useMemo } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import FlowInputFrame from './FlowInputFrame';
 
@@ -22,7 +22,7 @@ function StageFrame({
   return (
     <StageFrameCard>
       {children}
-      <div className="ml-auto py-1">
+      <div className="ml-auto py-2">
         <InlineStatusDisplay status={mutationStatus} />
       </div>
       <div className="flex flex-col space-y-1 border-y px-5 py-10">
