@@ -86,6 +86,7 @@ model IngredientUnit {
   id           String       @id @default(cuid())
   unit         String       @unique
   abbreviation String
+  plural       String       @default(" ")
   description  String
   property     UnitProperty @default(mass)
   ingredients  Ingredient[]

@@ -1,4 +1,4 @@
-import { Instruction, Prisma } from '@prisma/client';
+import { IngredientUnit, Instruction, Prisma } from '@prisma/client';
 
 // * objects from prisma validator
 
@@ -71,7 +71,33 @@ export interface FlowEquipment
   substitutes: string[];
 }
 
+export interface IngredientMeasurement extends IngredientUnit {
+  segment: {
+    quantity: number;
+    text: string;
+  };
+}
+
+export interface InstructionTemperature {
+  text: string,
+  temperature: string;
+  unit: string;
+}
+
 // * typeguard functions is<Type>Type
+
+export function isInstructionTemperatureType(
+  obj: any,
+): obj is InstructionTemperature {
+  return 'temperature' in obj;
+}
+
+export function isIngredientMeasurementType(
+  obj: any,
+): obj is IngredientMeasurement {
+  console.log(obj);
+  return 'segment' in obj && 'abbreviation' in obj && 'plural' in obj;
+}
 
 export function isFlowIngredientType(obj: any): obj is FlowIngredient {
   return 'unit' in obj && typeof obj.name === 'string';

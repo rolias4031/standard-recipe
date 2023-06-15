@@ -3,8 +3,9 @@ import { prisma } from 'lib/prismadb';
 import { AllUnitsQueryPayload, ErrorPayload } from 'types/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';
+import { apiHandler } from 'lib/util';
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse<AllUnitsQueryPayload | ErrorPayload>,
 ) {
@@ -23,3 +24,5 @@ export default async function handler(
     message: 'success',
   });
 }
+
+export default apiHandler(handler);

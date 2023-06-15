@@ -265,6 +265,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       {
         component: (
           <InstructionsStage
+            allUnits={allUnits}
             recipeId={recipe.id}
             instructions={instructions}
             ingredients={ingredients}

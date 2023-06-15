@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import StageFrame from './StageFrame';
-import { Instruction } from '@prisma/client';
+import { IngredientUnit, Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
   findRecipeInputIndexById,
@@ -31,6 +31,32 @@ import { dragEndHandler, useDebouncedAutosave } from './utils';
 import EquipmentTooltip from 'components/common/tooltip/EquipmentTooltip';
 import { useDeleteInstruction, useUpdateInstruction } from 'lib/mutations';
 import { instructionSchema } from 'validation/schemas';
+import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
+import TextWithPopover from 'components/popover/TextWithPopover';
+import MeasurementPopover from 'components/popover/MeasurementPopover';
+
+function createUnitMap(allUnits: IngredientUnit[]) {
+  const unitAbbreviations = allUnits.map((u) => u.abbreviation);
+  const unitPlurals = allUnits.map((u) => u.plural);
+  const unitsMap = new Map<string, IngredientUnit>();
+  allUnits.forEach((u) => {
+    unitsMap.set(u.unit, u);
+  });
+  unitAbbreviations.forEach((a) => {
+    const unit = allUnits.find((u) => u.abbreviation === a);
+    if (!unit) return;
+    unitsMap.set(a, unit);
+  });
+  unitPlurals.forEach((p) => {
+    const unit = allUnits.find((u) => u.plural === p);
+    if (!unit) return;
+    unitsMap.set(p, unit);
+  });
+
+  console.log('unitsMap', unitsMap);
+
+  return unitsMap;
+}
 
 function PanelCard({
   children,
@@ -129,6 +155,7 @@ interface InstructionsStageProps {
   ingredients: FlowIngredient[];
   equipment: FlowEquipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
+  allUnits: IngredientUnit[];
 }
 
 function InstructionsStage({
@@ -137,11 +164,14 @@ function InstructionsStage({
   ingredients,
   equipment,
   raiseInstructions,
+  allUnits,
 }: InstructionsStageProps) {
   const { mutate: updateInstruction, status: updateStatus } =
     useUpdateInstruction();
   const { mutate: deleteInstruction, status: deleteStatus } =
     useDeleteInstruction();
+
+  const unitsMap = useMemo(() => createUnitMap(allUnits), [allUnits]);
 
   const { triggerAutosave } = useDebouncedAutosave({
     dispatchInputs: raiseInstructions,
@@ -227,6 +257,8 @@ function InstructionsStage({
                   onClick={() => setIsInputFocused(true)}
                 >
                   <RenderInstructionTags
+                    allUnits={allUnits}
+                    unitsMap={unitsMap}
                     description={i.description}
                     tags={[...ingredients, ...equipment]}
                     ingredientTooltipComponent={(ingredient) => (
@@ -245,6 +277,26 @@ function InstructionsStage({
                         tooltipElement={
                           <EquipmentTooltip equipment={equipment} />
                         }
+                      />
+                    )}
+                    measurementPopoverComponent={(measurement) => (
+                      <TextWithPopover
+                        key={genId()}
+                        text={
+                          measurement.segment.quantity +
+                          measurement.segment.text
+                        }
+                        tooltip={
+                          <MeasurementPopover measurement={measurement} />
+                        }
+                      />
+                    )}
+                    temperatureTooltipComponent={(temp) => (
+                      <TextWithTooltip
+                        key={temp.temperature + temp.unit}
+                        text={temp.text}
+                        styles={{ text: 'font-semibold' }}
+                        tooltipElement={<TemperatureTooltip temp={temp} />}
                       />
                     )}
                   />

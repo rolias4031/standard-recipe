@@ -13,9 +13,12 @@ import {
 interface TextWithTooltip {
   text: string;
   tooltipElement: ReactNode;
+  styles?: {
+    text: string;
+  };
 }
 
-function TextWithTooltip({ text, tooltipElement }: TextWithTooltip) {
+function TextWithTooltip({ text, tooltipElement, styles }: TextWithTooltip) {
   const [isOpen, setIsOpen] = useState(false);
 
   const arrowRef = useRef(null);
@@ -37,7 +40,7 @@ function TextWithTooltip({ text, tooltipElement }: TextWithTooltip) {
   return (
     <>
       <span
-        className="text-fern"
+        className={styles?.text}
         ref={refs.setReference}
         {...getReferenceProps()}
       >
@@ -60,5 +63,11 @@ function TextWithTooltip({ text, tooltipElement }: TextWithTooltip) {
     </>
   );
 }
+
+TextWithTooltip.defaultProps = {
+  styles: {
+    text: 'text-fern',
+  },
+};
 
 export default TextWithTooltip;

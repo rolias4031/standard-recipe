@@ -1,6 +1,11 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FlowEquipment, FlowIngredient } from 'types/models';
+import {
+  FlowEquipment,
+  FlowIngredient,
+  IngredientMeasurement,
+  InstructionTemperature,
+} from 'types/models';
 import { ErrorPayload } from 'types/types';
 
 function sortTagsInDescending(tags: Array<FlowIngredient | FlowEquipment>) {
@@ -12,9 +17,11 @@ function sortTagsInDescending(tags: Array<FlowIngredient | FlowEquipment>) {
   });
 }
 
+const ogsplit = /(?=<)|(?<=>)/;
+
 function createMeasurementRegex(namesToMatch: string[]) {
   return new RegExp(
-    '\\b\\d+(\\.\\d+)?\\s(' + namesToMatch.join('|') + ')\\b',
+    '\\b\\d+(\\.\\d+)?\\s(' + namesToMatch.join('|') + ')s?\\b',
     'gi',
   );
 }
@@ -23,50 +30,100 @@ function createTagRegex(tagName: string) {
   return new RegExp(`(?<![<\\w])${tagName}(?![>\\w])`, 'g');
 }
 
+const temperatureRegex = /(\d+(\.\d+)?)[ ]?[CF]/g;
+
+function parseInstructionForTemps(description: string) {
+  const descriptionWithTemps = description.replace(
+    temperatureRegex,
+    (match) => {
+      console.log('match', match);
+      return '{' + match + '}';
+    },
+  );
+  console.log('TEMPS', descriptionWithTemps);
+  return descriptionWithTemps;
+}
+
 export function parseInstructionForFigures(
   namesToMatch: string[],
   description: string,
 ) {
   // create regex with names list
   const regex = createMeasurementRegex(namesToMatch);
-
   // apply regex to each word in description.
-  const measurementMatches = 
+  const descriptionWithMeasurements = description.replace(regex, (match) => {
+    return '[' + match + ']';
+  });
+
+  console.log('descriptionWithMeas', descriptionWithMeasurements);
+  return descriptionWithMeasurements;
 }
 
 export function parseInstructionForTags(
   description: string,
   tags: Array<FlowIngredient | FlowEquipment>,
-): Array<string | FlowIngredient | FlowEquipment> {
+  allUnits: IngredientUnit[],
+  unitsMap: Map<string, IngredientUnit>,
+): Array<
+  | string
+  | FlowIngredient
+  | FlowEquipment
+  | IngredientMeasurement
+  | InstructionTemperature
+> {
+  const unitNamesAndAbbs = [
+    ...allUnits.map((u) => u.unit),
+    ...allUnits.map((u) => u.abbreviation),
+  ];
   // sort tags by number of words in name - largest go first otherwise small will break large.
   const sortedTags = sortTagsInDescending(tags);
-  // create a hashmap for quick lookup
+  // create a hashmaps for quick lookup
   const tagMap = new Map();
   tags.forEach((tag) => {
     tagMap.set(tag.name, tag);
   });
-  // replace with <markdown>
-  let descriptionWithMarkdown = description;
+  // replace input tags <markdown>
+  let descripWithInputTags = description;
   sortedTags.forEach((tag) => {
     const regex = createTagRegex(tag.name);
-    descriptionWithMarkdown = descriptionWithMarkdown.replace(
-      regex,
-      `<${tag.name}>`,
-    );
+    descripWithInputTags = descripWithInputTags.replace(regex, `<${tag.name}>`);
   });
-
   // apply regex for units here
+  const descripWithFigures = parseInstructionForFigures(
+    unitNamesAndAbbs,
+    descripWithInputTags,
+  );
 
-  console.log('descriptionWithMarkdown', descriptionWithMarkdown);
+  const descripWithTemps = parseInstructionForTemps(descripWithFigures);
+
+  console.log(descripWithTemps);
+
+  // console.log('descriptionWithMarkdown', descriptionWithMarkdown);
   // split into array separated by markdown and regular text
-  const splitDescription = descriptionWithMarkdown.split(/(?=<)|(?<=>)/);
-  console.log('parseInstructionsForTags', splitDescription);
+  const splitDescription = descripWithTemps.split(
+    /(?=<)|(?<=>)|(?=\[)|(?<=\])|(?={)|(?<=})/,
+  );
 
-  // go over array and replace markdown with tagObject
+  // go over array and replace markdown with tagObject or measurementObj
   const parsed = splitDescription.map((segment) => {
     if (segment.startsWith('<')) {
+      // markdown for input tag
       const tagObj = tagMap.get(segment.slice(1, -1));
       return tagObj ? tagObj : segment;
+    }
+    if (segment.startsWith('[')) {
+      // markdown for measurement
+      const [quantity, text] = segment.slice(1, -1).split(' ');
+      if (!text) return;
+      const unitObj = unitsMap.get(text);
+      return { segment: { quantity, text }, ...unitObj };
+    }
+    if (segment.startsWith('{')) {
+      const temp = segment.slice(1, -2);
+      const unit = segment[segment.length - 2];
+      const text = `${temp}°${unit}`;
+      console.log(segment.length - 2);
+      return { text, temperature: temp, unit };
     }
     return segment;
   });
@@ -92,6 +149,7 @@ export function genIngredientUnit(): IngredientUnit {
     unit: '',
     abbreviation: '',
     description: '',
+    plural: '',
     property: 'mass',
   };
 }
