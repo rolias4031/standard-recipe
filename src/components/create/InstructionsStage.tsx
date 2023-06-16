@@ -18,13 +18,12 @@ import {
   pickStyles,
 } from 'lib/util-client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
-import { GeneralButton } from 'pirate-ui';
 import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
-import RenderInstructionTags from 'components/common/RenderInstructionTags';
+import RenderInstructionTags from 'components/common/SmartInstruction';
 import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
 import { dragEndHandler, useDebouncedAutosave } from './utils';
@@ -34,29 +33,7 @@ import { instructionSchema } from 'validation/schemas';
 import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
 import TextWithPopover from 'components/popover/TextWithPopover';
 import MeasurementPopover from 'components/popover/MeasurementPopover';
-
-function createUnitMap(allUnits: IngredientUnit[]) {
-  const unitAbbreviations = allUnits.map((u) => u.abbreviation);
-  const unitPlurals = allUnits.map((u) => u.plural);
-  const unitsMap = new Map<string, IngredientUnit>();
-  allUnits.forEach((u) => {
-    unitsMap.set(u.unit, u);
-  });
-  unitAbbreviations.forEach((a) => {
-    const unit = allUnits.find((u) => u.abbreviation === a);
-    if (!unit) return;
-    unitsMap.set(a, unit);
-  });
-  unitPlurals.forEach((p) => {
-    const unit = allUnits.find((u) => u.plural === p);
-    if (!unit) return;
-    unitsMap.set(p, unit);
-  });
-
-  console.log('unitsMap', unitsMap);
-
-  return unitsMap;
-}
+import BaseButton from 'components/common/BaseButton';
 
 function PanelCard({
   children,
@@ -166,13 +143,12 @@ function InstructionsStage({
   raiseInstructions,
   allUnits,
 }: InstructionsStageProps) {
+  const [previewMode, setPreviewMode] = useState(false);
   const { mutate: updateInstruction, status: updateStatus } =
     useUpdateInstruction();
   const { mutate: deleteInstruction, status: deleteStatus } =
     useDeleteInstruction();
-
-  const unitsMap = useMemo(() => createUnitMap(allUnits), [allUnits]);
-
+    
   const { triggerAutosave } = useDebouncedAutosave({
     dispatchInputs: raiseInstructions,
     inputs: instructions,
@@ -235,73 +211,21 @@ function InstructionsStage({
           overviewComponents={<>{i.optional ? <span>optional</span> : null}</>}
           mainInputComponents={(isInputFocused, setIsInputFocused) => (
             <>
-              {isInputFocused ? (
-                <textarea
-                  autoFocus
-                  name="description"
-                  value={i.description}
-                  className="inp-primary inp-reg w-5/6 resize-none"
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                    updateInstructionHandler({
-                      id: i.id,
-                      name: e.target.name,
-                      value: e.target.value,
-                    });
-                  }}
-                  onBlur={() => setIsInputFocused(false)}
-                  rows={4}
-                />
-              ) : (
-                <div
-                  className="min-h-[30px] w-5/6 rounded-sm bg-smoke px-2 py-1"
-                  onClick={() => setIsInputFocused(true)}
-                >
-                  <RenderInstructionTags
-                    allUnits={allUnits}
-                    unitsMap={unitsMap}
-                    description={i.description}
-                    tags={[...ingredients, ...equipment]}
-                    ingredientTooltipComponent={(ingredient) => (
-                      <TextWithTooltip
-                        key={`${ingredient.id}${genId()}`}
-                        text={ingredient.name}
-                        tooltipElement={
-                          <IngredientTooltip ingredient={ingredient} />
-                        }
-                      />
-                    )}
-                    equipmentTooltipComponent={(equipment) => (
-                      <TextWithTooltip
-                        key={`${equipment.id}${genId()}`}
-                        text={equipment.name}
-                        tooltipElement={
-                          <EquipmentTooltip equipment={equipment} />
-                        }
-                      />
-                    )}
-                    measurementPopoverComponent={(measurement) => (
-                      <TextWithPopover
-                        key={genId()}
-                        text={
-                          measurement.segment.quantity +
-                          measurement.segment.text
-                        }
-                        tooltip={
-                          <MeasurementPopover measurement={measurement} />
-                        }
-                      />
-                    )}
-                    temperatureTooltipComponent={(temp) => (
-                      <TextWithTooltip
-                        key={temp.temperature + temp.unit}
-                        text={temp.text}
-                        styles={{ text: 'font-semibold' }}
-                        tooltipElement={<TemperatureTooltip temp={temp} />}
-                      />
-                    )}
-                  />
-                </div>
-              )}
+              <textarea
+                autoFocus
+                name="description"
+                value={i.description}
+                className="inp-primary inp-reg w-5/6 resize-none"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  updateInstructionHandler({
+                    id: i.id,
+                    name: e.target.name,
+                    value: e.target.value,
+                  });
+                }}
+                onBlur={() => setIsInputFocused(false)}
+                rows={4}
+              />
             </>
           )}
           auxiliaryComponents={
@@ -316,7 +240,7 @@ function InstructionsStage({
               key="1"
               className="flex flex-grow items-center justify-between"
             >
-              <GeneralButton
+              <BaseButton
                 onClick={() =>
                   setOptionMode((prev: string | null) =>
                     prev === null && optionModes[0] ? optionModes[0] : null,
@@ -332,14 +256,14 @@ function InstructionsStage({
                     ]),
                   }}
                 />
-              </GeneralButton>
-              <GeneralButton onClick={() => removeInstructionHandler(i.id)}>
+              </BaseButton>
+              <BaseButton onClick={() => removeInstructionHandler(i.id)}>
                 <TrashIcon
                   styles={{
                     icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
                   }}
                 />
-              </GeneralButton>
+              </BaseButton>
             </div>
           )}
         />

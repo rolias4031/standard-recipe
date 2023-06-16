@@ -79,7 +79,7 @@ export interface IngredientMeasurement extends IngredientUnit {
 }
 
 export interface InstructionTemperature {
-  text: string,
+  text: string;
   temperature: string;
   unit: string;
 }
@@ -99,11 +99,11 @@ export function isIngredientMeasurementType(
   return 'segment' in obj && 'abbreviation' in obj && 'plural' in obj;
 }
 
-export function isFlowIngredientType(obj: any): obj is FlowIngredient {
-  return 'unit' in obj && typeof obj.name === 'string';
+export function isIngredientWithAllType(obj: any): obj is IngredientWithAll {
+  return 'unit' in obj && 'quantity' in obj;
 }
 
-export function isFlowEquipmentType(obj: any): obj is FlowEquipment {
+export function isEquipmentWithAllType(obj: any): obj is EquipmentWithAll {
   return (
     'name' in obj &&
     !('unit' in obj) &&

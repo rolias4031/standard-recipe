@@ -19,7 +19,11 @@ import {
   FlowEquipment,
   EquipmentWithAll,
 } from 'types/models';
-import { BaseZodSchema } from 'types/types';
+import {
+  BaseZodSchema,
+  UpdateInputMutationBody,
+  UpdateInputMutationPayload,
+} from 'types/types';
 import {
   equipmentSchema,
   ingredientSchema,
@@ -29,11 +33,20 @@ import EquipmentStage from './EquipmentStage';
 import InfoStage from './InfoStage';
 import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
+import InstructionsView from 'components/view/InstructionsView';
+import RecipeView from 'components/view/RecipeView';
+import { UseMutateFunction, useQueryClient } from '@tanstack/react-query';
+import {
+  useUpdateEquipment,
+  useUpdateIngredient,
+  useUpdateInstruction,
+} from 'lib/mutations';
 
 interface FlowControllerProps {
   children: ReactNode;
   stage: number;
   setStage: Dispatch<SetStateAction<number>>;
+  onEnterPreviewMode: () => void;
   recipeName: string;
   stageConfig?: StageConfig;
 }
@@ -41,19 +54,20 @@ interface FlowControllerProps {
 function FlowController({
   children,
   setStage,
+  onEnterPreviewMode,
   stage,
   recipeName,
   stageConfig,
 }: FlowControllerProps) {
   const [isError, setIsError] = useState<boolean>(false);
-  function nextStageHandler() {
+  async function nextStageHandler() {
     const curInputs = stageConfig?.inputs;
     if (!curInputs) return;
     for (const input of curInputs) {
       const schema = stageConfig.schema;
       if (!schema) return;
-      const valid = schema.safeParse(input);
-      if (!valid.success) {
+      const isValid = schema.safeParse(input);
+      if (!isValid.success) {
         setIsError(true);
         return;
       }
@@ -95,7 +109,10 @@ function FlowController({
           <p className="text-2xl font-bold">{stageConfig?.name}</p>
         </div>
         <div className="flex items-center space-x-4">
-          <button className="text-xs">tips</button>
+          <button className="text-xs">Tips</button>
+          <button className="text-xs" onClick={onEnterPreviewMode}>
+            Preview
+          </button>
         </div>
       </div>
       {children}
@@ -206,8 +223,14 @@ interface CreateRecipeFlowProps {
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
+  const { mutate: updateIngredients } = useUpdateIngredient();
+  const { mutate: updateEquipment } = useUpdateEquipment();
+  const { mutate: updateInstructions } = useUpdateInstruction();
+
   // state
   const [stage, setStage] = useState<number>(1);
+  const [previewMode, setPreviewMode] = useState(false);
+  const client = useQueryClient();
 
   const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
     initIngredients(recipe.ingredients),
@@ -296,17 +319,36 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     ],
   ]);
 
+  function previewModeHandler(set: boolean) {
+    return () => {
+      client.invalidateQueries(['recipe']);
+      setPreviewMode(set);
+    };
+  }
+
   return (
     <>
-      <FlowController
-        key={recipe.id}
-        recipeName={recipe.name}
-        stageConfig={stageConfig.get(stage)}
-        setStage={setStage}
-        stage={stage}
-      >
-        {stageConfig.get(stage)?.component}
-      </FlowController>
+      {!previewMode ? (
+        <FlowController
+          key={recipe.id}
+          recipeName={recipe.name}
+          stageConfig={stageConfig.get(stage)}
+          setStage={setStage}
+          stage={stage}
+          onEnterPreviewMode={previewModeHandler(true)}
+        >
+          {stageConfig.get(stage)?.component}
+        </FlowController>
+      ) : (
+        <RecipeView onExitPreviewMode={previewModeHandler(false)}>
+          <InstructionsView
+            instructions={recipe.instructions}
+            ingredients={recipe.ingredients}
+            equipment={recipe.equipment}
+            allUnits={allUnits}
+          />
+        </RecipeView>
+      )}
     </>
   );
 }

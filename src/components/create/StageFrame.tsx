@@ -25,7 +25,7 @@ function StageFrame({
       <div className="ml-auto py-2">
         <InlineStatusDisplay status={mutationStatus} />
       </div>
-      <div className="flex flex-col space-y-1 border-y px-5 py-10">
+      <div className="flex flex-col space-y-1 rounded-lg border px-5 py-10">
         <FlowInputFrame row1col2={stageInputLabels} />
         <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId={droppableId}>

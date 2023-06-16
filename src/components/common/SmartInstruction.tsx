@@ -2,21 +2,21 @@ import { IngredientUnit } from '@prisma/client';
 import { parseInstructionForTags } from 'lib/util-client';
 import React, { ReactNode } from 'react';
 import {
-  FlowEquipment,
-  FlowIngredient,
+  EquipmentWithAll,
   IngredientMeasurement,
+  IngredientWithAll,
   InstructionTemperature,
-  isFlowEquipmentType,
-  isFlowIngredientType,
+  isEquipmentWithAllType,
   isIngredientMeasurementType,
+  isIngredientWithAllType,
   isInstructionTemperatureType,
 } from 'types/models';
 
-interface RenderInstructionTags {
+interface SmartInstructionProps {
   description: string;
-  tags: Array<FlowIngredient | FlowEquipment>;
-  ingredientTooltipComponent: (ingredient: FlowIngredient) => ReactNode;
-  equipmentTooltipComponent: (equipment: FlowEquipment) => ReactNode;
+  tags: Array<IngredientWithAll | EquipmentWithAll>;
+  ingredientTooltipComponent: (ingredient: IngredientWithAll) => ReactNode;
+  equipmentTooltipComponent: (equipment: EquipmentWithAll) => ReactNode;
   measurementPopoverComponent: (
     measurement: IngredientMeasurement,
   ) => ReactNode;
@@ -27,7 +27,7 @@ interface RenderInstructionTags {
   unitsMap: Map<string, IngredientUnit>;
 }
 
-function RenderInstructionTags({
+function SmartInstruction({
   description,
   tags,
   ingredientTooltipComponent,
@@ -36,7 +36,7 @@ function RenderInstructionTags({
   temperatureTooltipComponent,
   allUnits,
   unitsMap,
-}: RenderInstructionTags) {
+}: SmartInstructionProps) {
   const parsedDescriptionArray = parseInstructionForTags(
     description,
     tags,
@@ -48,10 +48,10 @@ function RenderInstructionTags({
       {parsedDescriptionArray.map((segment) => {
         console.log(segment);
         if (typeof segment === 'string') return segment;
-        if (isFlowIngredientType(segment)) {
+        if (isIngredientWithAllType(segment)) {
           return ingredientTooltipComponent(segment);
         }
-        if (isFlowEquipmentType(segment)) {
+        if (isEquipmentWithAllType(segment)) {
           return equipmentTooltipComponent(segment);
         }
         if (isIngredientMeasurementType(segment)) {
@@ -65,4 +65,4 @@ function RenderInstructionTags({
   );
 }
 
-export default RenderInstructionTags;
+export default SmartInstruction;

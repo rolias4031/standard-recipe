@@ -1,17 +1,19 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  EquipmentWithAll,
   FlowEquipment,
   FlowIngredient,
   IngredientMeasurement,
+  IngredientWithAll,
   InstructionTemperature,
 } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
-function sortTagsInDescending(tags: Array<FlowIngredient | FlowEquipment>) {
+function sortTagsInDescending(tags: Array<IngredientWithAll | EquipmentWithAll>) {
   return tags.sort((a, b) => {
-    const aWords = a.name.split(' ').length;
-    const bWords = b.name.split(' ').length;
+    const aWords = a.name.name.split(' ').length;
+    const bWords = b.name.name.split(' ').length;
 
     return bWords - aWords;
   });
@@ -61,13 +63,13 @@ export function parseInstructionForFigures(
 
 export function parseInstructionForTags(
   description: string,
-  tags: Array<FlowIngredient | FlowEquipment>,
+  tags: (IngredientWithAll | EquipmentWithAll)[],
   allUnits: IngredientUnit[],
   unitsMap: Map<string, IngredientUnit>,
 ): Array<
   | string
-  | FlowIngredient
-  | FlowEquipment
+  | IngredientWithAll
+  | EquipmentWithAll
   | IngredientMeasurement
   | InstructionTemperature
 > {
@@ -80,13 +82,13 @@ export function parseInstructionForTags(
   // create a hashmaps for quick lookup
   const tagMap = new Map();
   tags.forEach((tag) => {
-    tagMap.set(tag.name, tag);
+    tagMap.set(tag.name.name, tag);
   });
   // replace input tags <markdown>
   let descripWithInputTags = description;
   sortedTags.forEach((tag) => {
-    const regex = createTagRegex(tag.name);
-    descripWithInputTags = descripWithInputTags.replace(regex, `<${tag.name}>`);
+    const regex = createTagRegex(tag.name.name);
+    descripWithInputTags = descripWithInputTags.replace(regex, `<${tag.name.name}>`);
   });
   // apply regex for units here
   const descripWithFigures = parseInstructionForFigures(
@@ -213,10 +215,10 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
   return obj && typeof obj.message === 'string' && Array.isArray(obj.errors);
 }
 
-type InputArray = [boolean, string, string?];
-type Input = InputArray | string;
+export type ToggleStylesInputArray = [boolean, string, string?];
+type Input = ToggleStylesInputArray | string;
 
-export function pickStyles(...inputItems: Input[]): string {
+export function pickStyles(...inputItems: (Input | null)[]): string {
   const combinedStringArray: string[] = [];
 
   inputItems.forEach((inputItem) => {
@@ -230,6 +232,8 @@ export function pickStyles(...inputItems: Input[]): string {
       }
     } else if (typeof inputItem === 'string') {
       combinedStringArray.push(inputItem);
+    } else if (inputItem === null) {
+      return;
     }
   });
 

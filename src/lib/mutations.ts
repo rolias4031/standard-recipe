@@ -124,10 +124,10 @@ export function useCreateNewDraftRecipe() {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
 }
 
-export function useUpdateRecipeIngredient() {
+export function useUpdateIngredient() {
   return useMutation({ mutationFn: updateRecipeIngredientMutation });
 }
 
-export function useUpdateRecipeEquipment() {
+export function useUpdateEquipment() {
   return useMutation({ mutationFn: updateRecipeEquipmentMutation });
 }
