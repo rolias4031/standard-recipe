@@ -64,11 +64,11 @@ body {
 
 /* input */
 .inp-primary {
-  @apply rounded-sm placeholder-concrete bg-smoke focus:outline-fern focus:bg-white;
+  @apply rounded placeholder-concrete bg-smoke focus:outline-fern focus:bg-white;
 }
 
 .inp-select {
-  @apply rounded-sm bg-smoke focus:outline-fern focus:text-white focus:bg-fern
+  @apply rounded bg-smoke focus:outline-fern focus:text-white focus:bg-fern
 }
 
 .inp-sm {

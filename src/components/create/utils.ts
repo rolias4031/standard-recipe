@@ -76,7 +76,6 @@ export function removeSubHandler<
 interface DebouncedMutationArgs<T> {
   recipeId: string;
   inputs: T[];
-  dispatchInputs: Dispatch<SetStateAction<T[]>>;
   schema: BaseZodSchema;
 }
 
@@ -92,7 +91,7 @@ interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
 export function useDebouncedAutosave<T extends { id: string }>(
   config: UseDebounceControllerArgs<T>,
 ): { triggerAutosave: () => void } {
-  const { recipeId, inputs, dispatchInputs, schema, updateInputsMutation } =
+  const { recipeId, inputs, schema, updateInputsMutation } =
     config;
   const [isAutosaveTriggered, setIsAutosaveTriggered] =
     useState<boolean>(false);
@@ -113,17 +112,10 @@ export function useDebouncedAutosave<T extends { id: string }>(
       const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
       if (isZeroLength(validInputs)) return;
       console.log('debounced mutation', validInputs);
-      updateInputsMutation(
-        {
-          recipeId: args.recipeId,
-          inputs: validInputs,
-        },
-        {
-          onSuccess: (data) => {
-            replaceRecipeInputIds(data.inputIdPairs, args.dispatchInputs);
-          },
-        },
-      );
+      updateInputsMutation({
+        recipeId: args.recipeId,
+        inputs: validInputs,
+      });
     }, 3000),
     [],
   );
@@ -134,7 +126,6 @@ export function useDebouncedAutosave<T extends { id: string }>(
     debouncedUpdateValidInputs({
       recipeId,
       inputs: inputs,
-      dispatchInputs,
       schema,
     });
     return () => {

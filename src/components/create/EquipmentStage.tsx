@@ -11,11 +11,15 @@ import {
 } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
-import { UpdateRecipeInputHandlerArgs } from 'types/types';
+import {
+  UpdateInputMutationBody,
+  UpdateInputMutationPayload,
+  UpdateRecipeInputHandlerArgs,
+} from 'types/types';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
-import { useDeleteEquipment, useUpdateRecipeEquipment } from 'lib/mutations';
+import { useDeleteEquipment } from 'lib/mutations';
 import { equipmentSchema } from 'validation/schemas';
 import {
   addSubHandler,
@@ -25,6 +29,7 @@ import {
 } from './utils';
 import { FlowEquipment } from 'types/models';
 import AddSubstitutes from './AddSubstitutes';
+import { UseMutateFunction } from '@tanstack/react-query';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
@@ -34,15 +39,22 @@ interface EquipmentStageProps {
   equipment: FlowEquipment[];
   raiseEquipment: Dispatch<SetStateAction<FlowEquipment[]>>;
   recipeId: string;
+  updateEquipmentMutation: UseMutateFunction<
+    UpdateInputMutationPayload,
+    unknown,
+    UpdateInputMutationBody<FlowEquipment>,
+    unknown
+  >;
+  updateEquipmentStatus: string;
 }
 
 function EquipmentStage({
   equipment,
   raiseEquipment,
   recipeId,
+  updateEquipmentMutation,
+  updateEquipmentStatus,
 }: EquipmentStageProps) {
-  const { mutate: updateEquipment, status: updateStatus } =
-    useUpdateRecipeEquipment();
   const { mutate: deleteEquipment, status: deleteStatus } =
     useDeleteEquipment();
 
@@ -51,9 +63,8 @@ function EquipmentStage({
   const { triggerAutosave } = useDebouncedAutosave({
     recipeId,
     inputs: equipment,
-    dispatchInputs: raiseEquipment,
     schema: equipmentSchema,
-    updateInputsMutation: updateEquipment,
+    updateInputsMutation: updateEquipmentMutation,
   });
 
   function removeEquipmentHandler(id: string) {
@@ -104,7 +115,7 @@ function EquipmentStage({
           <div className="w-full font-mono text-sm">Equipment</div>
         </>
       }
-      mutationStatus={updateStatus}
+      mutationStatus={updateEquipmentStatus}
       onDragEnd={(result) => dragEndHandler(result, raiseEquipment)}
       droppableId="equipment"
       stageInputComponents={equipment.map((e, index) => (
@@ -176,6 +187,7 @@ function EquipmentStage({
             <>
               {e.optional ? <span>optional</span> : null}
               {!isZeroLength(e.notes) ? <span>notes</span> : null}
+              {!isZeroLength(e.substitutes) ? <span>subs</span> : null}
             </>
           }
           optionInputComponents={(optionMode) => (

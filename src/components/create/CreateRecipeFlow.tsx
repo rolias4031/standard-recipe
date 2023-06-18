@@ -35,37 +35,48 @@ import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
 import InstructionsView from 'components/view/InstructionsView';
 import RecipeView from 'components/view/RecipeView';
+import LoadingBuffer from 'components/common/LoadingBuffer';
 import { UseMutateFunction, useQueryClient } from '@tanstack/react-query';
 import {
   useUpdateEquipment,
-  useUpdateIngredient,
-  useUpdateInstruction,
+  useUpdateIngredients,
+  useUpdateInstructions,
 } from 'lib/mutations';
 
-interface FlowControllerProps {
+interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
   stage: number;
-  setStage: Dispatch<SetStateAction<number>>;
-  onEnterPreviewMode: () => void;
+  dispatchStage: Dispatch<SetStateAction<number>>;
+  dispatchPreviewMode: Dispatch<SetStateAction<boolean>>;
   recipeName: string;
-  stageConfig?: StageConfig;
+  recipeId: string;
+  controllerConfig: ControllerConfig<T>;
 }
 
-function FlowController({
+function FlowController<T extends { id: string }>({
   children,
-  setStage,
-  onEnterPreviewMode,
+  dispatchPreviewMode,
+  dispatchStage,
   stage,
   recipeName,
-  stageConfig,
-}: FlowControllerProps) {
+  recipeId,
+  controllerConfig,
+}: FlowControllerProps<T>) {
+  const queryClient = useQueryClient();
+  const {
+    name,
+    label,
+    inputs,
+    dispatchInputs,
+    genInput,
+    schema,
+    updateInputsMutation,
+  } = controllerConfig;
   const [isError, setIsError] = useState<boolean>(false);
   async function nextStageHandler() {
-    const curInputs = stageConfig?.inputs;
-    if (!curInputs) return;
+    const curInputs = inputs;
+    if (!curInputs || !schema) return;
     for (const input of curInputs) {
-      const schema = stageConfig.schema;
-      if (!schema) return;
       const isValid = schema.safeParse(input);
       if (!isValid.success) {
         setIsError(true);
@@ -73,7 +84,10 @@ function FlowController({
       }
     }
     setIsError(false);
-    setStage((prev: number) => {
+    if (updateInputsMutation) {
+      updateInputsMutation({ inputs, recipeId });
+    }
+    dispatchStage((prev: number) => {
       if (prev === 4) return prev;
       if (prev >= 1) return prev + 1;
       return prev;
@@ -82,7 +96,10 @@ function FlowController({
 
   function prevStageHandler() {
     setIsError(false);
-    setStage((prev: number) => {
+    if (updateInputsMutation && inputs) {
+      updateInputsMutation({ inputs, recipeId });
+    }
+    dispatchStage((prev: number) => {
       if (prev === 1) return prev;
       if (prev > 1) return prev - 1;
       return prev;
@@ -90,10 +107,8 @@ function FlowController({
   }
 
   function createNewInputHandler() {
-    const dispatch = stageConfig?.dispatch;
-    const genInput = stageConfig?.genInput;
-    if (!dispatch || !genInput) return;
-    dispatch((prev: any[]) => {
+    if (!dispatchInputs || !genInput) return;
+    dispatchInputs((prev: T[]) => {
       const newInput = genInput();
       const idExists = prev.findIndex((i) => i.id === newInput.id);
       if (idExists !== -1) return prev;
@@ -101,16 +116,29 @@ function FlowController({
     });
   }
 
+  function enterPreviewModeHandler() {
+    if (!inputs || !updateInputsMutation) return;
+    updateInputsMutation(
+      { inputs, recipeId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(['recipe']);
+        },
+      },
+    );
+    dispatchPreviewMode(true);
+  }
+
   return (
     <div className="flex flex-grow flex-col">
       <div className="flex items-center justify-between space-x-2">
         <div className="flex items-end space-x-2">
           <p className="text-lg font-light">{recipeName}</p>
-          <p className="text-2xl font-bold">{stageConfig?.name}</p>
+          <p className="text-2xl font-bold">{name}</p>
         </div>
         <div className="flex items-center space-x-4">
           <button className="text-xs">Tips</button>
-          <button className="text-xs" onClick={onEnterPreviewMode}>
+          <button className="text-xs" onClick={enterPreviewModeHandler}>
             Preview
           </button>
         </div>
@@ -124,14 +152,14 @@ function FlowController({
             onClick={createNewInputHandler}
           >
             <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
-            <span className="pr-2 pl-1 text-lg">{stageConfig?.label}</span>
+            <span className="pr-2 pl-1 text-lg">{label}</span>
           </button>
         </div>
       ) : null}
       <div className="fixed left-10 right-10 bottom-0 flex flex-col items-center justify-between space-y-3 border-concrete transition-all">
         {isError ? (
           <StageError
-            stageName={stageConfig?.name.toLowerCase()}
+            stageName={name.toLowerCase()}
             dispatchIsError={setIsError}
           />
         ) : null}
@@ -199,19 +227,19 @@ function initInstructions(instructions: Instruction[]): Instruction[] {
 }
 
 function initGeneralInfo(recipe: RecipeWithFull): RecipeGeneralInfo {
-  return { name: recipe.name, description: recipe.description };
+  return { id: recipe.id, name: recipe.name, description: recipe.description };
 }
 
-type StageDispatchFunction =
-  | Dispatch<SetStateAction<FlowIngredient[]>>
-  | Dispatch<SetStateAction<FlowEquipment[]>>
-  | Dispatch<SetStateAction<Instruction[]>>;
-
-interface StageConfig {
-  component: ReactNode;
-  inputs?: FlowIngredient[] | FlowEquipment[] | Instruction[];
-  dispatch?: StageDispatchFunction;
-  genInput?: () => FlowIngredient | FlowEquipment | Instruction;
+interface ControllerConfig<T> {
+  inputs?: T[];
+  dispatchInputs?: Dispatch<SetStateAction<T[]>>;
+  genInput?: () => T;
+  updateInputsMutation?: UseMutateFunction<
+    UpdateInputMutationPayload,
+    unknown,
+    UpdateInputMutationBody<T>,
+    unknown
+  >;
   schema?: BaseZodSchema;
   name: string;
   label: string;
@@ -223,10 +251,6 @@ interface CreateRecipeFlowProps {
 }
 
 function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
-  const { mutate: updateIngredients } = useUpdateIngredient();
-  const { mutate: updateEquipment } = useUpdateEquipment();
-  const { mutate: updateInstructions } = useUpdateInstruction();
-
   // state
   const [stage, setStage] = useState<number>(1);
   const [previewMode, setPreviewMode] = useState(false);
@@ -245,109 +269,145 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     initGeneralInfo(recipe),
   );
 
-  const stageConfig = new Map<number, StageConfig>([
+  const { mutate: updateIngredients, status: updateIngredientsStatus } =
+    useUpdateIngredients(setIngredients);
+  const { mutate: updateEquipment, status: updateEquipmentStatus } =
+    useUpdateEquipment(setEquipment);
+  const { mutate: updateInstructions, status: updateInstructionsStatus } =
+    useUpdateInstructions(setInstructions);
+
+  const sharedControllerConfig = {
+    recipeName: recipe.name,
+    recipeId: recipe.id,
+    dispatchPreviewMode: setPreviewMode,
+    dispatchStage: setStage,
+    stage: stage,
+  };
+
+  const firstControllerConfig: ControllerConfig<FlowIngredient> = {
+    name: 'Ingredients',
+    label: 'Ingredient',
+    inputs: ingredients,
+    dispatchInputs: setIngredients,
+    genInput: genIngredient,
+    schema: ingredientSchema(allUnits.map((u) => u.id)),
+    updateInputsMutation: updateIngredients,
+  };
+
+  const secondControllerConfig: ControllerConfig<FlowEquipment> = {
+    name: 'Equipment',
+    label: 'Equipment',
+    inputs: equipment,
+    dispatchInputs: setEquipment,
+    genInput: genEquipment,
+    schema: equipmentSchema,
+    updateInputsMutation: updateEquipment,
+  };
+
+  const thirdControllerConfig: ControllerConfig<Instruction> = {
+    name: 'Instructions',
+    label: 'Instruction',
+    inputs: instructions,
+    dispatchInputs: setInstructions,
+    genInput: genInstruction,
+    schema: instructionSchema,
+    updateInputsMutation: updateInstructions,
+  };
+
+  const fourthControllerConfig: ControllerConfig<RecipeGeneralInfo> = {
+    name: 'Info',
+    label: 'Info',
+  };
+
+  const stageComponents = new Map<number, ReactNode>([
     [
       1,
-      {
-        component: (
-          <IngredientsStage
-            recipeId={recipe.id}
-            ingredients={ingredients}
-            raiseIngredients={setIngredients}
-            allUnits={allUnits}
-          />
-        ),
-        name: 'Ingredients',
-        inputs: ingredients,
-        dispatch: setIngredients,
-        genInput: genIngredient,
-        schema: ingredientSchema(allUnits.map((u) => u.id)),
-        label: 'Ingredient',
-      },
+      <FlowController
+        key={recipe.id + firstControllerConfig.name}
+        {...sharedControllerConfig}
+        controllerConfig={firstControllerConfig}
+      >
+        <IngredientsStage
+          recipeId={recipe.id}
+          ingredients={ingredients}
+          raiseIngredients={setIngredients}
+          allUnits={allUnits}
+          updateIngredientsMutation={updateIngredients}
+          updateInstructionsStatus={updateIngredientsStatus}
+        />
+      </FlowController>,
     ],
     [
       2,
-      {
-        component: (
-          <EquipmentStage
-            equipment={equipment}
-            raiseEquipment={setEquipment}
-            recipeId={recipe.id}
-          />
-        ),
-        name: 'Equipment',
-        inputs: equipment,
-        dispatch: setEquipment,
-        genInput: genEquipment,
-        schema: equipmentSchema,
-        label: 'Equipment',
-      },
+      <FlowController
+        key={recipe.id + secondControllerConfig.name}
+        {...sharedControllerConfig}
+        controllerConfig={secondControllerConfig}
+      >
+        <EquipmentStage
+          equipment={equipment}
+          raiseEquipment={setEquipment}
+          recipeId={recipe.id}
+          updateEquipmentMutation={updateEquipment}
+          updateEquipmentStatus={updateEquipmentStatus}
+        />
+      </FlowController>,
     ],
     [
       3,
-      {
-        component: (
-          <InstructionsStage
-            allUnits={allUnits}
-            recipeId={recipe.id}
-            instructions={instructions}
-            ingredients={ingredients}
-            equipment={equipment}
-            raiseInstructions={setInstructions}
-          />
-        ),
-        name: 'Instructions',
-        inputs: instructions,
-        dispatch: setInstructions,
-        genInput: genInstruction,
-        schema: instructionSchema,
-        label: 'Instruction',
-      },
+      <FlowController
+        key={recipe.id + thirdControllerConfig.name}
+        {...sharedControllerConfig}
+        controllerConfig={thirdControllerConfig}
+      >
+        <InstructionsStage
+          allUnits={allUnits}
+          recipeId={recipe.id}
+          instructions={instructions}
+          ingredients={ingredients}
+          equipment={equipment}
+          raiseInstructions={setInstructions}
+          updateInstructionsMutation={updateInstructions}
+          updateInstructionsStatus={updateInstructionsStatus}
+        />
+      </FlowController>,
     ],
     [
       4,
-      {
-        component: (
-          <InfoStage
-            generalInfo={generalInfo}
-            raiseGeneralInfo={setGeneralInfo}
-          />
-        ),
-        name: 'Info',
-        label: 'Info',
-      },
+      <FlowController
+        key={recipe.id + fourthControllerConfig.name}
+        {...sharedControllerConfig}
+        controllerConfig={fourthControllerConfig}
+      >
+        <InfoStage
+          generalInfo={generalInfo}
+          raiseGeneralInfo={setGeneralInfo}
+        />
+      </FlowController>,
     ],
   ]);
-
-  function previewModeHandler(set: boolean) {
-    return () => {
-      client.invalidateQueries(['recipe']);
-      setPreviewMode(set);
-    };
-  }
 
   return (
     <>
       {!previewMode ? (
-        <FlowController
-          key={recipe.id}
-          recipeName={recipe.name}
-          stageConfig={stageConfig.get(stage)}
-          setStage={setStage}
-          stage={stage}
-          onEnterPreviewMode={previewModeHandler(true)}
-        >
-          {stageConfig.get(stage)?.component}
-        </FlowController>
+        stageComponents.get(stage)
       ) : (
-        <RecipeView onExitPreviewMode={previewModeHandler(false)}>
-          <InstructionsView
-            instructions={recipe.instructions}
-            ingredients={recipe.ingredients}
-            equipment={recipe.equipment}
-            allUnits={allUnits}
-          />
-        </RecipeView>
+        <LoadingBuffer
+          statuses={[
+            updateIngredientsStatus,
+            updateEquipmentStatus,
+            updateInstructionsStatus,
+          ]}
+        >
+          <RecipeView onExitPreviewMode={() => setPreviewMode(false)}>
+            <InstructionsView
+              instructions={recipe.instructions}
+              ingredients={recipe.ingredients}
+              equipment={recipe.equipment}
+              allUnits={allUnits}
+            />
+          </RecipeView>
+        </LoadingBuffer>
       )}
     </>
   );

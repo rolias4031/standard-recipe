@@ -10,30 +10,28 @@ import { IngredientUnit, Instruction } from '@prisma/client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
   findRecipeInputIndexById,
-  genId,
   genInstruction,
   insertIntoPrevArray,
   isClientId,
   isZeroLength,
   pickStyles,
 } from 'lib/util-client';
-import { UpdateRecipeInputHandlerArgs } from 'types/types';
+import {
+  UpdateInputMutationBody,
+  UpdateInputMutationPayload,
+  UpdateRecipeInputHandlerArgs,
+} from 'types/types';
 import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { FlowEquipment, FlowIngredient } from 'types/models';
-import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
-import RenderInstructionTags from 'components/common/SmartInstruction';
-import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
 import { dragEndHandler, useDebouncedAutosave } from './utils';
-import EquipmentTooltip from 'components/common/tooltip/EquipmentTooltip';
-import { useDeleteInstruction, useUpdateInstruction } from 'lib/mutations';
+import { useDeleteInstruction } from 'lib/mutations';
 import { instructionSchema } from 'validation/schemas';
-import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
-import TextWithPopover from 'components/popover/TextWithPopover';
-import MeasurementPopover from 'components/popover/MeasurementPopover';
 import BaseButton from 'components/common/BaseButton';
+import { UseMutateFunction } from '@tanstack/react-query';
+import CharCount from 'components/common/CharCount';
 
 function PanelCard({
   children,
@@ -45,7 +43,7 @@ function PanelCard({
   const [isOpen, setIsOpen] = useState(true);
   return (
     <div className="flex h-fit basis-1/2 flex-col rounded border p-5 text-concrete">
-      <div className="mb-2 flex justify-between">
+      <div className="flex justify-between">
         <span className="text-lg text-abyss">{header}</span>
         <button onClick={() => setIsOpen((prev) => !prev)}>
           <ChevronRightIcon
@@ -133,6 +131,13 @@ interface InstructionsStageProps {
   equipment: FlowEquipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
   allUnits: IngredientUnit[];
+  updateInstructionsMutation: UseMutateFunction<
+    UpdateInputMutationPayload,
+    unknown,
+    UpdateInputMutationBody<Instruction>,
+    unknown
+  >;
+  updateInstructionsStatus: string;
 }
 
 function InstructionsStage({
@@ -141,20 +146,17 @@ function InstructionsStage({
   ingredients,
   equipment,
   raiseInstructions,
-  allUnits,
+  updateInstructionsMutation,
+  updateInstructionsStatus,
 }: InstructionsStageProps) {
-  const [previewMode, setPreviewMode] = useState(false);
-  const { mutate: updateInstruction, status: updateStatus } =
-    useUpdateInstruction();
   const { mutate: deleteInstruction, status: deleteStatus } =
     useDeleteInstruction();
-    
+
   const { triggerAutosave } = useDebouncedAutosave({
-    dispatchInputs: raiseInstructions,
     inputs: instructions,
     recipeId,
     schema: instructionSchema,
-    updateInputsMutation: updateInstruction,
+    updateInputsMutation: updateInstructionsMutation,
   });
 
   function removeInstructionHandler(id: string) {
@@ -201,7 +203,7 @@ function InstructionsStage({
       stageInputLabels={
         <div className="w-full font-mono text-sm">Instructions</div>
       }
-      mutationStatus={updateStatus}
+      mutationStatus={updateInstructionsStatus}
       stageInputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}
@@ -212,7 +214,6 @@ function InstructionsStage({
           mainInputComponents={(isInputFocused, setIsInputFocused) => (
             <>
               <textarea
-                autoFocus
                 name="description"
                 value={i.description}
                 className="inp-primary inp-reg w-5/6 resize-none"
@@ -224,6 +225,7 @@ function InstructionsStage({
                   });
                 }}
                 onBlur={() => setIsInputFocused(false)}
+                onClick={() => setIsInputFocused(true)}
                 rows={4}
               />
             </>

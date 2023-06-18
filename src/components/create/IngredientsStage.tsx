@@ -13,17 +13,22 @@ import { GeneralButton } from 'pirate-ui';
 import InputWithPopover from 'components/common/InputWithPopover';
 import { FlowIngredient } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
-import { UpdateRecipeInputHandlerArgs } from 'types/types';
+import {
+  UpdateInputMutationBody,
+  UpdateInputMutationPayload,
+  UpdateRecipeInputHandlerArgs,
+} from 'types/types';
 import AddSubstitutes from './AddSubstitutes';
 import NotesInput from 'components/common/NotesInput';
 import OptionalInput from 'components/common/OptionalInput';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
-import { useDeleteIngredient, useUpdateRecipeIngredient } from 'lib/mutations';
+import { useDeleteIngredient } from 'lib/mutations';
 import { ingredientSchema } from 'validation/schemas';
 import { addSubHandler, removeSubHandler, useDebouncedAutosave } from './utils';
 import { dragEndHandler } from './utils';
+import { UseMutateFunction } from '@tanstack/react-query';
 
 function cleanNameInput(value: string) {
   return value.toLowerCase();
@@ -38,6 +43,13 @@ interface IngredientStageProps {
   ingredients: FlowIngredient[];
   raiseIngredients: Dispatch<SetStateAction<FlowIngredient[]>>;
   allUnits: IngredientUnit[];
+  updateIngredientsMutation: UseMutateFunction<
+    UpdateInputMutationPayload,
+    unknown,
+    UpdateInputMutationBody<FlowIngredient>,
+    unknown
+  >;
+  updateInstructionsStatus: string;
 }
 
 function IngredientsStage({
@@ -45,20 +57,19 @@ function IngredientsStage({
   ingredients,
   raiseIngredients,
   allUnits,
+  updateIngredientsMutation,
+  updateInstructionsStatus,
 }: IngredientStageProps) {
   console.log('IngredientStage', ingredients);
 
-  const { mutate: updateIngredient, status: updateStatus } =
-    useUpdateRecipeIngredient();
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
 
   const { triggerAutosave } = useDebouncedAutosave({
     recipeId,
     inputs: ingredients,
-    dispatchInputs: raiseIngredients,
     schema: ingredientSchema(allUnits.map((u) => u.id)),
-    updateInputsMutation: updateIngredient,
+    updateInputsMutation: updateIngredientsMutation,
   });
 
   function addIngredientSubHandler(subValue: string, id: string) {
@@ -140,7 +151,7 @@ function IngredientsStage({
           <div className="col-start-3 w-36 font-mono text-sm">Unit</div>
         </>
       }
-      mutationStatus={updateStatus}
+      mutationStatus={updateInstructionsStatus}
       stageInputComponents={ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
@@ -190,7 +201,7 @@ function IngredientsStage({
                 }}
                 styles={{
                   button: {
-                    root: 'inp-reg focus:outline-fern rounded-sm w-36 flex disabled:text-concrete',
+                    root: 'inp-reg focus:outline-fern rounded w-36 flex disabled:text-concrete',
                     isToggled: ['bg-fern text-white', 'bg-smoke'],
                   },
                 }}

@@ -121,7 +121,7 @@ function InputWithPopover({
       {isOpen && buttonRef.current
         ? createPortal(
             <div
-              className="flex w-36 flex-col items-center rounded-sm border border-fern bg-white text-sm shadow-md shadow-concrete"
+              className="flex w-36 flex-col items-center rounded border border-fern bg-white text-sm shadow-md shadow-concrete"
               style={{
                 position: 'absolute',
                 top:

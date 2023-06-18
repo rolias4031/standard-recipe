@@ -13,6 +13,8 @@ import {
   UpdateInputMutationPayload,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
+import { Dispatch, SetStateAction } from 'react';
+import { replaceRecipeInputIds } from 'components/create/utils';
 
 async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   const response = await fetch(createApiUrl(config.apiRoute), {
@@ -108,8 +110,37 @@ export function useDeleteInstruction() {
   return useMutation({ mutationFn: deleteInstructionMutation });
 }
 
-export function useUpdateInstruction() {
-  return useMutation({ mutationFn: updateRecipeInstructionMutation });
+export function useUpdateInstructions(
+  dispatchInstructions: Dispatch<SetStateAction<Instruction[]>>,
+) {
+  return useMutation({
+    mutationFn: updateRecipeInstructionMutation,
+    onSuccess: (data) => {
+      replaceRecipeInputIds(data.inputIdPairs, dispatchInstructions);
+    },
+  });
+}
+
+export function useUpdateIngredients(
+  dispatchIngredients: Dispatch<SetStateAction<FlowIngredient[]>>,
+) {
+  return useMutation({
+    mutationFn: updateRecipeIngredientMutation,
+    onSuccess: (data) => {
+      replaceRecipeInputIds(data.inputIdPairs, dispatchIngredients);
+    },
+  });
+}
+
+export function useUpdateEquipment(
+  dispatchEquipment: Dispatch<SetStateAction<FlowEquipment[]>>,
+) {
+  return useMutation({
+    mutationFn: updateRecipeEquipmentMutation,
+    onSuccess: (data) => {
+      replaceRecipeInputIds(data.inputIdPairs, dispatchEquipment);
+    },
+  });
 }
 
 export function useDeleteEquipment() {
@@ -122,12 +153,4 @@ export function useDeleteIngredient() {
 
 export function useCreateNewDraftRecipe() {
   return useMutation({ mutationFn: createNewDraftRecipeMutation });
-}
-
-export function useUpdateIngredient() {
-  return useMutation({ mutationFn: updateRecipeIngredientMutation });
-}
-
-export function useUpdateEquipment() {
-  return useMutation({ mutationFn: updateRecipeEquipmentMutation });
 }

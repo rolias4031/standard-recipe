@@ -30,23 +30,23 @@ function FlowInputFrame({
     <div
       ref={innerRef}
       {...draggableProps}
-      className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 w-full group py-0"
+      className="group grid w-full grid-cols-[auto_1fr] gap-x-3 gap-y-1 py-0"
       onMouseEnter={() => (raiseIsMouseIn ? raiseIsMouseIn(true) : null)}
       onMouseLeave={() => (raiseIsMouseIn ? raiseIsMouseIn(false) : null)}
     >
       <div
         {...dragHandleProps}
-        className="font-mono text-sm col-start-1 w-6 flex items-center justify-end text-concrete transition-colors group-hover:text-abyss"
+        className="col-start-1 flex w-6 items-center justify-end font-mono text-sm text-concrete transition-colors group-hover:text-abyss"
       >
         {row1col1 ?? null}
       </div>
 
-      <div className="w-full col-start-2 flex items-stretch space-x-2">
+      <div className="col-start-2 flex w-full items-stretch space-x-2">
         {row1col2}
       </div>
       {row2col2 ? (
-        <div className="flex flex-col space-y-2 row-start-2 col-start-2 fade-in">
-          <div className="flex items-center space-x-3 text-sm mt-1">
+        <div className="fade-in col-start-2 row-start-2 flex flex-col space-y-2">
+          <div className="mt-1 flex items-center space-x-3 text-sm">
             {row2col2}
           </div>
           {row3col2}

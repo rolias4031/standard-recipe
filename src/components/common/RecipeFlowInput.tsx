@@ -72,7 +72,7 @@ function RecipeFlowInput({
           row1col2={
             <>
               {mainInputComponents(isInputFocused, setIsInputFocused)}
-              {isMouseIn || optionMode ? (
+              {isMouseIn || optionMode || isInputFocused ? (
                 optionBarComponent({
                   optionMode,
                   setOptionMode,

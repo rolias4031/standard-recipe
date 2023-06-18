@@ -44,6 +44,7 @@ export type EquipmentWithAll = Prisma.EquipmentGetPayload<
 >;
 
 export interface RecipeGeneralInfo {
+  id: string,
   name: string;
   description: RecipeWithAll['description'];
 }
