@@ -5,9 +5,7 @@ interface CharCountProps {
   string: string | undefined | null;
   charLimit: number;
   styles?: {
-    div?: string;
-    spanOne?: string;
-    spanTwo?: string;
+    span: string
   };
 }
 
@@ -24,7 +22,7 @@ function CharCount({ string, charLimit, styles }: CharCountProps) {
     }
   }, [string, charLimit]);
 
-  const style = pickStyles('text-xs font-mono', [isInvalid, 'text-red-500']);
+  const style = pickStyles([!!styles?.span, styles?.span ?? '', 'text-xs font-mono'], [isInvalid, 'text-red-500']);
 
   return (
     <span className={style}>

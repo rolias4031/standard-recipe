@@ -240,32 +240,39 @@ function InstructionsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="flex flex-grow items-center justify-between"
+              className="flex flex-grow flex-col justify-between items-start"
             >
-              <BaseButton
-                onClick={() =>
-                  setOptionMode((prev: string | null) =>
-                    prev === null && optionModes[0] ? optionModes[0] : null,
-                  )
-                }
-              >
-                <CogIcon
-                  styles={{
-                    icon: pickStyles('w-6 h-6 transition-colors', [
-                      !optionMode,
-                      'text-concrete hover:text-fern',
-                      'text-fern',
-                    ]),
-                  }}
-                />
-              </BaseButton>
-              <BaseButton onClick={() => removeInstructionHandler(i.id)}>
-                <TrashIcon
-                  styles={{
-                    icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
-                  }}
-                />
-              </BaseButton>
+              <div className="flex w-full justify-between">
+                <BaseButton
+                  onClick={() =>
+                    setOptionMode((prev: string | null) =>
+                      prev === null && optionModes[0] ? optionModes[0] : null,
+                    )
+                  }
+                >
+                  <CogIcon
+                    styles={{
+                      icon: pickStyles('w-6 h-6', [
+                        !optionMode,
+                        'text-concrete hover:text-fern',
+                        'text-fern',
+                      ]),
+                    }}
+                  />
+                </BaseButton>
+                <BaseButton onClick={() => removeInstructionHandler(i.id)}>
+                  <TrashIcon
+                    styles={{
+                      icon: 'w-6 h-6 text-concrete hover:text-red-500',
+                    }}
+                  />
+                </BaseButton>
+              </div>
+              <CharCount
+                string={i.description}
+                charLimit={250}
+                styles={{ span: 'text-concrete text-xs font-mono px-2' }}
+              />
             </div>
           )}
         />
