@@ -35,7 +35,6 @@ import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
 import InstructionsView from 'components/view/InstructionsView';
 import RecipeView from 'components/view/RecipeView';
-import LoadingBuffer from 'components/common/LoadingBuffer';
 import { UseMutateFunction, useQueryClient } from '@tanstack/react-query';
 import {
   useUpdateEquipment,
@@ -45,6 +44,7 @@ import {
 import BaseButton from 'components/common/BaseButton';
 import UpdateRecipeNameModal from './UpdateRecipeNameModal';
 import PencilIcon from 'components/common/icons/PencilIcon';
+import StatusRouter from 'components/common/StatusRouter';
 
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
@@ -413,7 +413,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       {!previewMode ? (
         stageComponents.get(stage)
       ) : (
-        <LoadingBuffer
+        <StatusRouter
           statuses={[
             updateIngredientsStatus,
             updateEquipmentStatus,
@@ -428,7 +428,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
               allUnits={allUnits}
             />
           </RecipeView>
-        </LoadingBuffer>
+        </StatusRouter>
       )}
     </>
   );

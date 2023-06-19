@@ -1,5 +1,6 @@
 import { IngredientUnit } from '@prisma/client';
 import LoadingPage from 'components/common/LoadingPage';
+import StatusRouter from 'components/common/StatusRouter';
 import { useGetAllUnits, useGetRecipeById } from 'lib/queries';
 import React, { ReactNode } from 'react';
 import { RecipeWithFull } from 'types/models';
@@ -16,10 +17,8 @@ function CreateRecipeDock({ recipeId, children }: CreateRecipeDockProps) {
   if (recipeData && unitsData) {
     return <>{children(recipeData.recipe, unitsData.units)}</>;
   }
-  if (recipeStatus === 'loading' || unitsStatus === 'loading') {
-    return <LoadingPage />;
-  }
-  return null;
+
+  return <StatusRouter statuses={[recipeStatus, unitsStatus]} />;
 }
 
 export default CreateRecipeDock;

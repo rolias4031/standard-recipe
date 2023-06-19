@@ -9,7 +9,6 @@ function CreateRecipePage() {
   const { recipeId } = router.query;
 
   if (recipeId && !Array.isArray(recipeId)) {
-    const validRecipeId = recipeId;
 
     return (
       <PageFrame
@@ -17,7 +16,7 @@ function CreateRecipePage() {
           div: 'p-5 mx-auto min-h-screen md:p-10 xl:w-5/6',
         }}
       >
-        <CreateRecipeDock recipeId={validRecipeId}>
+        <CreateRecipeDock recipeId={recipeId}>
           {(recipe, allUnits) => (
             <CreateRecipeFlow
               key={recipe.id + recipe.updatedAt}

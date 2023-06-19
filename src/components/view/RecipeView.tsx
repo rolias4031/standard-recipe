@@ -1,15 +1,22 @@
-import React, { ReactNode } from 'react';
+import { IngredientUnit } from '@prisma/client';
+import React from 'react';
+import { RecipeWithFull } from 'types/models';
+import InstructionsView from './InstructionsView';
 
 interface RecipeViewProps {
-  onExitPreviewMode: () => void;
-  children: ReactNode;
+  recipe: RecipeWithFull;
+  allUnits: IngredientUnit[];
 }
 
-function RecipeView({ children, onExitPreviewMode }: RecipeViewProps) {
+function RecipeView({ recipe, allUnits }: RecipeViewProps) {
   return (
     <div>
-      <button onClick={onExitPreviewMode}>Back</button>
-      {children}
+      <InstructionsView
+        allUnits={allUnits}
+        equipment={recipe.equipment}
+        instructions={recipe.instructions}
+        ingredients={recipe.ingredients}
+      />
     </div>
   );
 }

@@ -55,3 +55,10 @@ export function useGetAllUnits() {
     queryFn: fetchAllUnits,
   });
 }
+
+export function useGetRecipeViewData(recipeId: string) {
+  const recipeQuery = useGetRecipeById(recipeId);
+  const unitsQuery = useGetAllUnits();
+
+  return { recipeQuery, unitsQuery };
+}
