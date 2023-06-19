@@ -20,7 +20,7 @@ function CreateRecipePage() {
         <CreateRecipeDock recipeId={validRecipeId}>
           {(recipe, allUnits) => (
             <CreateRecipeFlow
-              key={recipe.id}
+              key={recipe.id + recipe.updatedAt}
               recipe={recipe}
               allUnits={allUnits}
             />

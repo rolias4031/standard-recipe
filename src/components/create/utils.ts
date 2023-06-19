@@ -83,7 +83,7 @@ interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
   updateInputsMutation: UseMutateFunction<
     UpdateInputMutationPayload,
     unknown,
-    UpdateInputMutationBody<T>,
+    UpdateInputMutationBody<T[]>,
     unknown
   >;
   debounceInMs?: number

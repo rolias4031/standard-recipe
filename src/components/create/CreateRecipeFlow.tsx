@@ -42,6 +42,9 @@ import {
   useUpdateIngredients,
   useUpdateInstructions,
 } from 'lib/mutations';
+import BaseButton from 'components/common/BaseButton';
+import UpdateRecipeNameModal from './UpdateRecipeNameModal';
+import PencilIcon from 'components/common/icons/PencilIcon';
 
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
@@ -64,14 +67,15 @@ function FlowController<T extends { id: string }>({
 }: FlowControllerProps<T>) {
   const queryClient = useQueryClient();
   const {
-    name,
-    label,
+    stageName,
+    stageLabel,
     inputs,
     dispatchInputs,
     genInput,
     schema,
     updateInputsMutation,
   } = controllerConfig;
+  const [isEditingName, setIsEditingName] = useState(false);
   const [isError, setIsError] = useState<boolean>(false);
   async function nextStageHandler() {
     const curInputs = inputs;
@@ -130,62 +134,79 @@ function FlowController<T extends { id: string }>({
   }
 
   return (
-    <div className="flex flex-grow flex-col">
-      <div className="flex items-center justify-between space-x-2">
-        <div className="flex items-end space-x-2">
-          <p className="text-lg font-light">{recipeName}</p>
-          <p className="text-2xl font-bold">{name}</p>
+    <>
+      <div className="flex flex-grow flex-col">
+        <div className="flex justify-between space-x-2">
+          <div className="flex basis-1/2 flex-col">
+            <div className="flex space-x-4 items-center">
+              <p className="text-2xl font-bold">{recipeName}</p>
+              <button
+                className="text-concrete hover:text-fern"
+                onClick={() => setIsEditingName(true)}
+              >
+                <PencilIcon styles={{ icon: 'w-5 h-5 ' }} />
+              </button>
+            </div>
+            <p className="text-lg font-light">{stageName}</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="text-xs">Tips</button>
+            <button className="text-xs" onClick={enterPreviewModeHandler}>
+              Preview
+            </button>
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <button className="text-xs">Tips</button>
-          <button className="text-xs" onClick={enterPreviewModeHandler}>
-            Preview
-          </button>
-        </div>
-      </div>
-      {children}
-      {stage !== 4 ? (
-        <div className="w-full">
-          <button
-            type="button"
-            className="btn-primary btn-reg ml-auto flex w-fit items-center transition-all"
-            onClick={createNewInputHandler}
-          >
-            <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
-            <span className="pr-2 pl-1 text-lg">{label}</span>
-          </button>
-        </div>
-      ) : null}
-      <div className="fixed left-10 right-10 bottom-0 flex flex-col items-center justify-between space-y-3 border-concrete transition-all">
-        {isError ? (
-          <StageError
-            stageName={name.toLowerCase()}
-            dispatchIsError={setIsError}
-          />
+        {children}
+        {stage !== 4 ? (
+          <div className="w-full">
+            <button
+              type="button"
+              className="btn-primary btn-reg ml-auto flex w-fit items-center transition-all"
+              onClick={createNewInputHandler}
+            >
+              <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
+              <span className="pr-2 pl-1 text-lg">{stageLabel}</span>
+            </button>
+          </div>
         ) : null}
-        <ControlPanel>
-          <button
-            className="btn-reg btn-primary scale disabled:opacity-0"
-            onClick={prevStageHandler}
-            disabled={stage === 1}
-          >
-            <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-          </button>
-          {stage !== 4 ? (
-            <FlowProgress curStage={stage} />
-          ) : (
-            <button>Publish!</button>
-          )}
-          <button
-            className="btn-reg btn-primary scale disabled:opacity-0"
-            onClick={nextStageHandler}
-            disabled={stage === 4}
-          >
-            <ArrowRightIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-          </button>
-        </ControlPanel>
+        <div className="fixed left-10 right-10 bottom-0 flex flex-col items-center justify-between space-y-3 border-concrete transition-all">
+          {isError ? (
+            <StageError
+              stageName={stageName.toLowerCase()}
+              dispatchIsError={setIsError}
+            />
+          ) : null}
+          <ControlPanel>
+            <button
+              className="btn-reg btn-primary scale disabled:opacity-0"
+              onClick={prevStageHandler}
+              disabled={stage === 1}
+            >
+              <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+            </button>
+            {stage !== 4 ? (
+              <FlowProgress curStage={stage} />
+            ) : (
+              <button>Publish!</button>
+            )}
+            <button
+              className="btn-reg btn-primary scale disabled:opacity-0"
+              onClick={nextStageHandler}
+              disabled={stage === 4}
+            >
+              <ArrowRightIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+            </button>
+          </ControlPanel>
+        </div>
       </div>
-    </div>
+      {isEditingName && (
+        <UpdateRecipeNameModal
+          recipeId={recipeId}
+          curRecipeName={recipeName}
+          onCloseModal={() => setIsEditingName(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -237,12 +258,12 @@ interface ControllerConfig<T> {
   updateInputsMutation?: UseMutateFunction<
     UpdateInputMutationPayload,
     unknown,
-    UpdateInputMutationBody<T>,
+    UpdateInputMutationBody<T[]>,
     unknown
   >;
   schema?: BaseZodSchema;
-  name: string;
-  label: string;
+  stageName: string;
+  stageLabel: string;
 }
 
 interface CreateRecipeFlowProps {
@@ -277,7 +298,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     useUpdateInstructions(setInstructions);
 
   const sharedControllerConfig = {
-    recipeName: recipe.name,
+    recipeName: generalInfo.name,
     recipeId: recipe.id,
     dispatchPreviewMode: setPreviewMode,
     dispatchStage: setStage,
@@ -285,8 +306,8 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const firstControllerConfig: ControllerConfig<FlowIngredient> = {
-    name: 'Ingredients',
-    label: 'Ingredient',
+    stageName: 'Ingredients',
+    stageLabel: 'Ingredient',
     inputs: ingredients,
     dispatchInputs: setIngredients,
     genInput: genIngredient,
@@ -295,8 +316,8 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const secondControllerConfig: ControllerConfig<FlowEquipment> = {
-    name: 'Equipment',
-    label: 'Equipment',
+    stageName: 'Equipment',
+    stageLabel: 'Equipment',
     inputs: equipment,
     dispatchInputs: setEquipment,
     genInput: genEquipment,
@@ -305,8 +326,8 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const thirdControllerConfig: ControllerConfig<Instruction> = {
-    name: 'Instructions',
-    label: 'Instruction',
+    stageName: 'Instructions',
+    stageLabel: 'Instruction',
     inputs: instructions,
     dispatchInputs: setInstructions,
     genInput: genInstruction,
@@ -315,15 +336,15 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const fourthControllerConfig: ControllerConfig<RecipeGeneralInfo> = {
-    name: 'Info',
-    label: 'Info',
+    stageName: 'Info',
+    stageLabel: 'Info',
   };
 
   const stageComponents = new Map<number, ReactNode>([
     [
       1,
       <FlowController
-        key={recipe.id + firstControllerConfig.name}
+        key={recipe.id + firstControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={firstControllerConfig}
       >
@@ -340,7 +361,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     [
       2,
       <FlowController
-        key={recipe.id + secondControllerConfig.name}
+        key={recipe.id + secondControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={secondControllerConfig}
       >
@@ -356,7 +377,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     [
       3,
       <FlowController
-        key={recipe.id + thirdControllerConfig.name}
+        key={recipe.id + thirdControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={thirdControllerConfig}
       >
@@ -375,7 +396,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     [
       4,
       <FlowController
-        key={recipe.id + fourthControllerConfig.name}
+        key={recipe.id + fourthControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={fourthControllerConfig}
       >

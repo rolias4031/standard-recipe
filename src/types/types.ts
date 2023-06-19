@@ -58,7 +58,7 @@ export interface CustomError extends Error {
 
 export interface UpdateInputMutationBody<T> {
   recipeId: Recipe['id'];
-  inputs: T[];
+  inputs: T;
 }
 
 export interface UpdateInputMutationPayload extends BasePayload {

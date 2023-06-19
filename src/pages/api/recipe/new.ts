@@ -8,7 +8,7 @@ import {
 } from 'types/types';
 import { Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
-import { newDraftRecipeSchema } from 'validation/schemas';
+import { recipeNameSchema } from 'validation/schemas';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';
 
@@ -42,7 +42,7 @@ export default async function handler(
   });
 
   const isValid = validateOneInput({
-    schema: newDraftRecipeSchema(draftRecipes.map((r) => r.name)),
+    schema: recipeNameSchema(draftRecipes.map((r) => r.name)),
     input: newDraftRecipeInputs,
   });
   if (!isValid) {

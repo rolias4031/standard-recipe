@@ -134,7 +134,7 @@ interface InstructionsStageProps {
   updateInstructionsMutation: UseMutateFunction<
     UpdateInputMutationPayload,
     unknown,
-    UpdateInputMutationBody<Instruction>,
+    UpdateInputMutationBody<Instruction[]>,
     unknown
   >;
   updateInstructionsStatus: string;

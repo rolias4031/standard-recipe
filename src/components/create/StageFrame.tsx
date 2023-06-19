@@ -58,12 +58,12 @@ export function InlineStatusDisplay({ status }: { status: string }) {
       new Map<string, ReactNode>([
         [
           'loading',
-          <span className="text-fade-in" key="1">
+          <span className="animate-pulse-fast text-fern" key="1">
             autosaving
           </span>,
         ],
         ['success', <span key="2">saved</span>],
-        ['error', <span key="3">error</span>],
+        ['error', <span className='text-red-500' key="3">error</span>],
         [
           'idle',
           <span className="opacity-0" key="4">

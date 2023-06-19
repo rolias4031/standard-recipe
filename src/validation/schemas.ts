@@ -59,7 +59,7 @@ export const newRecipeGeneralInfoSchema = z.object({
   description: z.string().max(500),
 });
 
-export function newDraftRecipeSchema(existingDraftNames: string[]) {
+export function recipeNameSchema(existingDraftNames: string[]) {
   return z.object({
     name: z
       .string()

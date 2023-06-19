@@ -47,7 +47,7 @@ export async function createNewDraftRecipeMutation(
 }
 
 export async function updateRecipeIngredientMutation(
-  body: UpdateInputMutationBody<FlowIngredient>,
+  body: UpdateInputMutationBody<FlowIngredient[]>,
 ): Promise<UpdateInputMutationPayload> {
   return mutateWithBody({
     method: 'POST',
@@ -67,7 +67,7 @@ export async function deleteIngredientMutation(
 }
 
 export async function updateRecipeEquipmentMutation(
-  body: UpdateInputMutationBody<FlowEquipment>,
+  body: UpdateInputMutationBody<FlowEquipment[]>,
 ): Promise<UpdateInputMutationPayload> {
   return mutateWithBody({
     method: 'POST',
@@ -87,7 +87,7 @@ export async function deleteEquipmentMutation(
 }
 
 export async function updateRecipeInstructionMutation(
-  body: UpdateInputMutationBody<Instruction>,
+  body: UpdateInputMutationBody<Instruction[]>,
 ): Promise<UpdateInputMutationPayload> {
   return mutateWithBody({
     method: 'POST',
@@ -104,6 +104,20 @@ export async function deleteInstructionMutation(
     apiRoute: 'api/instruction/delete',
     body,
   });
+}
+
+export async function updateRecipeNameMutation(
+  body: UpdateInputMutationBody<string>,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/recipe/update',
+    body,
+  });
+}
+
+export function useUpdateRecipeName() {
+  return useMutation({ mutationFn: updateRecipeNameMutation });
 }
 
 export function useDeleteInstruction() {

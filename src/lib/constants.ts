@@ -1,3 +1,6 @@
+import { NextApiResponse } from 'next';
+import { ErrorPayload } from 'types/types';
+
 export const ERRORS = {
   INVALID_INPUT: 'invalid input',
   UNAUTHORIZED: 'unauthorized',
@@ -8,4 +11,19 @@ export const ERRORS = {
     return `that ${item.toLowerCase()} does not exist`;
   },
   UKNOWN_SERVER: 'unknown server error',
+};
+
+type ErrorResponse = NextApiResponse<ErrorPayload>;
+
+export const ERROR_RESPONSES = {
+  INVALID_INPUT: (res: ErrorResponse) =>
+    res.status(400).json({
+      message: 'failed',
+      errors: [ERRORS.INVALID_INPUT],
+    }),
+  UNAUTHORIZED: (res: ErrorResponse) =>
+    res.status(401).json({
+      message: 'failed',
+      errors: [ERRORS.UNAUTHORIZED],
+    }),
 };

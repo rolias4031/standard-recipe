@@ -6,6 +6,16 @@ body {
   @apply text-abyss
 }
 
+
+@keyframes pulse {
+  50% {
+    opacity: .4;
+  }
+}
+.animate-pulse-fast {
+  animation: pulse 0.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 .text-fade-in {
   animation: textFadeInOut 0.7s infinite;
   opacity: 0.3; /* Set initial opacity to 20% */

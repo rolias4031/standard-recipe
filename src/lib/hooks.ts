@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { newDraftRecipeSchema } from 'validation/schemas';
+import { recipeNameSchema } from 'validation/schemas';
 import {
   BaseZodSchema,
   FormValidationState,
@@ -20,7 +20,7 @@ export const useNewRecipeModalForm = (existingDraftNames: string[]) => {
       name: '',
     });
 
-  const formSchema = newDraftRecipeSchema(existingDraftNames);
+  const formSchema = recipeNameSchema(existingDraftNames);
 
   function raiseRecipeInputs(args: RaiseInputArgs) {
     setNewDraftRecipeInputs((prevState: NewDraftRecipeInputs) => {

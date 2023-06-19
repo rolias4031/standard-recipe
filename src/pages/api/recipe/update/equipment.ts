@@ -14,17 +14,9 @@ import {
 import { equipmentSchema } from 'validation/schemas';
 
 async function handler(
-  req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment>>,
+  req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment[]>>,
   res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
-  const session = getAuth(req);
-  if (!session || !session.userId) {
-    return res.status(401).json({
-      message: 'unauthorized',
-      errors: [ERRORS.UNAUTHORIZED],
-    });
-  }
-
   const { recipeId, inputs: allEquipment } = req.body;
 
   const equipmentIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];

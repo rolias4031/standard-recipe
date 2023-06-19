@@ -46,7 +46,7 @@ interface IngredientStageProps {
   updateIngredientsMutation: UseMutateFunction<
     UpdateInputMutationPayload,
     unknown,
-    UpdateInputMutationBody<FlowIngredient>,
+    UpdateInputMutationBody<FlowIngredient[]>,
     unknown
   >;
   updateInstructionsStatus: string;

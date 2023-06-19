@@ -42,7 +42,7 @@ interface EquipmentStageProps {
   updateEquipmentMutation: UseMutateFunction<
     UpdateInputMutationPayload,
     unknown,
-    UpdateInputMutationBody<FlowEquipment>,
+    UpdateInputMutationBody<FlowEquipment[]>,
     unknown
   >;
   updateEquipmentStatus: string;

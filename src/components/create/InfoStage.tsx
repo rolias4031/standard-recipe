@@ -1,5 +1,6 @@
+import BaseButton from 'components/common/BaseButton';
 import CharCount from 'components/common/CharCount';
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import { RecipeGeneralInfo } from 'types/models';
 import { StageFrameCard } from './StageFrame';
 
@@ -19,16 +20,10 @@ function InfoStage({ generalInfo, raiseGeneralInfo }: InfoStageProps) {
   return (
     <StageFrameCard>
       <div className="flex flex-col space-y-3">
-        <input
-          type="text"
-          name="name"
-          className="text-2xl outline-none"
-          value={generalInfo.name}
-          onChange={updateInfoHandler()}
-        />
         <div className="flex flex-col">
           <label htmlFor="recipe-description">Description</label>
           <textarea
+            autoFocus
             id="recipe-description"
             name="description"
             className="inp-reg inp-primary"
