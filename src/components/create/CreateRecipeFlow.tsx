@@ -30,21 +30,16 @@ import {
   instructionSchema,
 } from 'validation/schemas';
 import EquipmentStage from './EquipmentStage';
-import InfoStage from './InfoStage';
 import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
-import InstructionsView from 'components/view/InstructionsView';
-import RecipeView from 'components/view/RecipeView';
 import { UseMutateFunction, useQueryClient } from '@tanstack/react-query';
 import {
   useUpdateEquipment,
   useUpdateIngredients,
   useUpdateInstructions,
 } from 'lib/mutations';
-import BaseButton from 'components/common/BaseButton';
 import UpdateRecipeNameModal from './UpdateRecipeNameModal';
 import PencilIcon from 'components/common/icons/PencilIcon';
-import StatusRouter from 'components/common/StatusRouter';
 
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
@@ -138,7 +133,7 @@ function FlowController<T extends { id: string }>({
       <div className="flex flex-grow flex-col">
         <div className="flex justify-between space-x-2">
           <div className="flex basis-1/2 flex-col">
-            <div className="flex space-x-4 items-center">
+            <div className="flex items-center space-x-4">
               <p className="text-2xl font-bold">{recipeName}</p>
               <button
                 className="text-concrete hover:text-fern"
@@ -192,7 +187,7 @@ function FlowController<T extends { id: string }>({
             <button
               className="btn-reg btn-primary scale disabled:opacity-0"
               onClick={nextStageHandler}
-              disabled={stage === 4}
+              disabled={stage === 3}
             >
               <ArrowRightIcon styles={{ icon: 'w-7 h-7 text-white' }} />
             </button>
@@ -393,45 +388,9 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
         />
       </FlowController>,
     ],
-    [
-      4,
-      <FlowController
-        key={recipe.id + fourthControllerConfig.stageName}
-        {...sharedControllerConfig}
-        controllerConfig={fourthControllerConfig}
-      >
-        <InfoStage
-          generalInfo={generalInfo}
-          raiseGeneralInfo={setGeneralInfo}
-        />
-      </FlowController>,
-    ],
   ]);
 
-  return (
-    <>
-      {!previewMode ? (
-        stageComponents.get(stage)
-      ) : (
-        <StatusRouter
-          statuses={[
-            updateIngredientsStatus,
-            updateEquipmentStatus,
-            updateInstructionsStatus,
-          ]}
-        >
-          <RecipeView onExitPreviewMode={() => setPreviewMode(false)}>
-            <InstructionsView
-              instructions={recipe.instructions}
-              ingredients={recipe.ingredients}
-              equipment={recipe.equipment}
-              allUnits={allUnits}
-            />
-          </RecipeView>
-        </StatusRouter>
-      )}
-    </>
-  );
+  return <>{stageComponents.get(stage)}</>;
 }
 
 function ControlPanel({ children }: { children: ReactNode }) {

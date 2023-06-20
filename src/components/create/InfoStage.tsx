@@ -1,6 +1,5 @@
-import BaseButton from 'components/common/BaseButton';
 import CharCount from 'components/common/CharCount';
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { RecipeGeneralInfo } from 'types/models';
 import { StageFrameCard } from './StageFrame';
 
