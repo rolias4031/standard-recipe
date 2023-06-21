@@ -1,24 +1,49 @@
 import { DropResult } from '@hello-pangea/dnd';
-import { UseMutateFunction } from '@tanstack/react-query';
-import {
-  findRecipeInputIndexById,
-  insertIntoPrevArray,
-  isZeroLength,
-} from 'lib/util-client';
-import debounce from 'lodash.debounce';
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
-import {
-  BaseZodSchema,
-  InputIdPairs,
-  UpdateInputMutationBody,
-  UpdateInputMutationPayload,
-} from 'types/types';
+import { findRecipeInputIndexById, insertIntoPrevArray } from 'lib/util-client';
+import { Dispatch, SetStateAction } from 'react';
+import { BaseZodSchema, InputIdPairs, Stage } from 'types/types';
+import { stages } from './CreateRecipeFlow';
+import { NextRouter } from 'next/router';
+
+export function navigateToCreateStage(
+  router: NextRouter,
+  {
+    recipeId,
+    stage,
+    shallow,
+  }: { recipeId: string; stage: Stage; shallow?: boolean },
+) {
+  return router.push(
+    {
+      pathname: '/create/[recipeId]/',
+      query: { recipeId, stage },
+    },
+    undefined,
+    { shallow: shallow },
+  );
+}
+
+export function getNextStageName(curStage: Stage) {
+  const curIndex = stages.indexOf(curStage);
+  let nextStage: Stage = curStage;
+  if (curIndex === 2) return nextStage;
+  if (curIndex >= 0 && curIndex !== 2) {
+    nextStage = stages[curIndex + 1] || curStage;
+    return nextStage;
+  }
+  return nextStage;
+}
+
+export function getPrevStageName(curStage: Stage) {
+  const curIndex = stages.indexOf(curStage);
+  let nextStage: Stage = curStage;
+  if (curIndex === 0) return nextStage;
+  if (curIndex > 0) {
+    nextStage = stages[curIndex - 1] || curStage;
+    return nextStage;
+  }
+  return nextStage;
+}
 
 interface SubHandlerArgs<T> {
   subValue: string;
@@ -71,81 +96,6 @@ export function removeSubHandler<
     );
     return newIngredientArray;
   });
-}
-
-interface DebouncedMutationArgs<T> {
-  recipeId: string;
-  inputs: T[];
-  schema: BaseZodSchema;
-}
-
-interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
-  updateInputsMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
-    unknown,
-    UpdateInputMutationBody<T[]>,
-    unknown
-  >;
-  debounceInMs?: number;
-}
-
-export function useDebouncedAutosave<T extends { id: string }>(
-  config: UseDebounceControllerArgs<T>,
-): { triggerAutosave: () => void } {
-  const {
-    recipeId,
-    inputs,
-    schema,
-    updateInputsMutation,
-    debounceInMs = 2000,
-  } = config;
-  const [isAutosaveTriggered, setIsAutosaveTriggered] =
-    useState<boolean>(false);
-
-  function triggerAutosave() {
-    setIsAutosaveTriggered(true);
-  }
-
-  function clearAutosave() {
-    setIsAutosaveTriggered(false);
-  }
-
-  const debouncedUpdateValidInputs = useCallback(
-    debounce((args: DebouncedMutationArgs<T>) => {
-      clearAutosave();
-      if (isZeroLength(args.inputs)) return;
-      console.log('debounced validation', args.inputs);
-      const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
-      if (isZeroLength(validInputs)) return;
-      console.log('debounced mutation', validInputs);
-      updateInputsMutation({
-        recipeId: args.recipeId,
-        inputs: validInputs,
-      });
-    }, debounceInMs),
-    [],
-  );
-
-  useEffect(() => {
-    console.log('fired useEffect');
-    if (!isAutosaveTriggered) return;
-    debouncedUpdateValidInputs({
-      recipeId,
-      inputs: inputs,
-      schema,
-    });
-    return () => {
-      debouncedUpdateValidInputs.cancel();
-    };
-  }, [
-    inputs,
-    debouncedUpdateValidInputs,
-    isAutosaveTriggered,
-    recipeId,
-    schema,
-  ]);
-
-  return { triggerAutosave };
 }
 
 export function filterValidRecipeInputs<T extends { id: string }>(

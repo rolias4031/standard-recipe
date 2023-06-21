@@ -26,7 +26,8 @@ import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient } from 'lib/mutations';
 import { ingredientSchema } from 'validation/schemas';
-import { addSubHandler, removeSubHandler, useDebouncedAutosave } from './utils';
+import { addSubHandler, removeSubHandler } from './utils';
+import { useDebouncedAutosave } from './hooks';
 import { dragEndHandler } from './utils';
 import { UseMutateFunction } from '@tanstack/react-query';
 

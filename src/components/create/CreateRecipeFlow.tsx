@@ -9,12 +9,7 @@ import {
   genInstruction,
   pickStyles,
 } from 'lib/util-client';
-import React, {
-  Dispatch,
-  SetStateAction,
-  ReactNode,
-  useState,
-} from 'react';
+import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
 import {
   IngredientWithAll,
   FlowIngredient,
@@ -45,29 +40,11 @@ import {
 import UpdateRecipeNameModal from './UpdateRecipeNameModal';
 import PencilIcon from 'components/common/icons/PencilIcon';
 import { useRouter } from 'next/router';
-
-function getNextStageName(curStage: Stage) {
-  const curIndex = stages.indexOf(curStage);
-  let nextStage: Stage = curStage;
-  if (curIndex === 2) return nextStage;
-  if (curIndex >= 0 && curIndex !== 2) {
-    nextStage = stages[curIndex + 1] || curStage;
-    return nextStage;
-  }
-  return nextStage;
-}
-
-function getPrevStage(curStage: Stage) {
-  const curIndex = stages.indexOf(curStage);
-  let nextStage: Stage = curStage;
-  if (curIndex === 0) return nextStage;
-  if (curIndex > 0) {
-    nextStage = stages[curIndex - 1] || curStage;
-    return nextStage;
-  }
-  return nextStage;
-}
-
+import {
+  getNextStageName,
+  getPrevStageName,
+  navigateToCreateStage,
+} from './utils';
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
   stage: Stage;
@@ -96,28 +73,11 @@ function FlowController<T extends { id: string }>({
   } = controllerConfig;
   const [isEditingName, setIsEditingName] = useState(false);
   const [isError, setIsError] = useState<boolean>(false);
-  function nextStage(curStage: Stage) {
-    const nextStage = getNextStageName(curStage);
-    router.push(
-      {
-        pathname: '/create/[recipeId]/',
-        query: { recipeId, stage: nextStage },
-      },
-      undefined,
-      { shallow: true },
-    );
+
+  function changeStage(newStage: Stage) {
+    navigateToCreateStage(router, { recipeId, stage: newStage, shallow: true });
   }
-  function prevStage(curStage: Stage) {
-    const prevStage = getPrevStage(curStage);
-    router.push(
-      {
-        pathname: '/create/[recipeId]/',
-        query: { recipeId, stage: prevStage },
-      },
-      undefined,
-      { shallow: true },
-    );
-  }
+
   async function nextStageHandler() {
     const curInputs = inputs;
     if (!curInputs || !schema) return;
@@ -132,7 +92,7 @@ function FlowController<T extends { id: string }>({
     if (updateInputsMutation) {
       updateInputsMutation({ inputs, recipeId });
     }
-    nextStage(stage);
+    changeStage(getNextStageName(stage));
   }
 
   function prevStageHandler() {
@@ -140,7 +100,7 @@ function FlowController<T extends { id: string }>({
     if (updateInputsMutation && inputs) {
       updateInputsMutation({ inputs, recipeId });
     }
-    prevStage(stage);
+    changeStage(getPrevStageName(stage));
   }
 
   function createNewInputHandler() {
@@ -153,14 +113,13 @@ function FlowController<T extends { id: string }>({
     });
   }
 
-  function sendToPreviewModeHandler() {
+  function enterPreviewModeHandler() {
     if (!inputs || !updateInputsMutation) return;
     updateInputsMutation(
       { inputs, recipeId },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries(['recipe']);
-          window.localStorage.set('previous_stage', stage);
+          window.localStorage.setItem('previous_stage', stage);
           router.push({
             pathname: '/view/[recipeId]',
             query: { recipeId },
@@ -188,7 +147,7 @@ function FlowController<T extends { id: string }>({
           </div>
           <div className="flex items-center space-x-4">
             <button className="text-xs">Tips</button>
-            <button className="text-xs" onClick={sendToPreviewModeHandler}>
+            <button className="text-xs" onClick={enterPreviewModeHandler}>
               Preview
             </button>
           </div>
@@ -213,7 +172,6 @@ function FlowController<T extends { id: string }>({
           ) : null}
           <ControlPanel>
             <button
-              
               className="btn-reg btn-primary scale disabled:opacity-0"
               onClick={prevStageHandler}
               disabled={stage === 'ingredients'}
@@ -306,7 +264,6 @@ interface CreateRecipeFlowProps {
 }
 
 function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
-
   // state
   const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
     initIngredients(recipe.ingredients),
@@ -448,7 +405,6 @@ function StageError({
   stageName?: string;
   dispatchIsError: Dispatch<SetStateAction<boolean>>;
 }) {
-
   return (
     <div className="flex flex-col rounded-sm bg-red-400 p-1 text-white">
       <button className="ml-auto" onClick={() => dispatchIsError(false)}>

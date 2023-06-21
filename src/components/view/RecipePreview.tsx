@@ -1,27 +1,25 @@
 import { IngredientUnit } from '@prisma/client';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { RecipeWithFull } from 'types/models';
 import InstructionsView from './InstructionsView';
-
-function createFlowUrl() {}
+import { navigateToCreateStage } from 'components/create/utils';
+import { Stage } from 'types/types';
 
 interface PreviewControllerProps {
   recipeId: string;
+  children: ReactNode;
 }
 
-function PreviewController({ recipeId }: PreviewControllerProps) {
+function PreviewController({ recipeId, children }: PreviewControllerProps) {
   const router = useRouter();
 
   function exitPreviewModeHandler() {
-    const previousStage: number | undefined =
-      window.localStorage.get('previous_stage');
-    router.push({
-      pathname: 'create/[recipeId]/[stage]',
-      query: {
-        recipeId,
-        stage: previousStage ? previousStage : 1,
-      },
+    const previousStage: string | null =
+      window.localStorage.getItem('previous_stage');
+    navigateToCreateStage(router, {
+      recipeId,
+      stage: previousStage as Stage ?? 'ingredients',
     });
   }
   return (
@@ -29,6 +27,7 @@ function PreviewController({ recipeId }: PreviewControllerProps) {
       <button className="" onClick={exitPreviewModeHandler}>
         Back To Editing
       </button>
+      {children}
     </div>
   );
 }
@@ -40,14 +39,14 @@ interface RecipeViewProps {
 
 function RecipePreview({ recipe, allUnits }: RecipeViewProps) {
   return (
-    <div>
+    <PreviewController recipeId={recipe.id}>
       <InstructionsView
         allUnits={allUnits}
         equipment={recipe.equipment}
         instructions={recipe.instructions}
         ingredients={recipe.ingredients}
       />
-    </div>
+    </PreviewController>
   );
 }
 

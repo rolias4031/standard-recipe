@@ -21,12 +21,8 @@ import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteEquipment } from 'lib/mutations';
 import { equipmentSchema } from 'validation/schemas';
-import {
-  addSubHandler,
-  dragEndHandler,
-  removeSubHandler,
-  useDebouncedAutosave,
-} from './utils';
+import { addSubHandler, dragEndHandler, removeSubHandler } from './utils';
+import { useDebouncedAutosave } from './hooks';
 import { FlowEquipment } from 'types/models';
 import AddSubstitutes from './AddSubstitutes';
 import { UseMutateFunction } from '@tanstack/react-query';

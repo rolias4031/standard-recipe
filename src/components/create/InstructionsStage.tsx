@@ -26,7 +26,8 @@ import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
-import { dragEndHandler, useDebouncedAutosave } from './utils';
+import { dragEndHandler } from './utils';
+import { useDebouncedAutosave } from './hooks';
 import { useDeleteInstruction } from 'lib/mutations';
 import { instructionSchema } from 'validation/schemas';
 import BaseButton from 'components/common/BaseButton';
@@ -240,7 +241,7 @@ function InstructionsStage({
           optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
             <div
               key="1"
-              className="flex flex-grow flex-col justify-between items-start"
+              className="flex flex-grow flex-col items-start justify-between"
             >
               <div className="flex w-full justify-between">
                 <BaseButton

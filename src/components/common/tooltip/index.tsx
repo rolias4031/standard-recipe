@@ -6,7 +6,7 @@ interface TooltipCardProps {
 }
 export function TooltipCard({ children }: TooltipCardProps) {
   return (
-    <div className="max-w-[250px] min-w-[150px] p-2 text-xs rounded-md border-2 bg-fern border-fern shadow-md shadow-concrete text-white flex flex-col space-y-2">
+    <div className="flex min-w-[150px] max-w-[250px] flex-col space-y-2 rounded-md border-2 border-fern bg-fern p-2 text-xs text-white shadow-md shadow-concrete">
       {children}
     </div>
   );
@@ -44,17 +44,18 @@ interface TooltipSubsProps {
 
 export function TooltipSubs({ substitutes }: TooltipSubsProps) {
   let content = null;
+  
+  const subs = useMemo(
+    () =>
+      substitutes.map((s) => (
+        <span className="" key={s}>
+          {s}
+        </span>
+      )),
+    [substitutes],
+  );
 
   if (!isZeroLength(substitutes)) {
-    const subs = useMemo(
-      () =>
-        substitutes.map((s) => (
-          <span className="" key={s}>
-            {s}
-          </span>
-        )),
-      [substitutes],
-    );
     content = (
       <div className="flex flex-col">
         <span className="underline">Substitutes</span>
