@@ -86,14 +86,19 @@ interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
     UpdateInputMutationBody<T[]>,
     unknown
   >;
-  debounceInMs?: number
+  debounceInMs?: number;
 }
 
 export function useDebouncedAutosave<T extends { id: string }>(
   config: UseDebounceControllerArgs<T>,
 ): { triggerAutosave: () => void } {
-  const { recipeId, inputs, schema, updateInputsMutation, debounceInMs = 2000 } =
-    config;
+  const {
+    recipeId,
+    inputs,
+    schema,
+    updateInputsMutation,
+    debounceInMs = 2000,
+  } = config;
   const [isAutosaveTriggered, setIsAutosaveTriggered] =
     useState<boolean>(false);
 
@@ -132,7 +137,13 @@ export function useDebouncedAutosave<T extends { id: string }>(
     return () => {
       debouncedUpdateValidInputs.cancel();
     };
-  }, [inputs]);
+  }, [
+    inputs,
+    debouncedUpdateValidInputs,
+    isAutosaveTriggered,
+    recipeId,
+    schema,
+  ]);
 
   return { triggerAutosave };
 }

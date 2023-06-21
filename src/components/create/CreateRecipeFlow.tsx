@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IngredientUnit, Instruction } from '@prisma/client';
 import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';

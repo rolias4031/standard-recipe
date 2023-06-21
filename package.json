@@ -30,11 +30,8 @@
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.7",
     "@types/uuid": "^9.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.60.0",
-    "@typescript-eslint/parser": "^5.60.0",
     "autoprefixer": "^10.4.13",
     "eslint": "^8.36.0",
-    "eslint-plugin-react": "^7.32.2",
     "postcss": "^8.4.21",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.3.0",

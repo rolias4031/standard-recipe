@@ -5,7 +5,7 @@ import CreateRecipeFlow, { stages } from 'components/create/CreateRecipeFlow';
 import PageFrame from 'components/common/PageFrame';
 import { Stage } from 'types/types';
 
-function extractQueryParams() {
+function useExtractQueryParams() {
   const router = useRouter();
   const { recipeId, stage } = router.query;
   console.log('slug', router.query);
@@ -23,7 +23,7 @@ function extractQueryParams() {
 }
 
 function CreateRecipePage() {
-  const { recipeId, stage } = extractQueryParams();
+  const { recipeId, stage } = useExtractQueryParams();
 
   if (recipeId && stage) {
     console.log(recipeId);
