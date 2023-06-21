@@ -10,17 +10,22 @@ import {
   genInstruction,
   pickStyles,
 } from 'lib/util-client';
-import React, { Dispatch, SetStateAction, ReactNode, useState } from 'react';
+import React, {
+  Dispatch,
+  SetStateAction,
+  ReactNode,
+  useState,
+} from 'react';
 import {
   IngredientWithAll,
   FlowIngredient,
-  RecipeGeneralInfo,
   RecipeWithFull,
   FlowEquipment,
   EquipmentWithAll,
 } from 'types/models';
 import {
   BaseZodSchema,
+  Stage,
   UpdateInputMutationBody,
   UpdateInputMutationPayload,
 } from 'types/types';
@@ -40,12 +45,33 @@ import {
 } from 'lib/mutations';
 import UpdateRecipeNameModal from './UpdateRecipeNameModal';
 import PencilIcon from 'components/common/icons/PencilIcon';
+import { useRouter } from 'next/router';
+
+function getNextStageName(curStage: Stage) {
+  const curIndex = stages.indexOf(curStage);
+  let nextStage: Stage = curStage;
+  if (curIndex === 2) return nextStage;
+  if (curIndex >= 0 && curIndex !== 2) {
+    nextStage = stages[curIndex + 1] || curStage;
+    return nextStage;
+  }
+  return nextStage;
+}
+
+function getPrevStage(curStage: Stage) {
+  const curIndex = stages.indexOf(curStage);
+  let nextStage: Stage = curStage;
+  if (curIndex === 0) return nextStage;
+  if (curIndex > 0) {
+    nextStage = stages[curIndex - 1] || curStage;
+    return nextStage;
+  }
+  return nextStage;
+}
 
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
-  stage: number;
-  dispatchStage: Dispatch<SetStateAction<number>>;
-  dispatchPreviewMode: Dispatch<SetStateAction<boolean>>;
+  stage: Stage;
   recipeName: string;
   recipeId: string;
   controllerConfig: ControllerConfig<T>;
@@ -53,13 +79,12 @@ interface FlowControllerProps<T extends { id: string }> {
 
 function FlowController<T extends { id: string }>({
   children,
-  dispatchPreviewMode,
-  dispatchStage,
   stage,
   recipeName,
   recipeId,
   controllerConfig,
 }: FlowControllerProps<T>) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const {
     stageName,
@@ -72,6 +97,28 @@ function FlowController<T extends { id: string }>({
   } = controllerConfig;
   const [isEditingName, setIsEditingName] = useState(false);
   const [isError, setIsError] = useState<boolean>(false);
+  function nextStage(curStage: Stage) {
+    const nextStage = getNextStageName(curStage);
+    router.push(
+      {
+        pathname: '/create/[recipeId]/',
+        query: { recipeId, stage: nextStage },
+      },
+      undefined,
+      { shallow: true },
+    );
+  }
+  function prevStage(curStage: Stage) {
+    const prevStage = getPrevStage(curStage);
+    router.push(
+      {
+        pathname: '/create/[recipeId]/',
+        query: { recipeId, stage: prevStage },
+      },
+      undefined,
+      { shallow: true },
+    );
+  }
   async function nextStageHandler() {
     const curInputs = inputs;
     if (!curInputs || !schema) return;
@@ -86,11 +133,7 @@ function FlowController<T extends { id: string }>({
     if (updateInputsMutation) {
       updateInputsMutation({ inputs, recipeId });
     }
-    dispatchStage((prev: number) => {
-      if (prev === 4) return prev;
-      if (prev >= 1) return prev + 1;
-      return prev;
-    });
+    nextStage(stage);
   }
 
   function prevStageHandler() {
@@ -98,11 +141,7 @@ function FlowController<T extends { id: string }>({
     if (updateInputsMutation && inputs) {
       updateInputsMutation({ inputs, recipeId });
     }
-    dispatchStage((prev: number) => {
-      if (prev === 1) return prev;
-      if (prev > 1) return prev - 1;
-      return prev;
-    });
+    prevStage(stage);
   }
 
   function createNewInputHandler() {
@@ -115,17 +154,21 @@ function FlowController<T extends { id: string }>({
     });
   }
 
-  function enterPreviewModeHandler() {
+  function sendToPreviewModeHandler() {
     if (!inputs || !updateInputsMutation) return;
     updateInputsMutation(
       { inputs, recipeId },
       {
         onSuccess: () => {
           queryClient.invalidateQueries(['recipe']);
+          window.localStorage.set('previous_stage', stage);
+          router.push({
+            pathname: '/view/[recipeId]',
+            query: { recipeId },
+          });
         },
       },
     );
-    dispatchPreviewMode(true);
   }
 
   return (
@@ -146,24 +189,22 @@ function FlowController<T extends { id: string }>({
           </div>
           <div className="flex items-center space-x-4">
             <button className="text-xs">Tips</button>
-            <button className="text-xs" onClick={enterPreviewModeHandler}>
+            <button className="text-xs" onClick={sendToPreviewModeHandler}>
               Preview
             </button>
           </div>
         </div>
         {children}
-        {stage !== 4 ? (
-          <div className="w-full">
-            <button
-              type="button"
-              className="btn-primary btn-reg ml-auto flex w-fit items-center transition-all"
-              onClick={createNewInputHandler}
-            >
-              <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
-              <span className="pr-2 pl-1 text-lg">{stageLabel}</span>
-            </button>
-          </div>
-        ) : null}
+        <div className="w-full">
+          <button
+            type="button"
+            className="btn-primary btn-reg ml-auto flex w-fit items-center transition-all"
+            onClick={createNewInputHandler}
+          >
+            <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
+            <span className="pr-2 pl-1 text-lg">{stageLabel}</span>
+          </button>
+        </div>
         <div className="fixed left-10 right-10 bottom-0 flex flex-col items-center justify-between space-y-3 border-concrete transition-all">
           {isError ? (
             <StageError
@@ -173,13 +214,14 @@ function FlowController<T extends { id: string }>({
           ) : null}
           <ControlPanel>
             <button
+              
               className="btn-reg btn-primary scale disabled:opacity-0"
               onClick={prevStageHandler}
-              disabled={stage === 1}
+              disabled={stage === 'ingredients'}
             >
               <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-white' }} />
             </button>
-            {stage !== 4 ? (
+            {stage !== 'instructions' ? (
               <FlowProgress curStage={stage} />
             ) : (
               <button>Publish!</button>
@@ -187,7 +229,7 @@ function FlowController<T extends { id: string }>({
             <button
               className="btn-reg btn-primary scale disabled:opacity-0"
               onClick={nextStageHandler}
-              disabled={stage === 3}
+              disabled={stage === 'instructions'}
             >
               <ArrowRightIcon styles={{ icon: 'w-7 h-7 text-white' }} />
             </button>
@@ -242,10 +284,6 @@ function initInstructions(instructions: Instruction[]): Instruction[] {
   return [genInstruction(), genInstruction()];
 }
 
-function initGeneralInfo(recipe: RecipeWithFull): RecipeGeneralInfo {
-  return { id: recipe.id, name: recipe.name, description: recipe.description };
-}
-
 interface ControllerConfig<T> {
   inputs?: T[];
   dispatchInputs?: Dispatch<SetStateAction<T[]>>;
@@ -261,17 +299,16 @@ interface ControllerConfig<T> {
   stageLabel: string;
 }
 
+export const stages: Stage[] = ['ingredients', 'equipment', 'instructions'];
 interface CreateRecipeFlowProps {
   recipe: RecipeWithFull;
   allUnits: IngredientUnit[];
+  stage: Stage;
 }
 
-function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
-  // state
-  const [stage, setStage] = useState<number>(1);
-  const [previewMode, setPreviewMode] = useState(false);
-  const client = useQueryClient();
+function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
 
+  // state
   const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
     initIngredients(recipe.ingredients),
   );
@@ -281,10 +318,6 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   const [instructions, setInstructions] = useState<Instruction[]>(() =>
     initInstructions(recipe.instructions),
   );
-  const [generalInfo, setGeneralInfo] = useState<RecipeGeneralInfo>(() =>
-    initGeneralInfo(recipe),
-  );
-
   const { mutate: updateIngredients, status: updateIngredientsStatus } =
     useUpdateIngredients(setIngredients);
   const { mutate: updateEquipment, status: updateEquipmentStatus } =
@@ -293,15 +326,13 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     useUpdateInstructions(setInstructions);
 
   const sharedControllerConfig = {
-    recipeName: generalInfo.name,
+    recipeName: recipe.name,
     recipeId: recipe.id,
-    dispatchPreviewMode: setPreviewMode,
-    dispatchStage: setStage,
-    stage: stage,
+    stage,
   };
 
   const firstControllerConfig: ControllerConfig<FlowIngredient> = {
-    stageName: 'Ingredients',
+    stageName: 'ingredients',
     stageLabel: 'Ingredient',
     inputs: ingredients,
     dispatchInputs: setIngredients,
@@ -311,7 +342,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const secondControllerConfig: ControllerConfig<FlowEquipment> = {
-    stageName: 'Equipment',
+    stageName: 'equipment',
     stageLabel: 'Equipment',
     inputs: equipment,
     dispatchInputs: setEquipment,
@@ -321,7 +352,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
   };
 
   const thirdControllerConfig: ControllerConfig<Instruction> = {
-    stageName: 'Instructions',
+    stageName: 'instructions',
     stageLabel: 'Instruction',
     inputs: instructions,
     dispatchInputs: setInstructions,
@@ -330,14 +361,9 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
     updateInputsMutation: updateInstructions,
   };
 
-  const fourthControllerConfig: ControllerConfig<RecipeGeneralInfo> = {
-    stageName: 'Info',
-    stageLabel: 'Info',
-  };
-
-  const stageComponents = new Map<number, ReactNode>([
+  const stageComponents = new Map<Stage, ReactNode>([
     [
-      1,
+      'ingredients',
       <FlowController
         key={recipe.id + firstControllerConfig.stageName}
         {...sharedControllerConfig}
@@ -354,7 +380,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       </FlowController>,
     ],
     [
-      2,
+      'equipment',
       <FlowController
         key={recipe.id + secondControllerConfig.stageName}
         {...sharedControllerConfig}
@@ -370,7 +396,7 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
       </FlowController>,
     ],
     [
-      3,
+      'instructions',
       <FlowController
         key={recipe.id + thirdControllerConfig.stageName}
         {...sharedControllerConfig}
@@ -395,14 +421,14 @@ function CreateRecipeFlow({ recipe, allUnits }: CreateRecipeFlowProps) {
 
 function ControlPanel({ children }: { children: ReactNode }) {
   return (
-    <div className="border-concerete flex w-full items-center justify-between border-t bg-white p-3">
+    <div className="flex w-full items-center justify-between border-t border-concrete bg-white p-3">
       {children}
     </div>
   );
 }
 
-function FlowProgress({ curStage }: { curStage: number }) {
-  const dots = [1, 2, 3].map((i) => {
+function FlowProgress({ curStage }: { curStage: Stage }) {
+  const dots = stages.map((i) => {
     return (
       <div
         key={i}
@@ -423,6 +449,7 @@ function StageError({
   stageName?: string;
   dispatchIsError: Dispatch<SetStateAction<boolean>>;
 }) {
+
   return (
     <div className="flex flex-col rounded-sm bg-red-400 p-1 text-white">
       <button className="ml-auto" onClick={() => dispatchIsError(false)}>

@@ -1,5 +1,6 @@
 import { NextApiResponse } from 'next';
-import { ErrorPayload } from 'types/types';
+import { ErrorPayload, Stage } from 'types/types';
+
 
 export const ERRORS = {
   INVALID_INPUT: 'invalid input',

@@ -11,6 +11,7 @@ interface CreateRecipeDockProps {
 }
 
 function CreateRecipeDock({ recipeId, children }: CreateRecipeDockProps) {
+  console.log(recipeId);
   const { data: recipeData, status: recipeStatus } = useGetRecipeById(recipeId);
   const { data: unitsData, status: unitsStatus } = useGetAllUnits();
 

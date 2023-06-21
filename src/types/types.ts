@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
 import { FlowIngredient, RecipeWithFull } from './models';
 
+export type Stage = 'ingredients' | 'equipment' | 'instructions';
+
 type ReqMethod = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
 export type LockedInterface<T> = { readonly [K in keyof T]: string };

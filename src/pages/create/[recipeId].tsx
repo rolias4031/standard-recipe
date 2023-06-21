@@ -1,15 +1,32 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import CreateRecipeDock from 'components/create/CreateRecipeDock';
-import CreateRecipeFlow from 'components/create/CreateRecipeFlow';
+import CreateRecipeFlow, { stages } from 'components/create/CreateRecipeFlow';
 import PageFrame from 'components/common/PageFrame';
+import { Stage } from 'types/types';
+
+function extractQueryParams() {
+  const router = useRouter();
+  const { recipeId, stage } = router.query;
+  console.log('slug', router.query);
+  if (
+    recipeId &&
+    !Array.isArray(recipeId) &&
+    stage &&
+    !Array.isArray(stage) &&
+    stages.includes(stage as Stage)
+  ) {
+    const castedStage = stage as Stage;
+    return { recipeId, stage: castedStage };
+  }
+  return { recipeId: undefined, stage: undefined };
+}
 
 function CreateRecipePage() {
-  const router = useRouter();
-  const { recipeId } = router.query;
+  const { recipeId, stage } = extractQueryParams();
 
-  if (recipeId && !Array.isArray(recipeId)) {
-
+  if (recipeId && stage) {
+    console.log(recipeId);
     return (
       <PageFrame
         styles={{
@@ -22,6 +39,7 @@ function CreateRecipePage() {
               key={recipe.id + recipe.updatedAt}
               recipe={recipe}
               allUnits={allUnits}
+              stage={stage}
             />
           )}
         </CreateRecipeDock>
@@ -29,6 +47,8 @@ function CreateRecipePage() {
       </PageFrame>
     );
   }
+
+  return <div>Error</div>;
 }
 
 export default CreateRecipePage;

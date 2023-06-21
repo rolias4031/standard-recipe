@@ -29,8 +29,8 @@ function NewRecipeModal({
         onSuccess: (data) => {
           console.log(data.draftId);
           router.push({
-            pathname: '/create/[recipeId]',
-            query: { recipeId: data.draftId },
+            pathname: '/create/[recipeId]/',
+            query: { recipeId: data.draftId, stage: 'ingredients' },
           });
         },
       },
@@ -41,18 +41,18 @@ function NewRecipeModal({
 
   return (
     <ModalBackdrop>
-      <div className="bg-white rounded-sm p-10 w-3/4 h-5/6 flex flex-col">
+      <div className="flex h-5/6 w-3/4 flex-col rounded-sm bg-white p-10">
         <GeneralButton onClick={onCloseModal}>
           <ArrowLeftIcon styles={{ icon: 'w-6 h-6' }} />
         </GeneralButton>
 
-        <div className="h-1/4 text-center text-xl mt-10">
+        <div className="mt-10 h-1/4 text-center text-xl">
           First, name your new recipe.
           <br />
           This name must be unique among all your other recipes.
         </div>
 
-        <div className="w-full h-1/4 flex flex-col justify-end">
+        <div className="flex h-1/4 w-full flex-col justify-end">
           <TextInput
             name="name"
             placeholder="Name your new recipe"
@@ -79,7 +79,7 @@ function NewRecipeModal({
             )}
           </GeneralButton>
         </div>
-        <div className="text-red-500 h-1/4 flex flex-col justify-center items-center">
+        <div className="flex h-1/4 flex-col items-center justify-center text-red-500">
           {formValidation.name.error
             ? formValidation.name.error.map((e) => {
                 return <div key={e}>{e}</div>;
