@@ -9,30 +9,7 @@ import TextWithPopover from 'components/popover/TextWithPopover';
 import { genId } from 'lib/util-client';
 import React from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
-
-function createUnitMap(allUnits: IngredientUnit[]) {
-  const unitAbbreviations = allUnits.map((u) => u.abbreviation);
-  const unitPlurals = allUnits.map((u) => u.plural);
-  const unitsMap = new Map<string, IngredientUnit>();
-  allUnits.forEach((u) => {
-    unitsMap.set(u.unit, u);
-  });
-  unitAbbreviations.forEach((a) => {
-    const unit = allUnits.find((u) => u.abbreviation === a);
-    if (!unit) return;
-    unitsMap.set(a, unit);
-  });
-  unitPlurals.forEach((p) => {
-    const unit = allUnits.find((u) => u.plural === p);
-    if (!unit) return;
-    unitsMap.set(p, unit);
-  });
-
-  console.log('unitsMap', unitsMap);
-
-  return unitsMap;
-}
-
+import { useUnitStructures } from 'lib/parsing/utils';
 interface InstructionsViewProps {
   instructions: Instruction[];
   ingredients: IngredientWithAll[];
@@ -46,22 +23,27 @@ function InstructionsView({
   equipment,
   allUnits,
 }: InstructionsViewProps) {
-  const unitsMap = createUnitMap(allUnits);
+  const { unitMap, unitNamesAndAbbreviations } = useUnitStructures(allUnits);
+
+  console.log(ingredients);
 
   const smartInstructions = instructions.map((i) => (
     <div key={i.id} className="w-5/6 rounded-md bg-smoke px-2 py-1">
       <SmartInstruction
-        allUnits={allUnits}
-        unitsMap={unitsMap}
+        unitNamesAndAbbreviations={unitNamesAndAbbreviations}
+        unitMap={unitMap}
         description={i.description}
-        tags={[...ingredients, ...equipment]}
-        ingredientTooltipComponent={(ingredient) => (
-          <TextWithTooltip
-            key={`${ingredient.id}${genId()}`}
-            text={ingredient.name.name}
-            tooltipElement={<IngredientTooltip ingredient={ingredient} />}
-          />
-        )}
+        items={[...ingredients, ...equipment]}
+        ingredientTooltipComponent={(ingredient) => {
+          console.log('ingredient', ingredient);
+          return (
+            <TextWithTooltip
+              key={`${ingredient.id}${genId()}`}
+              text={ingredient.name.name}
+              tooltipElement={<IngredientTooltip ingredient={ingredient} />}
+            />
+          );
+        }}
         equipmentTooltipComponent={(equipment) => (
           <TextWithTooltip
             key={`${equipment.id}${genId()}`}
@@ -72,7 +54,7 @@ function InstructionsView({
         measurementPopoverComponent={(measurement) => (
           <TextWithPopover
             key={genId()}
-            text={measurement.segment.quantity + measurement.segment.text}
+            text={measurement.text}
             tooltip={<MeasurementPopover measurement={measurement} />}
           />
         )}
@@ -87,6 +69,7 @@ function InstructionsView({
       />
     </div>
   ));
+
   return <div className="flex flex-col space-y-2">{smartInstructions}</div>;
 }
 

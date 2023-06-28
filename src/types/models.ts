@@ -44,7 +44,7 @@ export type EquipmentWithAll = Prisma.EquipmentGetPayload<
 >;
 
 export interface RecipeGeneralInfo {
-  id: string,
+  id: string;
   name: string;
   description: RecipeWithAll['description'];
 }
@@ -72,11 +72,9 @@ export interface FlowEquipment
   substitutes: string[];
 }
 
-export interface IngredientMeasurement extends IngredientUnit {
-  segment: {
-    quantity: number;
-    text: string;
-  };
+export interface InstructionMeasurement extends IngredientUnit {
+  text: string;
+  quantity: string;
 }
 
 export interface InstructionTemperature {
@@ -90,18 +88,23 @@ export interface InstructionTemperature {
 export function isInstructionTemperatureType(
   obj: any,
 ): obj is InstructionTemperature {
-  return 'temperature' in obj;
+  return 'temperature' in obj && 'unit' in obj;
 }
 
-export function isIngredientMeasurementType(
+export function isInstructionMeasurementType(
   obj: any,
-): obj is IngredientMeasurement {
+): obj is InstructionMeasurement {
   console.log(obj);
-  return 'segment' in obj && 'abbreviation' in obj && 'plural' in obj;
+  return (
+    'text' in obj &&
+    'quantity' in obj &&
+    'abbreviation' in obj &&
+    'plural' in obj
+  );
 }
 
 export function isIngredientWithAllType(obj: any): obj is IngredientWithAll {
-  return 'unit' in obj && 'quantity' in obj;
+  return 'unit' in obj && 'quantity' in obj && 'name' in obj;
 }
 
 export function isEquipmentWithAllType(obj: any): obj is EquipmentWithAll {

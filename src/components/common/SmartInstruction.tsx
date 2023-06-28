@@ -1,52 +1,53 @@
 import { IngredientUnit } from '@prisma/client';
-import { parseInstructionForTags } from 'lib/util-client';
-import React, { ReactNode } from 'react';
+import { useBuildSmartInstructionArray } from 'lib/parsing';
+import React, { ReactNode, useMemo } from 'react';
 import {
   EquipmentWithAll,
-  IngredientMeasurement,
+  InstructionMeasurement,
   IngredientWithAll,
   InstructionTemperature,
   isEquipmentWithAllType,
-  isIngredientMeasurementType,
+  isInstructionMeasurementType,
   isIngredientWithAllType,
   isInstructionTemperatureType,
 } from 'types/models';
 
 interface SmartInstructionProps {
   description: string;
-  tags: Array<IngredientWithAll | EquipmentWithAll>;
+  items: Array<IngredientWithAll | EquipmentWithAll>;
   ingredientTooltipComponent: (ingredient: IngredientWithAll) => ReactNode;
   equipmentTooltipComponent: (equipment: EquipmentWithAll) => ReactNode;
   measurementPopoverComponent: (
-    measurement: IngredientMeasurement,
+    measurement: InstructionMeasurement,
   ) => ReactNode;
   temperatureTooltipComponent: (
     temperature: InstructionTemperature,
   ) => ReactNode;
-  allUnits: IngredientUnit[];
-  unitsMap: Map<string, IngredientUnit>;
+  unitNamesAndAbbreviations: string[];
+  unitMap: Map<string, IngredientUnit>;
 }
 
 function SmartInstruction({
   description,
-  tags,
+  items,
   ingredientTooltipComponent,
   equipmentTooltipComponent,
   measurementPopoverComponent,
   temperatureTooltipComponent,
-  allUnits,
-  unitsMap,
+  unitNamesAndAbbreviations,
+  unitMap,
 }: SmartInstructionProps) {
-  const parsedDescriptionArray = parseInstructionForTags(
+  const smartInstructionsArray = useBuildSmartInstructionArray(
     description,
-    tags,
-    allUnits,
-    unitsMap,
+    items,
+    unitNamesAndAbbreviations,
+    unitMap,
   );
+
   return (
     <div>
-      {parsedDescriptionArray.map((segment) => {
-        console.log(segment);
+      {smartInstructionsArray.map((segment) => {
+        console.log('Segment', segment);
         if (typeof segment === 'string') return segment;
         if (isIngredientWithAllType(segment)) {
           return ingredientTooltipComponent(segment);
@@ -54,7 +55,7 @@ function SmartInstruction({
         if (isEquipmentWithAllType(segment)) {
           return equipmentTooltipComponent(segment);
         }
-        if (isIngredientMeasurementType(segment)) {
+        if (isInstructionMeasurementType(segment)) {
           return measurementPopoverComponent(segment);
         }
         if (isInstructionTemperatureType(segment)) {
