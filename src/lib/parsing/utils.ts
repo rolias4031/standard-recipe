@@ -1,4 +1,5 @@
 import { IngredientUnit } from '@prisma/client';
+import { genId } from 'lib/util-client';
 import { useMemo } from 'react';
 import {
   EquipmentWithAll,
@@ -16,6 +17,12 @@ export const markdownConfig: { [key in markdownConfigKey]: [string, string] } =
     temperature: ['{', '}'],
   };
 
+function splitStringAtNumber(string: string) {
+  const regex = /(\d+(\.\d+)?)|(\D.*)/g;
+  const matches = string.match(regex)?.map((m) => m.trim());
+  return matches ?? [];
+}
+
 export function removeMarkdown(segment: string) {
   return segment.slice(1, -1);
 }
@@ -24,29 +31,32 @@ function createMarkdown(string: string, config: [string, string]) {
   return config[0] + string + config[1];
 }
 
-const splitByMarkdownRegex = /(?=<)|(?<=>)|(?=\[)|(?<=\])|(?={)|(?<=})/;
-
-const temperatureRegex = /(\d+(\.\d+)?)[ ]?[CF]/g;
-
-export function createMeasurementRegex(namesToMatch: string[]) {
-  return new RegExp(
-    '\\b\\d+(\\.\\d+)?\\s(' + namesToMatch.join('|') + ')s?\\b',
-    'gi',
-  );
-}
-
-export function createItemRegex(item: string) {
-  return new RegExp(`(?<![<\\w])${item}(?![>\\w])`, 'g');
-}
+const createRegex = {
+  items: (items: string[]) => {
+    return new RegExp('\\b(' + items.join('|') + ')\\b', 'gi');
+  },
+  measurements: (unitStrings: string[]) => {
+    return new RegExp(
+      '\\b\\d+(\\.\\d+)?\\s(' + unitStrings.join('|') + ')\\b',
+      'gi',
+    );
+  },
+  temperatures: () => {
+    return new RegExp(/(\d+(\.\d+)?)\s?[CF]\b/g);
+  },
+  markdown: () => {
+    return new RegExp(/(?=<)|(?<=>)|(?=\[)|(?<=\])|(?={)|(?<=})/);
+  },
+};
 
 export function splitIntoMarkdownAndStrings(description: string) {
-  return description.split(splitByMarkdownRegex);
+  return description.split(createRegex.markdown());
 }
 
 export const addMarkdown = {
   temperature: (description: string) => {
     const descriptionWithTemps = description.replace(
-      temperatureRegex,
+      createRegex.temperatures(),
       (match) => {
         console.log('match', match);
         return createMarkdown(match, markdownConfig.temperature);
@@ -57,7 +67,7 @@ export const addMarkdown = {
   },
   measurement: (namesToMatch: string[], description: string) => {
     // create regex with names list
-    const regex = createMeasurementRegex(namesToMatch);
+    const regex = createRegex.measurements(namesToMatch);
     // apply regex to each word in description.
     const descriptionWithMeasurements = description.replace(regex, (match) => {
       return createMarkdown(match, markdownConfig.measurement);
@@ -70,12 +80,10 @@ export const addMarkdown = {
     sortedItems: Array<IngredientWithAll | EquipmentWithAll>,
     description: string,
   ) => {
-    let newDescription = description;
-    sortedItems.forEach((item) => {
-      const itemRegex = createItemRegex(item.name.name);
-      newDescription = description.replace(itemRegex, (match) =>
-        createMarkdown(match, markdownConfig.item),
-      );
+    const sortedItemNames = sortedItems.map((i) => i.name.name);
+    const itemsRegex = createRegex.items(sortedItemNames);
+    const newDescription = description.replace(itemsRegex, (match) => {
+      return createMarkdown(match, markdownConfig.item);
     });
     console.log('addMarkdown.item', newDescription);
     return newDescription;
@@ -94,9 +102,9 @@ export const buildObject = {
     segment: string,
     unitMap: Map<string, IngredientUnit>,
   ): InstructionMeasurement | string => {
-    const [quantity, unit] = removeMarkdown(segment).split(' ');
+    const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
     if (!unit || !quantity) return segment;
-    const obj = unitMap.get(unit);
+    const obj = unitMap.get(unit.toLocaleLowerCase());
     return obj ? { text: quantity + ' ' + unit, quantity, ...obj } : segment;
   },
   temperature: (segment: string): InstructionTemperature | string => {
@@ -155,8 +163,12 @@ export function useUnitStructures(allUnits: IngredientUnit[]) {
       unitMap.set(p, unit);
     });
 
-    const unitNamesAndAbbreviations = unitNames.concat(unitAbbreviations);
+    const unitNamesAbbreviationsPlurals = unitNames
+      .concat(unitAbbreviations, unitPlurals)
+      .filter((i) => i !== '');
 
-    return { unitMap, unitNamesAndAbbreviations };
+    console.log('unitNamesAbbreviationsPlurals', unitNamesAbbreviationsPlurals);
+
+    return { unitMap, unitNamesAbbreviationsPlurals };
   }, [allUnits]);
 }

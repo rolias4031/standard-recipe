@@ -37,7 +37,7 @@ export function ingredientSchema(allowedUnitIds: string[]) {
     optional: sharedSchemas.optional,
     notes: sharedSchemas.notes,
     order: sharedSchemas.order,
-    substitutes: sharedSchemas.substitutes
+    substitutes: sharedSchemas.substitutes,
   });
 }
 
@@ -51,7 +51,7 @@ export const equipmentSchema = z.object({
 
 export const instructionSchema = z.object({
   order: sharedSchemas.order,
-  description: z.string().max(500),
+  description: z.string().min(1).max(500),
   optional: sharedSchemas.optional,
 });
 

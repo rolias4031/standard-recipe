@@ -23,7 +23,7 @@ interface SmartInstructionProps {
   temperatureTooltipComponent: (
     temperature: InstructionTemperature,
   ) => ReactNode;
-  unitNamesAndAbbreviations: string[];
+  unitStringsForRegex: string[];
   unitMap: Map<string, IngredientUnit>;
 }
 
@@ -34,15 +34,16 @@ function SmartInstruction({
   equipmentTooltipComponent,
   measurementPopoverComponent,
   temperatureTooltipComponent,
-  unitNamesAndAbbreviations,
+  unitStringsForRegex,
   unitMap,
 }: SmartInstructionProps) {
-  const smartInstructionsArray = useBuildSmartInstructionArray(
+  
+  const smartInstructionsArray = useBuildSmartInstructionArray({
     description,
     items,
-    unitNamesAndAbbreviations,
+    unitStringsForRegex,
     unitMap,
-  );
+  });
 
   return (
     <div>

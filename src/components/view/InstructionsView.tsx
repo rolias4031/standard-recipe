@@ -7,7 +7,7 @@ import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
 import MeasurementPopover from 'components/popover/MeasurementPopover';
 import TextWithPopover from 'components/popover/TextWithPopover';
 import { genId } from 'lib/util-client';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
 import { useUnitStructures } from 'lib/parsing/utils';
 interface InstructionsViewProps {
@@ -23,17 +23,21 @@ function InstructionsView({
   equipment,
   allUnits,
 }: InstructionsViewProps) {
-  const { unitMap, unitNamesAndAbbreviations } = useUnitStructures(allUnits);
+  const { unitMap, unitNamesAbbreviationsPlurals } =
+    useUnitStructures(allUnits);
 
-  console.log(ingredients);
+  const ingredientsAndEquipment = useMemo(
+    () => [...ingredients, ...equipment],
+    [ingredients, equipment],
+  );
 
   const smartInstructions = instructions.map((i) => (
     <div key={i.id} className="w-5/6 rounded-md bg-smoke px-2 py-1">
       <SmartInstruction
-        unitNamesAndAbbreviations={unitNamesAndAbbreviations}
+        unitStringsForRegex={unitNamesAbbreviationsPlurals}
         unitMap={unitMap}
         description={i.description}
-        items={[...ingredients, ...equipment]}
+        items={ingredientsAndEquipment}
         ingredientTooltipComponent={(ingredient) => {
           console.log('ingredient', ingredient);
           return (

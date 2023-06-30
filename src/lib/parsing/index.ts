@@ -15,12 +15,19 @@ import {
 import { IngredientUnit } from '@prisma/client';
 import { useMemo } from 'react';
 
-export function useBuildSmartInstructionArray(
-  description: string,
-  items: (IngredientWithAll | EquipmentWithAll)[],
-  unitNamesAndAbbreviations: string[],
-  unitMap: Map<string, IngredientUnit>,
-): Array<
+interface UseBuildSmartInstructionArrayArgs {
+  description: string;
+  items: Array<IngredientWithAll | EquipmentWithAll>;
+  unitStringsForRegex: string[];
+  unitMap: Map<string, IngredientUnit>;
+}
+
+export function useBuildSmartInstructionArray({
+  description,
+  items,
+  unitStringsForRegex,
+  unitMap,
+}: UseBuildSmartInstructionArrayArgs): Array<
   | string
   | IngredientWithAll
   | EquipmentWithAll
@@ -28,16 +35,14 @@ export function useBuildSmartInstructionArray(
   | InstructionTemperature
 > {
   return useMemo(() => {
+    console.log('items', items);
     // sort items by number of words in name - largest go first otherwise small will break large.
     const sortedItems = sortItemsInDescending(items);
 
     // markdown items, measurements, then temperatures
     let withMarkdown = description;
     withMarkdown = addMarkdown.item(sortedItems, withMarkdown);
-    withMarkdown = addMarkdown.measurement(
-      unitNamesAndAbbreviations,
-      withMarkdown,
-    );
+    withMarkdown = addMarkdown.measurement(unitStringsForRegex, withMarkdown);
     withMarkdown = addMarkdown.temperature(withMarkdown);
 
     // split into array by markdown and plain strings
@@ -58,5 +63,5 @@ export function useBuildSmartInstructionArray(
       }
       return segment;
     });
-  }, [description, items, unitMap, unitNamesAndAbbreviations]);
+  }, [description, items, unitMap, unitStringsForRegex]);
 }
