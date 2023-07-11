@@ -4,6 +4,7 @@ import {
   useInteractions,
   useHover,
   offset,
+  shift,
   FloatingArrow,
   arrow,
   useClick,
@@ -25,7 +26,7 @@ function TextWithTooltip({ text, tooltipElement, styles }: TextWithTooltip) {
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'top',
-    middleware: [offset(7), arrow({ element: arrowRef })],
+    middleware: [offset(7), shift(), arrow({ element: arrowRef })],
     open: isOpen,
     onOpenChange: setIsOpen,
   });

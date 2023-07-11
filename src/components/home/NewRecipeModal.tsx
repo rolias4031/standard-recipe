@@ -37,10 +37,8 @@ function NewRecipeModal({
     );
   }
 
-  console.log(formValidation);
-
   return (
-    <ModalBackdrop>
+    <ModalBackdrop modalRoot="modal-root">
       <div className="flex h-5/6 w-3/4 flex-col rounded-sm bg-white p-10">
         <GeneralButton onClick={onCloseModal}>
           <ArrowLeftIcon styles={{ icon: 'w-6 h-6' }} />

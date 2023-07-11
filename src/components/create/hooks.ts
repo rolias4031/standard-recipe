@@ -33,7 +33,7 @@ export function useDebouncedAutosave<T extends { id: string }>(
     inputs,
     schema,
     updateInputsMutation,
-    debounceInMs = 2000,
+    debounceInMs = 1000,
   } = config;
   const [isAutosaveTriggered, setIsAutosaveTriggered] =
     useState<boolean>(false);

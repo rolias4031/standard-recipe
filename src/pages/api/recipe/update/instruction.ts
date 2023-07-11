@@ -10,7 +10,7 @@ import {
 import { instructionSchema } from 'validation/schemas';
 
 async function handler(
-  req: StandardRecipeApiRequest<UpdateInputMutationBody<Instruction>>,
+  req: StandardRecipeApiRequest<UpdateInputMutationBody<Instruction[]>>,
   res: NextApiResponse<UpdateInputMutationPayload>,
 ) {
   const { recipeId, inputs: instructions } = req.body;

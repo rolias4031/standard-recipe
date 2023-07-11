@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import LoadingSpinner from 'components/common/LoadingSpinner';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import { useUpdateRecipeName } from 'lib/mutations';
 import { pickStyles } from 'lib/util-client';
@@ -38,7 +37,7 @@ function UpdateRecipeNameModal({
   }
 
   return (
-    <ModalBackdrop>
+    <ModalBackdrop modalRoot="modal-root">
       <div className="flex w-1/2 flex-col justify-between space-y-6 rounded-lg bg-white p-5">
         <span className="mx-auto text-concrete">Update Recipe Name</span>
         <input
@@ -56,7 +55,10 @@ function UpdateRecipeNameModal({
             Cancel
           </button>
           <button
-            className={pickStyles("rounded-lg bg-fern px-2 py-1 text-sm text-white", [status === 'loading', 'animate-pulse-fast'])}
+            className={pickStyles(
+              'rounded-lg bg-fern px-2 py-1 text-sm text-white',
+              [status === 'loading', 'animate-pulse-fast'],
+            )}
             onClick={saveRecipeNameHandler}
             disabled={status === 'loading'}
           >

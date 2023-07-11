@@ -1,15 +1,33 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
-import SmartInstruction from 'components/common/SmartInstruction';
-import EquipmentTooltip from 'components/common/tooltip/EquipmentTooltip';
-import IngredientTooltip from 'components/common/tooltip/IngredientTooltip';
+import SmartInstruction, {
+  SmartInstructionWrapper,
+} from 'components/common/SmartInstruction';
 import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
 import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
-import MeasurementPopover from 'components/popover/MeasurementPopover';
-import TextWithPopover from 'components/popover/TextWithPopover';
+import TextWithPopover from 'components/common/popover/TextWithPopover';
 import { genId } from 'lib/util-client';
-import React, { useMemo } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
-import { useUnitStructures } from 'lib/parsing/utils';
+import { useDissectUnitStructures } from 'lib/parsing/utils';
+import ViewSectionContainer from './ViewSectionContainer';
+import TextWithDialog from 'components/common/dialog/TextWithDialog';
+import IngredientDialog from 'components/common/dialog/IngredientDialog';
+import EquipmentDialog from 'components/common/dialog/EquipmentDialog';
+import MeasurementDialog from 'components/common/dialog/MeasurementDialog';
+
+interface InstructionBlockProps {
+  order: number;
+  children: ReactNode;
+}
+
+function InstructionBlock({ order, children }: InstructionBlockProps) {
+  return (
+    <SmartInstructionWrapper>
+      <span className="text-md pr-1 font-mono text-concrete">{order}.</span>
+      {children}
+    </SmartInstructionWrapper>
+  );
+}
 interface InstructionsViewProps {
   instructions: Instruction[];
   ingredients: IngredientWithAll[];
@@ -23,43 +41,53 @@ function InstructionsView({
   equipment,
   allUnits,
 }: InstructionsViewProps) {
-  const { unitMap, unitNamesAbbreviationsPlurals } =
-    useUnitStructures(allUnits);
+  const { unitMap, unitStrings, unitsByProperty } =
+    useDissectUnitStructures(allUnits);
 
   const ingredientsAndEquipment = useMemo(
     () => [...ingredients, ...equipment],
     [ingredients, equipment],
   );
 
-  const smartInstructions = instructions.map((i) => (
-    <div key={i.id} className="w-5/6 rounded-md bg-smoke px-2 py-1">
+  const instructionViewRows = instructions.map((i) => (
+    <InstructionBlock order={i.order} key={i.id}>
       <SmartInstruction
-        unitStringsForRegex={unitNamesAbbreviationsPlurals}
+        unitStringsForRegex={unitStrings.unitNamesAbbreviationsPlurals}
         unitMap={unitMap}
         description={i.description}
         items={ingredientsAndEquipment}
-        ingredientTooltipComponent={(ingredient) => {
-          console.log('ingredient', ingredient);
-          return (
-            <TextWithTooltip
-              key={`${ingredient.id}${genId()}`}
-              text={ingredient.name.name}
-              tooltipElement={<IngredientTooltip ingredient={ingredient} />}
-            />
-          );
-        }}
+        ingredientTooltipComponent={(ingredient) => (
+          <TextWithDialog
+            text={ingredient.name.name}
+            dialogContent={<IngredientDialog ingredient={ingredient} />}
+          />
+        )}
         equipmentTooltipComponent={(equipment) => (
-          <TextWithTooltip
+          <TextWithDialog
             key={`${equipment.id}${genId()}`}
             text={equipment.name.name}
-            tooltipElement={<EquipmentTooltip equipment={equipment} />}
+            dialogContent={<EquipmentDialog equipment={equipment} />}
           />
         )}
         measurementPopoverComponent={(measurement) => (
-          <TextWithPopover
-            key={genId()}
+          <TextWithDialog
+            disabled={measurement.property === 'other'}
+            key={measurement.quantity + measurement.id}
             text={measurement.text}
-            tooltip={<MeasurementPopover measurement={measurement} />}
+            styles={{ text: 'text-indigo-500' }}
+            dialogContent={
+              <MeasurementDialog
+                measurement={measurement}
+                propertyUnits={
+                  measurement.property === 'mass' ||
+                  measurement.property === 'weight'
+                    ? unitsByProperty['mass']?.concat(
+                        unitsByProperty['weight'] ?? [],
+                      )
+                    : unitsByProperty[measurement.property]
+                }
+              />
+            }
           />
         )}
         temperatureTooltipComponent={(temp) => (
@@ -71,10 +99,17 @@ function InstructionsView({
           />
         )}
       />
-    </div>
+    </InstructionBlock>
   ));
 
-  return <div className="flex flex-col space-y-2">{smartInstructions}</div>;
+  return (
+    <ViewSectionContainer
+      title="Instructions"
+      totalItems={instructionViewRows.length}
+    >
+      <div className="flex flex-col space-y-5">{instructionViewRows}</div>
+    </ViewSectionContainer>
+  );
 }
 
 export default InstructionsView;

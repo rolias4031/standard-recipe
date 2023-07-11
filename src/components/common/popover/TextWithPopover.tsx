@@ -14,10 +14,11 @@ import React, { ReactNode, useState } from 'react';
 
 interface TextWithPopoverProps {
   text: string;
-  tooltip: ReactNode;
+  popover: ({ onClosePopover }: { onClosePopover: () => void }) => ReactNode;
+  disabled?: boolean;
 }
 
-function TextWithPopover({ text, tooltip }: TextWithPopoverProps) {
+function TextWithPopover({ text, popover, disabled }: TextWithPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -33,11 +34,23 @@ function TextWithPopover({ text, tooltip }: TextWithPopoverProps) {
     dismiss,
     role,
   ]);
+
+  function onClosePopover() {
+    setIsOpen(false);
+  }
   return (
     <>
-      <button ref={refs.setReference} {...getReferenceProps()}>
-        {text}
-      </button>
+      {!disabled ? (
+        <button
+          className="underline"
+          ref={refs.setReference}
+          {...getReferenceProps()}
+        >
+          {text}
+        </button>
+      ) : (
+        <span>{text}</span>
+      )}
       {isOpen ? (
         <FloatingFocusManager context={context} modal={false}>
           <div
@@ -45,8 +58,7 @@ function TextWithPopover({ text, tooltip }: TextWithPopoverProps) {
             style={floatingStyles}
             {...getFloatingProps()}
           >
-            <button onClick={() => setIsOpen(false)}>close</button>
-            {tooltip}
+            {popover({ onClosePopover })}
           </div>
         </FloatingFocusManager>
       ) : null}

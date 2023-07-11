@@ -74,7 +74,7 @@ export interface FlowEquipment
 
 export interface InstructionMeasurement extends IngredientUnit {
   text: string;
-  quantity: string;
+  quantity: number;
 }
 
 export interface InstructionTemperature {

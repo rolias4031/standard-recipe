@@ -1,6 +1,6 @@
 import { IngredientUnit } from '@prisma/client';
 import { useBuildSmartInstructionArray } from 'lib/parsing';
-import React, { ReactNode, useMemo } from 'react';
+import React, { ReactNode } from 'react';
 import {
   EquipmentWithAll,
   InstructionMeasurement,
@@ -11,6 +11,16 @@ import {
   isIngredientWithAllType,
   isInstructionTemperatureType,
 } from 'types/models';
+
+interface SmartInstructionWrapperProps {
+  children: ReactNode;
+}
+
+export function SmartInstructionWrapper({
+  children,
+}: SmartInstructionWrapperProps) {
+  return <div className="w-full rounded-lg bg-smoke p-3">{children}</div>;
+}
 
 interface SmartInstructionProps {
   description: string;
@@ -37,7 +47,6 @@ function SmartInstruction({
   unitStringsForRegex,
   unitMap,
 }: SmartInstructionProps) {
-  
   const smartInstructionsArray = useBuildSmartInstructionArray({
     description,
     items,
@@ -46,7 +55,7 @@ function SmartInstruction({
   });
 
   return (
-    <div>
+    <>
       {smartInstructionsArray.map((segment) => {
         console.log('Segment', segment);
         if (typeof segment === 'string') return segment;
@@ -63,7 +72,7 @@ function SmartInstruction({
           return temperatureTooltipComponent(segment);
         }
       })}
-    </div>
+    </>
   );
 }
 

@@ -38,7 +38,7 @@ function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
 }
 
 async function handler(
-  req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient>>,
+  req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient[]>>,
   res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
 ) {
   const { recipeId, inputs: ingredients } = req.body;
@@ -53,7 +53,6 @@ async function handler(
   });
 
   for (const ingredient of ingredients) {
-
     const isValid = validateOneInput({
       schema: ingredientSchema(allUnits.map((u) => u.id)),
       input: ingredient,
@@ -95,7 +94,10 @@ async function handler(
       },
       order: ingredient.order,
       quantity: ingredient.quantity,
-      notes: ingredient.notes,
+      notes:
+        ingredient.notes && ingredient.notes.length > 0
+          ? ingredient.notes
+          : null,
       optional: ingredient.optional,
     };
 

@@ -50,6 +50,7 @@ interface FlowControllerProps<T extends { id: string }> {
   stage: Stage;
   recipeName: string;
   recipeId: string;
+  isMutationLoadingOrError: boolean,
   controllerConfig: ControllerConfig<T>;
 }
 
@@ -58,6 +59,7 @@ function FlowController<T extends { id: string }>({
   stage,
   recipeName,
   recipeId,
+  isMutationLoadingOrError,
   controllerConfig,
 }: FlowControllerProps<T>) {
   const router = useRouter();
@@ -114,19 +116,12 @@ function FlowController<T extends { id: string }>({
   }
 
   function enterPreviewModeHandler() {
-    if (!inputs || !updateInputsMutation) return;
-    updateInputsMutation(
-      { inputs, recipeId },
-      {
-        onSuccess: () => {
-          window.localStorage.setItem('previous_stage', stage);
-          router.push({
-            pathname: '/view/[recipeId]',
-            query: { recipeId },
-          });
-        },
-      },
-    );
+    if (isMutationLoadingOrError) return;
+    window.localStorage.setItem('previous_stage', stage);
+    router.push({
+      pathname: '/view/[recipeId]',
+      query: { recipeId },
+    });
   }
 
   return (
@@ -147,9 +142,14 @@ function FlowController<T extends { id: string }>({
           </div>
           <div className="flex items-center space-x-4">
             <button className="text-xs">Tips</button>
-            <button className="text-xs" onClick={enterPreviewModeHandler}>
+            <button
+              className="text-xs disabled:text-red-500"
+              onClick={enterPreviewModeHandler}
+              disabled={isMutationLoadingOrError}
+            >
               Preview
             </button>
+            {isMutationLoadingOrError}
           </div>
         </div>
         {children}
@@ -241,6 +241,12 @@ function initInstructions(instructions: Instruction[]): Instruction[] {
   return [genInstruction(), genInstruction()];
 }
 
+function checkStatusesForLoadingOrError(statuses: string[]) {
+  const isLoading = statuses.some((status) => status === 'loading');
+  const isError = statuses.some((status) => status === 'error');
+  return isLoading || isError;
+}
+
 interface ControllerConfig<T> {
   inputs?: T[];
   dispatchInputs?: Dispatch<SetStateAction<T[]>>;
@@ -281,9 +287,16 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
   const { mutate: updateInstructions, status: updateInstructionsStatus } =
     useUpdateInstructions(setInstructions);
 
+  const isMutationLoadingOrError = checkStatusesForLoadingOrError([
+    updateIngredientsStatus,
+    updateEquipmentStatus,
+    updateInstructionsStatus,
+  ]);
+
   const sharedControllerConfig = {
     recipeName: recipe.name,
     recipeId: recipe.id,
+    isMutationLoadingOrError,
     stage,
   };
 

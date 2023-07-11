@@ -1,5 +1,4 @@
 import { IngredientUnit } from '@prisma/client';
-import { genId } from 'lib/util-client';
 import { useMemo } from 'react';
 import {
   EquipmentWithAll,
@@ -8,13 +7,13 @@ import {
   InstructionTemperature,
 } from 'types/models';
 
-type markdownConfigKey = 'item' | 'measurement' | 'temperature';
+type markdownConfigKey = 'items' | 'measurements' | 'temperatures';
 
 export const markdownConfig: { [key in markdownConfigKey]: [string, string] } =
   {
-    item: ['<', '>'],
-    measurement: ['[', ']'],
-    temperature: ['{', '}'],
+    items: ['<', '>'],
+    measurements: ['[', ']'],
+    temperatures: ['{', '}'],
   };
 
 function splitStringAtNumber(string: string) {
@@ -59,7 +58,7 @@ export const addMarkdown = {
       createRegex.temperatures(),
       (match) => {
         console.log('match', match);
-        return createMarkdown(match, markdownConfig.temperature);
+        return createMarkdown(match, markdownConfig.temperatures);
       },
     );
     console.log('addMarkdown.temperature', descriptionWithTemps);
@@ -70,7 +69,7 @@ export const addMarkdown = {
     const regex = createRegex.measurements(namesToMatch);
     // apply regex to each word in description.
     const descriptionWithMeasurements = description.replace(regex, (match) => {
-      return createMarkdown(match, markdownConfig.measurement);
+      return createMarkdown(match, markdownConfig.measurements);
     });
 
     console.log('addMarkdown.measurement', descriptionWithMeasurements);
@@ -83,7 +82,7 @@ export const addMarkdown = {
     const sortedItemNames = sortedItems.map((i) => i.name.name);
     const itemsRegex = createRegex.items(sortedItemNames);
     const newDescription = description.replace(itemsRegex, (match) => {
-      return createMarkdown(match, markdownConfig.item);
+      return createMarkdown(match, markdownConfig.items);
     });
     console.log('addMarkdown.item', newDescription);
     return newDescription;
@@ -91,23 +90,26 @@ export const addMarkdown = {
 };
 
 export const buildObject = {
-  item: (
+  items: (
     segment: string,
     itemMap: Map<string, IngredientWithAll | EquipmentWithAll>,
   ) => {
     const obj = itemMap.get(removeMarkdown(segment));
     return obj ? obj : segment;
   },
-  measurement: (
+  measurements: (
     segment: string,
     unitMap: Map<string, IngredientUnit>,
   ): InstructionMeasurement | string => {
     const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
     if (!unit || !quantity) return segment;
+    const numberQuantity = parseInt(quantity);
     const obj = unitMap.get(unit.toLocaleLowerCase());
-    return obj ? { text: quantity + ' ' + unit, quantity, ...obj } : segment;
+    return obj
+      ? { text: quantity + ' ' + unit, quantity: numberQuantity, ...obj }
+      : segment;
   },
-  temperature: (segment: string): InstructionTemperature | string => {
+  temperatures: (segment: string): InstructionTemperature | string => {
     const temperature = segment.slice(1, -2);
     const unit = segment[segment.length - 2];
     if (!temperature || !unit) return segment;
@@ -143,32 +145,66 @@ type SmartInstructionSegment = Array<
   | InstructionTemperature
 >;
 
-export function useUnitStructures(allUnits: IngredientUnit[]) {
+export function useSortUnitsByProperty(allUnits: IngredientUnit[]) {
+  return useMemo(() => {
+    const properties = [...new Set(allUnits.map((u) => u.property))] as const;
+    type PropertyKeys = (typeof properties)[number];
+    let unitsByProperty: { [K in PropertyKeys]?: IngredientUnit[] } = {};
+
+    properties.forEach((property) => {
+      unitsByProperty[property] = allUnits.filter(
+        (u) => u.property === property,
+      );
+    });
+
+    return unitsByProperty;
+  }, [allUnits]);
+}
+
+export function useUnitStrings(allUnits: IngredientUnit[]) {
   return useMemo(() => {
     const unitNames = allUnits.map((u) => u.unit);
     const unitAbbreviations = allUnits.map((u) => u.abbreviation);
     const unitPlurals = allUnits.map((u) => u.plural);
-    const unitMap = new Map<string, IngredientUnit>();
-    allUnits.forEach((u) => {
-      unitMap.set(u.unit, u);
-    });
-    unitAbbreviations.forEach((a) => {
-      const unit = allUnits.find((u) => u.abbreviation === a);
-      if (!unit) return;
-      unitMap.set(a, unit);
-    });
-    unitPlurals.forEach((p) => {
-      const unit = allUnits.find((u) => u.plural === p);
-      if (!unit) return;
-      unitMap.set(p, unit);
-    });
-
     const unitNamesAbbreviationsPlurals = unitNames
       .concat(unitAbbreviations, unitPlurals)
-      .filter((i) => i !== '');
-
-    console.log('unitNamesAbbreviationsPlurals', unitNamesAbbreviationsPlurals);
-
-    return { unitMap, unitNamesAbbreviationsPlurals };
+      .filter((u) => u !== '');
+    return {
+      unitNames,
+      unitAbbreviations,
+      unitPlurals,
+      unitNamesAbbreviationsPlurals,
+    };
   }, [allUnits]);
+}
+
+export function useUnitMap(allUnits: IngredientUnit[]) {
+  const unitStrings = useUnitStrings(allUnits);
+
+  const unitMap = useMemo(() => {
+    const newUnitMap = new Map<string, IngredientUnit>();
+    allUnits.forEach((u) => {
+      newUnitMap.set(u.unit, u);
+    });
+    unitStrings.unitAbbreviations.forEach((a) => {
+      const unit = allUnits.find((u) => u.abbreviation === a);
+      if (!unit) return;
+      newUnitMap.set(a, unit);
+    });
+    unitStrings.unitPlurals.forEach((p) => {
+      const unit = allUnits.find((u) => u.plural === p);
+      if (!unit) return;
+      newUnitMap.set(p, unit);
+    });
+    return newUnitMap;
+  }, [allUnits, unitStrings]);
+
+  return { unitMap, unitStrings };
+}
+
+export function useDissectUnitStructures(allUnits: IngredientUnit[]) {
+  const unitsByProperty = useSortUnitsByProperty(allUnits);
+  const { unitMap, unitStrings } = useUnitMap(allUnits);
+
+  return { unitMap, unitStrings, unitsByProperty };
 }

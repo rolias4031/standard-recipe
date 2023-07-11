@@ -8,7 +8,11 @@ interface PageFrameProps {
 }
 
 function PageFrame({ children, styles }: PageFrameProps) {
-  return <div className={styles.div}>{children}</div>;
+  return (
+    <div id="page-root" className={styles.div}>
+      {children}
+    </div>
+  );
 }
 
 export default PageFrame;

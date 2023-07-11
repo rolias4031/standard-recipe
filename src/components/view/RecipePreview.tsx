@@ -5,6 +5,10 @@ import { RecipeWithFull } from 'types/models';
 import InstructionsView from './InstructionsView';
 import { navigateToCreateStage } from 'components/create/utils';
 import { Stage } from 'types/types';
+import IngredientsView from './IngredientsView';
+import EquipmentView from './EquipmentView';
+
+const defaultExitStage = 'ingredients';
 
 interface PreviewControllerProps {
   recipeId: string;
@@ -19,15 +23,18 @@ function PreviewController({ recipeId, children }: PreviewControllerProps) {
       window.localStorage.getItem('previous_stage');
     navigateToCreateStage(router, {
       recipeId,
-      stage: previousStage as Stage ?? 'ingredients',
+      stage: (previousStage as Stage) ?? defaultExitStage,
     });
   }
   return (
-    <div>
-      <button className="" onClick={exitPreviewModeHandler}>
-        Back To Editing
-      </button>
-      {children}
+    <div className="flex flex-col space-y-5">
+      <div className="flex justify-between">
+        <button className="w-fit" onClick={exitPreviewModeHandler}>
+          Back To Editing
+        </button>
+        <span>Preview</span>
+      </div>
+      <div className="flex flex-col space-y-5">{children}</div>
     </div>
   );
 }
@@ -40,6 +47,8 @@ interface RecipeViewProps {
 function RecipePreview({ recipe, allUnits }: RecipeViewProps) {
   return (
     <PreviewController recipeId={recipe.id}>
+      <IngredientsView ingredients={recipe.ingredients} />
+      <EquipmentView equipment={recipe.equipment} />
       <InstructionsView
         allUnits={allUnits}
         equipment={recipe.equipment}

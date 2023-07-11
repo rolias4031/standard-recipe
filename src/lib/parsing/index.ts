@@ -36,6 +36,7 @@ export function useBuildSmartInstructionArray({
 > {
   return useMemo(() => {
     console.log('items', items);
+    console.log('unitStringsForRegex', unitStringsForRegex)
     // sort items by number of words in name - largest go first otherwise small will break large.
     const sortedItems = sortItemsInDescending(items);
 
@@ -52,14 +53,14 @@ export function useBuildSmartInstructionArray({
     // detect by markdown opening char and replace from itemMap
     const itemMap = buildItemMap(items);
     return descriptionArray.map((segment) => {
-      if (segment.startsWith(markdownConfig.item[0])) {
-        return buildObject.item(segment, itemMap);
+      if (segment.startsWith(markdownConfig.items[0])) {
+        return buildObject.items(segment, itemMap);
       }
-      if (segment.startsWith(markdownConfig.measurement[0])) {
-        return buildObject.measurement(segment, unitMap);
+      if (segment.startsWith(markdownConfig.measurements[0])) {
+        return buildObject.measurements(segment, unitMap);
       }
-      if (segment.startsWith(markdownConfig.temperature[0])) {
-        return buildObject.temperature(segment);
+      if (segment.startsWith(markdownConfig.temperatures[0])) {
+        return buildObject.temperatures(segment);
       }
       return segment;
     });
