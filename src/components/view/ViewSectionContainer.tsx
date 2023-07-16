@@ -18,7 +18,7 @@ function ViewSectionContainer({
     <div className="flex flex-col space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-xl font-bold">{title}</span>
+          <span className="text-lg font-bold">{title}</span>
           <div className="flex justify-center rounded-md bg-smoke px-2 font-mono text-sm">
             <div className="text-black">{totalItems}</div>
           </div>

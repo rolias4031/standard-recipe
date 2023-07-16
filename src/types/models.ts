@@ -79,7 +79,7 @@ export interface InstructionMeasurement extends IngredientUnit {
 
 export interface InstructionTemperature {
   text: string;
-  temperature: string;
+  temperature: number;
   unit: string;
 }
 

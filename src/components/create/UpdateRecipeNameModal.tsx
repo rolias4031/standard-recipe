@@ -43,7 +43,7 @@ function UpdateRecipeNameModal({
         <input
           autoFocus
           name="name"
-          className="border-b-4 border-fern text-2xl font-bold outline-none"
+          className="border-b-4 border-fern text-2xl outline-none"
           value={newRecipeName}
           onChange={changeNameHandler}
         />

@@ -41,11 +41,13 @@ export default async function handler(
           substitutes: true,
         },
       },
-      instructions: true,
+      instructions: {
+        orderBy: {
+          order: 'asc',
+        },
+      },
     },
   });
-
-  console.log(recipe);
 
   if (!recipe) {
     return res.status(400).json({

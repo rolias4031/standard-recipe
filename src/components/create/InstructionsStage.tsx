@@ -16,22 +16,15 @@ import {
   isZeroLength,
   pickStyles,
 } from 'lib/util-client';
-import {
-  UpdateInputMutationBody,
-  UpdateInputMutationPayload,
-  UpdateRecipeInputHandlerArgs,
-} from 'types/types';
+import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import OptionalInput from 'components/common/OptionalInput';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import CogIcon from 'components/common/icons/CogIcon';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
 import { dragEndHandler } from './utils';
-import { useDebouncedAutosave } from './hooks';
 import { useDeleteInstruction } from 'lib/mutations';
-import { instructionSchema } from 'validation/schemas';
 import BaseButton from 'components/common/BaseButton';
-import { UseMutateFunction } from '@tanstack/react-query';
 import CharCount from 'components/common/CharCount';
 
 function PanelCard({
@@ -132,13 +125,7 @@ interface InstructionsStageProps {
   equipment: FlowEquipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
   allUnits: IngredientUnit[];
-  updateInstructionsMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
-    unknown,
-    UpdateInputMutationBody<Instruction[]>,
-    unknown
-  >;
-  updateInstructionsStatus: string;
+  triggerDebouncedUpdate: () => void;
 }
 
 function InstructionsStage({
@@ -147,18 +134,10 @@ function InstructionsStage({
   ingredients,
   equipment,
   raiseInstructions,
-  updateInstructionsMutation,
-  updateInstructionsStatus,
+  triggerDebouncedUpdate,
 }: InstructionsStageProps) {
   const { mutate: deleteInstruction, status: deleteStatus } =
     useDeleteInstruction();
-
-  const { triggerAutosave } = useDebouncedAutosave({
-    inputs: instructions,
-    recipeId,
-    schema: instructionSchema,
-    updateInputsMutation: updateInstructionsMutation,
-  });
 
   function removeInstructionHandler(id: string) {
     raiseInstructions((prev: Instruction[]) => {
@@ -189,7 +168,7 @@ function InstructionsStage({
       );
       return newInstructionArray as Instruction[];
     });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   const instructionString = useMemo<string>(
@@ -200,11 +179,13 @@ function InstructionsStage({
   return (
     <StageFrame
       droppableId="instructions"
-      onDragEnd={(result) => dragEndHandler(result, raiseInstructions)}
+      onDragEnd={(result) => {
+        dragEndHandler(result, raiseInstructions);
+        triggerDebouncedUpdate();
+      }}
       stageInputLabels={
         <div className="w-full font-mono text-sm">Instructions</div>
       }
-      mutationStatus={updateInstructionsStatus}
       stageInputComponents={instructions.map((i, idx) => (
         <RecipeFlowInput
           key={i.id}

@@ -10,14 +10,9 @@ import {
 } from 'lib/util-client';
 import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import { GeneralButton } from 'pirate-ui';
-import InputWithPopover from 'components/common/InputWithPopover';
 import { FlowIngredient } from 'types/models';
 import { IngredientUnit } from '@prisma/client';
-import {
-  UpdateInputMutationBody,
-  UpdateInputMutationPayload,
-  UpdateRecipeInputHandlerArgs,
-} from 'types/types';
+import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import AddSubstitutes from './AddSubstitutes';
 import NotesInput from 'components/common/NotesInput';
 import OptionalInput from 'components/common/OptionalInput';
@@ -25,11 +20,9 @@ import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteIngredient } from 'lib/mutations';
-import { ingredientSchema } from 'validation/schemas';
 import { addSubHandler, removeSubHandler } from './utils';
-import { useDebouncedAutosave } from './hooks';
 import { dragEndHandler } from './utils';
-import { UseMutateFunction } from '@tanstack/react-query';
+import SelectUnit from './SelectUnit';
 
 function cleanNameInput(value: string) {
   return value.toLowerCase();
@@ -44,13 +37,7 @@ interface IngredientStageProps {
   ingredients: FlowIngredient[];
   raiseIngredients: Dispatch<SetStateAction<FlowIngredient[]>>;
   allUnits: IngredientUnit[];
-  updateIngredientsMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
-    unknown,
-    UpdateInputMutationBody<FlowIngredient[]>,
-    unknown
-  >;
-  updateInstructionsStatus: string;
+  triggerDebouncedUpdate: () => void;
 }
 
 function IngredientsStage({
@@ -58,29 +45,21 @@ function IngredientsStage({
   ingredients,
   raiseIngredients,
   allUnits,
-  updateIngredientsMutation,
-  updateInstructionsStatus,
+  triggerDebouncedUpdate,
 }: IngredientStageProps) {
   console.log('IngredientStage', ingredients);
 
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
 
-  const { triggerAutosave } = useDebouncedAutosave({
-    recipeId,
-    inputs: ingredients,
-    schema: ingredientSchema(allUnits.map((u) => u.id)),
-    updateInputsMutation: updateIngredientsMutation,
-  });
-
   function addIngredientSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   function removeIngredientSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   function removeIngredientHandler(id: string) {
@@ -111,7 +90,7 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   function updateUnitHandler({
@@ -138,7 +117,7 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   return (
@@ -152,7 +131,6 @@ function IngredientsStage({
           <div className="col-start-3 w-36 font-mono text-sm">Unit</div>
         </>
       }
-      mutationStatus={updateInstructionsStatus}
       stageInputComponents={ingredients.map((i, index) => (
         <RecipeFlowInput
           key={i.id}
@@ -190,22 +168,15 @@ function IngredientsStage({
                 className="inp-reg inp-primary w-36 disabled:text-concrete"
                 disabled={!i.unit}
               />
-              <InputWithPopover
-                options={allUnits.map((u) => u.unit)}
-                name="unit"
-                curValue={i.unit && i.unit.unit}
-                onRaiseInput={({ value }) => {
+              <SelectUnit
+                curUnit={i.unit && i.unit.unit}
+                onSelectUnit={({ value }) => {
                   updateUnitHandler({
                     id: i.id,
                     unitInput: value,
                   });
                 }}
-                styles={{
-                  button: {
-                    root: 'inp-reg focus:outline-fern rounded w-36 flex disabled:text-concrete',
-                    isToggled: ['bg-fern text-white', 'bg-smoke'],
-                  },
-                }}
+                unitOptions={allUnits.map((u) => u.unit)}
               />
             </>
           )}

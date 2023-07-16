@@ -12,10 +12,15 @@ const defaultExitStage = 'ingredients';
 
 interface PreviewControllerProps {
   recipeId: string;
+  recipeName: string;
   children: ReactNode;
 }
 
-function PreviewController({ recipeId, children }: PreviewControllerProps) {
+function PreviewController({
+  recipeId,
+  recipeName,
+  children,
+}: PreviewControllerProps) {
   const router = useRouter();
 
   function exitPreviewModeHandler() {
@@ -29,10 +34,13 @@ function PreviewController({ recipeId, children }: PreviewControllerProps) {
   return (
     <div className="flex flex-col space-y-5">
       <div className="flex justify-between">
-        <button className="w-fit" onClick={exitPreviewModeHandler}>
-          Back To Editing
+        <p className="whitespace-normal text-lg font-bold">{recipeName}</p>
+        <button
+          className="w-fit rounded-lg text-sm hover:text-fern active:text-fern"
+          onClick={exitPreviewModeHandler}
+        >
+          <span className="">Editor</span>
         </button>
-        <span>Preview</span>
       </div>
       <div className="flex flex-col space-y-5">{children}</div>
     </div>
@@ -46,7 +54,7 @@ interface RecipeViewProps {
 
 function RecipePreview({ recipe, allUnits }: RecipeViewProps) {
   return (
-    <PreviewController recipeId={recipe.id}>
+    <PreviewController recipeId={recipe.id} recipeName={recipe.name}>
       <IngredientsView ingredients={recipe.ingredients} />
       <EquipmentView equipment={recipe.equipment} />
       <InstructionsView

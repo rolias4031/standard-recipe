@@ -11,21 +11,14 @@ import {
 } from 'lib/util-client';
 import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
-import {
-  UpdateInputMutationBody,
-  UpdateInputMutationPayload,
-  UpdateRecipeInputHandlerArgs,
-} from 'types/types';
+import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
 import CogIcon from 'components/common/icons/CogIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteEquipment } from 'lib/mutations';
-import { equipmentSchema } from 'validation/schemas';
 import { addSubHandler, dragEndHandler, removeSubHandler } from './utils';
-import { useDebouncedAutosave } from './hooks';
 import { FlowEquipment } from 'types/models';
 import AddSubstitutes from './AddSubstitutes';
-import { UseMutateFunction } from '@tanstack/react-query';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
@@ -35,33 +28,17 @@ interface EquipmentStageProps {
   equipment: FlowEquipment[];
   raiseEquipment: Dispatch<SetStateAction<FlowEquipment[]>>;
   recipeId: string;
-  updateEquipmentMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
-    unknown,
-    UpdateInputMutationBody<FlowEquipment[]>,
-    unknown
-  >;
-  updateEquipmentStatus: string;
+  triggerDebouncedUpdate: () => void;
 }
 
 function EquipmentStage({
   equipment,
   raiseEquipment,
   recipeId,
-  updateEquipmentMutation,
-  updateEquipmentStatus,
+  triggerDebouncedUpdate,
 }: EquipmentStageProps) {
   const { mutate: deleteEquipment, status: deleteStatus } =
     useDeleteEquipment();
-
-  console.log('equipment', equipment);
-
-  const { triggerAutosave } = useDebouncedAutosave({
-    recipeId,
-    inputs: equipment,
-    schema: equipmentSchema,
-    updateInputsMutation: updateEquipmentMutation,
-  });
 
   function removeEquipmentHandler(id: string) {
     raiseEquipment((prev: FlowEquipment[]) => {
@@ -91,17 +68,17 @@ function EquipmentStage({
       );
       return newIngredientsArray as FlowEquipment[];
     });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   function addEquipmentSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   function removeEquipmentSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    triggerAutosave();
+    triggerDebouncedUpdate();
   }
 
   return (
@@ -111,7 +88,6 @@ function EquipmentStage({
           <div className="w-full font-mono text-sm">Equipment</div>
         </>
       }
-      mutationStatus={updateEquipmentStatus}
       onDragEnd={(result) => dragEndHandler(result, raiseEquipment)}
       droppableId="equipment"
       stageInputComponents={equipment.map((e, index) => (

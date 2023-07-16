@@ -9,7 +9,7 @@ function ViewRecipePage() {
   const { recipeId } = router.query;
   if (recipeId && !Array.isArray(recipeId)) {
     return (
-      <PageFrame styles={{ div: 'p-5 mx-auto min-h-screen md:p-10 xl:w-5/6' }}>
+      <PageFrame>
         <ViewRecipeDock recipeId={recipeId}>
           {(recipe, allUnits) => (
             <RecipePreview recipe={recipe} allUnits={allUnits} />

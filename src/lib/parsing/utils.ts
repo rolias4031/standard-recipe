@@ -103,14 +103,14 @@ export const buildObject = {
   ): InstructionMeasurement | string => {
     const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
     if (!unit || !quantity) return segment;
-    const numberQuantity = parseInt(quantity);
+    const numberQuantity = parseFloat(quantity);
     const obj = unitMap.get(unit.toLocaleLowerCase());
     return obj
       ? { text: quantity + ' ' + unit, quantity: numberQuantity, ...obj }
       : segment;
   },
   temperatures: (segment: string): InstructionTemperature | string => {
-    const temperature = segment.slice(1, -2);
+    const temperature = parseFloat(segment.slice(1, -2));
     const unit = segment[segment.length - 2];
     if (!temperature || !unit) return segment;
     return { text: `${temperature}°${unit}`, temperature, unit };

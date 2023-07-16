@@ -3,9 +3,10 @@ import { IngredientUnit } from '@prisma/client';
 import { sortBy } from 'lodash';
 import React from 'react';
 import { InstructionMeasurement } from 'types/models';
-import { DialogCard } from '.';
+import { DialogCard, DialogConversionItem, DialogConversionList } from '.';
 
-function formatConversion(num: number): string {
+export function formatConversion(num: number): string {
+  console.log(num);
   return num % 1 !== 0 ? num.toFixed(2) : num.toLocaleString('en-US');
 }
 
@@ -23,6 +24,7 @@ function useConvertMeasurement(
   const unfilteredConversions: ConvertedMeasurement[] = [];
   propertyUnits.forEach((u) => {
     try {
+      console.log('quantity', measurement.quantity);
       const convertedQuantity = convert(measurement.quantity)
         .from(measurement.abbreviation as Unit)
         .to(u.abbreviation as Unit);
@@ -59,24 +61,18 @@ function MeasurementDialog({
   const conversions = useConvertMeasurement(measurement, propertyUnits);
   return (
     <DialogCard color="indigo">
-      <ul className="divide-y divide-dashed divide-white">
-        {conversions ? (
-          conversions?.map((c) => (
-            <li
+      <DialogConversionList>
+        {conversions.map((c) => {
+          return (
+            <DialogConversionItem
               key={c.unit}
-              className="flex w-full justify-between py-2 px-2 font-mono first:pt-0 last:pb-0"
-            >
-              <div className="flex space-x-2">
-                <span>{c.unit}</span>
-                <span>{`(${c.abbreviation})`}</span>
-              </div>
-              <span>{c.quantity}</span>
-            </li>
-          ))
-        ) : (
-          <span>No Conversions!</span>
-        )}
-      </ul>
+              quantity={c.quantity}
+              unit={c.unit}
+              abbreviation={c.abbreviation}
+            />
+          );
+        })}
+      </DialogConversionList>
     </DialogCard>
   );
 }

@@ -3,8 +3,6 @@ import SmartInstruction, {
   SmartInstructionWrapper,
 } from 'components/common/SmartInstruction';
 import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
-import TextWithTooltip from 'components/common/tooltip/TextWithTooltip';
-import TextWithPopover from 'components/common/popover/TextWithPopover';
 import { genId } from 'lib/util-client';
 import React, { ReactNode, useMemo } from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
@@ -14,16 +12,27 @@ import TextWithDialog from 'components/common/dialog/TextWithDialog';
 import IngredientDialog from 'components/common/dialog/IngredientDialog';
 import EquipmentDialog from 'components/common/dialog/EquipmentDialog';
 import MeasurementDialog from 'components/common/dialog/MeasurementDialog';
+import TemperatureDialog from 'components/common/dialog/TemperatureDialog';
 
 interface InstructionBlockProps {
   order: number;
   children: ReactNode;
+  optional: boolean;
 }
 
-function InstructionBlock({ order, children }: InstructionBlockProps) {
+function InstructionBlock({
+  order,
+  optional,
+  children,
+}: InstructionBlockProps) {
   return (
     <SmartInstructionWrapper>
       <span className="text-md pr-1 font-mono text-concrete">{order}.</span>
+      {optional ? (
+        <span className="mr-2 rounded-lg text-concrete underline">
+          optional
+        </span>
+      ) : null}
       {children}
     </SmartInstructionWrapper>
   );
@@ -50,7 +59,7 @@ function InstructionsView({
   );
 
   const instructionViewRows = instructions.map((i) => (
-    <InstructionBlock order={i.order} key={i.id}>
+    <InstructionBlock order={i.order} optional={i.optional} key={i.id}>
       <SmartInstruction
         unitStringsForRegex={unitStrings.unitNamesAbbreviationsPlurals}
         unitMap={unitMap}
@@ -91,11 +100,16 @@ function InstructionsView({
           />
         )}
         temperatureTooltipComponent={(temp) => (
-          <TextWithTooltip
+          <TextWithDialog
             key={temp.temperature + temp.unit}
             text={temp.text}
-            styles={{ text: 'font-semibold' }}
-            tooltipElement={<TemperatureTooltip temp={temp} />}
+            styles={{ text: 'text-indigo-500' }}
+            dialogContent={
+              <TemperatureDialog
+                temperature={temp.temperature}
+                unit={temp.unit}
+              />
+            }
           />
         )}
       />

@@ -91,7 +91,7 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
 export type ToggleStylesInputArray = [boolean, string, string?];
 type Input = ToggleStylesInputArray | string;
 
-export function pickStyles(...inputItems: (Input | null)[]): string {
+export function pickStyles(...inputItems: (Input | null | undefined)[]): string {
   const combinedStringArray: string[] = [];
 
   inputItems.forEach((inputItem) => {

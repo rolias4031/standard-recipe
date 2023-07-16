@@ -28,11 +28,7 @@ function CreateRecipePage() {
   if (recipeId && stage) {
     console.log(recipeId);
     return (
-      <PageFrame
-        styles={{
-          div: 'p-5 mx-auto min-h-screen md:p-10 xl:w-5/6',
-        }}
-      >
+      <PageFrame>
         <CreateRecipeDock recipeId={recipeId}>
           {(recipe, allUnits) => (
             <CreateRecipeFlow

@@ -78,3 +78,32 @@ export function DialogOptional({ optional }: { optional: boolean }) {
     <span className="text-xs italic text-smoke">optional</span>
   ) : null;
 }
+
+interface DialogConversionProps {
+  unit: string;
+  abbreviation?: string;
+  quantity: string;
+}
+
+export function DialogConversionList({ children }: { children: ReactNode }) {
+  return <ul className="divide-y divide-dashed divide-white">{children}</ul>;
+}
+
+export function DialogConversionItem({
+  unit,
+  abbreviation,
+  quantity,
+}: DialogConversionProps) {
+  return (
+    <li
+      key={unit}
+      className="flex w-full justify-between py-2 px-2 font-mono first:pt-0 last:pb-0"
+    >
+      <div className="flex space-x-2">
+        <span>{unit}</span>
+        {abbreviation ? <span>{`(${abbreviation})`}</span> : null}
+      </div>
+      <span>{quantity}</span>
+    </li>
+  );
+}

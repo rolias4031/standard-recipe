@@ -5,6 +5,12 @@ import { BaseZodSchema, InputIdPairs, Stage } from 'types/types';
 import { stages } from './CreateRecipeFlow';
 import { NextRouter } from 'next/router';
 
+export function checkStatusesForLoadingOrError(statuses: string[]) {
+  const isLoading = statuses.some((status) => status === 'loading');
+  const isError = statuses.some((status) => status === 'error');
+  return isLoading || isError;
+}
+
 export function navigateToCreateStage(
   router: NextRouter,
   {

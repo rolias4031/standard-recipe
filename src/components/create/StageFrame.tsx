@@ -8,7 +8,6 @@ interface StageFrameProps {
   children?: ReactNode;
   droppableId: string;
   onDragEnd: (result: DropResult) => void;
-  mutationStatus: string;
 }
 
 function StageFrame({
@@ -17,14 +16,10 @@ function StageFrame({
   stageInputLabels,
   droppableId,
   onDragEnd,
-  mutationStatus,
 }: StageFrameProps) {
   return (
     <StageFrameCard>
       {children}
-      <div className="ml-auto py-2">
-        <InlineStatusDisplay status={mutationStatus} />
-      </div>
       <div className="flex flex-col space-y-1 rounded-lg border px-5 py-10">
         <FlowInputFrame row1col2={stageInputLabels} />
         <DragDropContext onDragEnd={onDragEnd}>
@@ -48,35 +43,7 @@ function StageFrame({
 
 export function StageFrameCard({ children }: { children: ReactNode }) {
   return (
-    <section className="flex h-full flex-col pt-10 pb-3">{children}</section>
-  );
-}
-
-export function InlineStatusDisplay({ status }: { status: string }) {
-  const statusDisplayConfig = useMemo(
-    () =>
-      new Map<string, ReactNode>([
-        [
-          'loading',
-          <span className="animate-pulse-fast text-fern" key="1">
-            autosaving
-          </span>,
-        ],
-        ['success', <span key="2">saved</span>],
-        ['error', <span className='text-red-500' key="3">error</span>],
-        [
-          'idle',
-          <span className="opacity-0" key="4">
-            null
-          </span>,
-        ],
-      ]),
-    [],
-  );
-  return (
-    <div className="text-xs text-concrete">
-      {statusDisplayConfig.get(status)}
-    </div>
+    <section className="flex h-full flex-col pt-10 pb-3 space-y-5">{children}</section>
   );
 }
 
