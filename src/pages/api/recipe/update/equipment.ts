@@ -21,8 +21,6 @@ async function handler(
 
   const equipmentIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
-  console.log('update/equipment', allEquipment);
-
   for (const equipment of allEquipment) {
     const isValid = validateOneInput({
       schema: equipmentSchema,

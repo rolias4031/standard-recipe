@@ -1,38 +1,31 @@
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
-import React, { useRef, useState } from 'react';
+import React, { ReactNode, useRef } from 'react';
 
-interface SubTagProps {
+export interface SubTagProps {
   sub: string;
   onRemoveSub: () => void;
 }
 
-function SubTag({ sub, onRemoveSub }: SubTagProps) {
-  const [isMouseOver, setIsMouseOver] = useState(false);
-
+export function SubTag({ sub, onRemoveSub }: SubTagProps) {
   return (
-    <div
+    <span
       key={sub}
-      className="flex items-center space-x-2 rounded-full border border-abyss py-1 px-2 text-sm text-abyss"
-      onMouseEnter={() => setIsMouseOver(true)}
-      onMouseLeave={() => setIsMouseOver(false)}
+      className="flex w-fit items-center space-x-2 rounded-full border border-abyss py-1 px-2 text-abyss"
     >
       <span>{sub}</span>
-      {isMouseOver ? (
-        <button onClick={() => onRemoveSub()}>
-          <XIcon styles={{ icon: 'w-4 h-4 text-fern' }} />
-        </button>
-      ) : null}
-    </div>
+      <button onClick={() => onRemoveSub()}>
+        <XIcon styles={{ icon: 'w-5 h-5 text-fern' }} />
+      </button>
+    </span>
   );
 }
 
-interface AddSubstitutesProps {
+export interface AddSubstitutesProps {
   id: string;
   curSubs: string[];
   onAddSub: (newSub: string, id: string) => void;
-  onRemoveSub: (subToRemove: string, id: string) => void;
-  styles: {
+  styles?: {
     div: string;
   };
 }
@@ -41,22 +34,19 @@ function AddSubstitutes({
   id,
   curSubs,
   onAddSub,
-  onRemoveSub,
   styles,
 }: AddSubstitutesProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMaxSubs = curSubs.length >= 3
   return (
-    <div className={styles.div}>
-      <div className="flex items-center space-x-1">
+    <>
+      <div className={styles?.div}>
         <input
           ref={inputRef}
           type="text"
-          className="inp-primary inp-reg w-48"
-          disabled={curSubs.length >= 3}
-          placeholder={
-            curSubs.length >= 3 ? 'limit reached' : 'Add Substitutes'
-          }
-          autoFocus
+          className="inp-primary inp-reg w-full"
+          disabled={isMaxSubs}
+          placeholder={isMaxSubs ? 'limit reached' : 'Add Substitutes'}
         />
         <button
           type="button"
@@ -67,22 +57,12 @@ function AddSubstitutes({
             inputRef.current.value = '';
             onAddSub(newSub, id);
           }}
-          disabled={curSubs.length >= 3}
+          disabled={isMaxSubs}
         >
           <PlusIcon styles={{ icon: 'w-6 h-6 text-white' }} />
         </button>
       </div>
-
-      <div className="flex items-start space-x-2">
-        {curSubs.map((s) => (
-          <SubTag
-            key={`${id}${s}`}
-            sub={s}
-            onRemoveSub={() => onRemoveSub(s, id)}
-          />
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
 

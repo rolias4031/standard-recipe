@@ -1,6 +1,5 @@
 import { pickStyles } from 'lib/util-client';
 import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
-import FlowInputFrame from 'components/create/FlowInputFrame';
 
 import { Draggable } from '@hello-pangea/dnd';
 
@@ -51,7 +50,7 @@ function RecipeFlowInput({
         type="button"
         className={pickStyles('btn-sm btn-inverted', [
           optionMode === o,
-          'text-white bg-fern',
+          'bg-fern text-white',
         ])}
         onClick={() => setOptionMode(o)}
       >
@@ -63,45 +62,20 @@ function RecipeFlowInput({
   return (
     <Draggable key={id} draggableId={id} index={index}>
       {(provided) => (
-        <FlowInputFrame
-          draggableProps={provided.draggableProps}
-          dragHandleProps={provided.dragHandleProps}
-          innerRef={provided.innerRef}
-          raiseIsMouseIn={setIsMouseIn}
-          row1col1={index + 1}
-          row1col2={
-            <>
-              {mainInputComponents(isInputFocused, setIsInputFocused)}
-              {isMouseIn || optionMode || isInputFocused ? (
-                optionBarComponent({
-                  optionMode,
-                  setOptionMode,
-                  optionModes,
-                })
-              ) : (
-                <div
-                  key="2"
-                  className="flex items-center flex-grow justify-end space-x-4 text-xs text-concrete"
-                >
-                  {overviewComponents}
-                </div>
-              )}
-            </>
-          }
-          row2col2={
-            optionMode !== null ? (
-              <>
-                {optionButtons}
-                {auxiliaryComponents}
-              </>
-            ) : null
-          }
-          row3col2={
-            optionInputComponents && optionMode
-              ? optionInputComponents(optionMode)
-              : null
-          }
-        />
+        <div
+          className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2"
+        >
+          <div className="flex space-x-2 md:w-3/4">
+            <div className="flex items-center rounded bg-fern px-2 font-mono text-sm text-white">
+              <span>{index + 1}</span>
+            </div>
+            <input type="text" className="w-full rounded bg-smoke px-2 py-1" />
+          </div>
+          <div className="flex space-x-2">
+            <input type="number" className="w-1/3 rounded bg-smoke px-2 py-1" />
+            <input type="number" className="w-2/3 rounded bg-smoke px-2 py-1" />
+          </div>
+        </div>
       )}
     </Draggable>
   );

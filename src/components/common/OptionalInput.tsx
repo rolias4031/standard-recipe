@@ -14,7 +14,7 @@ function OptionalInput({id, curIsOptional, onRaiseInput}: OptionalInputProps) {
         id={`optional-${id}`}
         name="optional"
         type="checkbox"
-        className="w-4 h-4 accent-fern cursor-pointer"
+        className="w-6 h-6 accent-fern cursor-pointer"
         checked={curIsOptional}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           onRaiseInput({
@@ -24,7 +24,7 @@ function OptionalInput({id, curIsOptional, onRaiseInput}: OptionalInputProps) {
           });
         }}
       />
-      <label htmlFor={`optional-${id}`} className="text-xs cursor-pointer">
+      <label htmlFor={`optional-${id}`} className="cursor-pointer">
         Optional
       </label>
     </div>

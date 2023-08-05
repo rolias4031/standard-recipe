@@ -1,9 +1,6 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  FlowEquipment,
-  FlowIngredient,
-} from 'types/models';
+import { FlowEquipment, FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
 export function isZeroLength(val: string | any[] | null) {
@@ -65,6 +62,12 @@ export function genInstruction(): Instruction {
   };
 }
 
+export function assignInputOrderByIndex<T extends { order: number }>(inputs: T[]) {
+  return inputs.map((i, idx) => {
+    return { ...i, order: idx + 1 };
+  });
+}
+
 export function findRecipeInputIndexById<T extends { id: string }>(
   prev: T[],
   id: string,
@@ -91,7 +94,9 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
 export type ToggleStylesInputArray = [boolean, string, string?];
 type Input = ToggleStylesInputArray | string;
 
-export function pickStyles(...inputItems: (Input | null | undefined)[]): string {
+export function pickStyles(
+  ...inputItems: (Input | null | undefined)[]
+): string {
   const combinedStringArray: string[] = [];
 
   inputItems.forEach((inputItem) => {
@@ -113,4 +118,8 @@ export function pickStyles(...inputItems: (Input | null | undefined)[]): string 
   const classString = combinedStringArray.join(' ');
 
   return classString;
+}
+
+export function stopRootDivPropagation(e: React.MouseEvent<HTMLDivElement>) {
+  e.stopPropagation();
 }

@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import { useUpdateRecipeName } from 'lib/mutations';
-import { pickStyles } from 'lib/util-client';
+import { pickStyles, stopRootDivPropagation } from 'lib/util-client';
 import React, { useState } from 'react';
 
 interface UpdateRecipeNameModalProps {
@@ -30,33 +30,35 @@ function UpdateRecipeNameModal({
       {
         onSuccess: () => {
           queryClient.invalidateQueries(['recipe']);
-          onCloseModal();
         },
       },
     );
   }
 
   return (
-    <ModalBackdrop modalRoot="modal-root">
-      <div className="flex w-1/2 flex-col justify-between space-y-6 rounded-lg bg-white p-5">
+    <ModalBackdrop modalRoot="modal-root" onClose={onCloseModal}>
+      <div
+        className="fixed left-0 right-0 bottom-0 top-52 flex flex-col space-y-10 rounded-t-2xl bg-white p-5 md:p-10"
+        onClick={stopRootDivPropagation}
+      >
         <span className="mx-auto text-concrete">Update Recipe Name</span>
         <input
           autoFocus
           name="name"
-          className="border-b-4 border-fern text-2xl outline-none"
+          className="border-b-4 border-fern text-lg outline-none lg:text-2xl"
           value={newRecipeName}
           onChange={changeNameHandler}
         />
         <div className="flex justify-between">
           <button
-            className="rounded-lg bg-concrete px-2 py-1 text-sm text-white"
+            className="rounded-lg bg-concrete px-2 py-1 text-2xl text-white"
             onClick={onCloseModal}
           >
             Cancel
           </button>
           <button
             className={pickStyles(
-              'rounded-lg bg-fern px-2 py-1 text-sm text-white',
+              'rounded-lg bg-fern px-2 py-1 text-2xl text-white',
               [status === 'loading', 'animate-pulse-fast'],
             )}
             onClick={saveRecipeNameHandler}

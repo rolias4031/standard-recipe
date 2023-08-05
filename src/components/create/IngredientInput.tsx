@@ -1,5 +1,5 @@
 import InputWithPopover from 'components/common/InputWithPopover';
-import RecipeFlowInput from 'components/common/RecipeFlowInput';
+import RecipeFlowInput from 'components/create/RecipeFlowInput';
 import { TextInput } from 'pirate-ui';
 import React, {
 } from 'react';

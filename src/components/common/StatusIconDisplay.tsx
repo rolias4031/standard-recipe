@@ -3,7 +3,13 @@ import CloudArrowUpIcon from './icons/CloudArrowUpIcon';
 import CircleCheckIcon from './icons/CircleCheckIcon';
 import CircleXIcon from './icons/CircleXIcon';
 
-export function InlineStatusDisplay({ status }: { status: string }) {
+export function StatusIconDisplay({
+  status,
+  asModal,
+}: {
+  status: string;
+  asModal?: boolean;
+}) {
   const statusDisplayConfig = useMemo(
     () =>
       new Map<string, ReactNode>([
@@ -22,20 +28,15 @@ export function InlineStatusDisplay({ status }: { status: string }) {
           'error',
           <CircleXIcon key={3} styles={{ icon: 'w-6 h-6 text-red-500' }} />,
         ],
-        [
-          'idle',
-          <span className="opacity-0" key="4">
-            null
-          </span>,
-        ],
+        ['idle', null],
       ]),
     [],
   );
-  return (
+  return asModal ? (
+    <div className="">statusDisplayConfig.get(status)</div>
+  ) : (
     <div className="flex items-center text-white">
       {statusDisplayConfig.get(status)}
     </div>
   );
 }
-
-export default InlineStatusDisplay;

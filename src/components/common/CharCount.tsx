@@ -16,7 +16,7 @@ function CharCount({ string, charLimit, styles }: CharCountProps) {
   const isInvalid = charCount > charLimit
 
   const style = pickStyles(
-    [!!styles?.span, styles?.span ?? '', 'text-xs font-mono'],
+    [!!styles?.span, styles?.span ?? '', 'text-sm font-mono'],
     [isInvalid, 'text-red-500'],
   );
 

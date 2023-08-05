@@ -1,24 +1,19 @@
-import NotesInput from 'components/common/NotesInput';
 import OptionalInput from 'components/common/OptionalInput';
-import RecipeFlowInput from 'components/common/RecipeFlowInput';
 import {
+  assignInputOrderByIndex,
   findRecipeInputIndexById,
   genEquipment,
   insertIntoPrevArray,
   isClientId,
-  isZeroLength,
-  pickStyles,
 } from 'lib/util-client';
-import { GeneralButton } from 'pirate-ui';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
-import CogIcon from 'components/common/icons/CogIcon';
-import TrashIcon from 'components/common/icons/TrashIcon';
 import { useDeleteEquipment } from 'lib/mutations';
 import { addSubHandler, dragEndHandler, removeSubHandler } from './utils';
 import { FlowEquipment } from 'types/models';
-import AddSubstitutes from './AddSubstitutes';
+import FlowInputBlock from './FlowInputBlock';
+import { OptionDialog } from './OptionDialog';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
@@ -40,10 +35,11 @@ function EquipmentStage({
   const { mutate: deleteEquipment, status: deleteStatus } =
     useDeleteEquipment();
 
-  function removeEquipmentHandler(id: string) {
+  function deleteEquipmentHandler(id: string) {
     raiseEquipment((prev: FlowEquipment[]) => {
       if (prev.length === 1) return [genEquipment()];
-      return prev.filter((i) => i.id !== id);
+      const newEquipment = prev.filter((i) => i.id !== id);
+      return assignInputOrderByIndex(newEquipment);
     });
     if (isClientId(id)) return;
     deleteEquipment({ id });
@@ -83,25 +79,22 @@ function EquipmentStage({
 
   return (
     <StageFrame
-      stageInputLabels={
-        <>
-          <div className="w-full font-mono text-sm">Equipment</div>
-        </>
-      }
-      onDragEnd={(result) => dragEndHandler(result, raiseEquipment)}
+      onDragEnd={(result) => {
+        dragEndHandler(result, raiseEquipment);
+        triggerDebouncedUpdate();
+      }}
       droppableId="equipment"
       stageInputComponents={equipment.map((e, index) => (
-        <RecipeFlowInput
+        <FlowInputBlock
           key={e.id}
           id={e.id}
-          index={index}
-          optionModes={['notes', 'substitutes']}
-          mainInputComponents={() => (
+          order={index + 1}
+          mainInputComponent={() => (
             <input
               type="text"
               name="name"
               value={e.name}
-              className="inp-reg inp-primary w-[350px]"
+              className="inp-reg inp-primary w-full md:w-2/3"
               onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
                 updateEquipmentHandler({
                   id: e.id,
@@ -112,78 +105,32 @@ function EquipmentStage({
               autoComplete="off"
             />
           )}
-          auxiliaryComponents={
-            <OptionalInput
-              id={e.id}
-              curIsOptional={e.optional}
-              onRaiseInput={updateEquipmentHandler}
-            />
-          }
-          optionBarComponent={({ optionMode, setOptionMode, optionModes }) => (
-            <div
-              key="1"
-              className="flex flex-grow items-center justify-between"
-            >
-              <div className="flex items-center space-x-2">
-                <GeneralButton
-                  onClick={() =>
-                    setOptionMode((prev: string | null) =>
-                      prev === null && optionModes[0] ? optionModes[0] : null,
-                    )
-                  }
-                >
-                  <CogIcon
-                    styles={{
-                      icon: pickStyles('w-6 h-6 transition-colors', [
-                        !optionMode,
-                        'text-concrete hover:text-fern',
-                        'text-fern',
-                      ]),
-                    }}
-                  />
-                </GeneralButton>
+          optionsComponent={
+            <OptionDialog.Card>
+              <OptionDialog.Heading
+                name={e.name}
+                onDeleteIngredient={() => deleteEquipmentHandler(e.id)}
+              />
+              <div className="flex space-x-5 text-lg">
+                <OptionalInput
+                  id={e.id}
+                  curIsOptional={e.optional}
+                  onRaiseInput={updateEquipmentHandler}
+                />
               </div>
-              <GeneralButton
-                onClick={() => removeEquipmentHandler(e.id)}
-                styles={{ button: 'h-fit' }}
-              >
-                <TrashIcon
-                  styles={{
-                    icon: 'w-6 h-6 transition-colors text-concrete hover:text-red-500',
-                  }}
-                />
-              </GeneralButton>
-            </div>
-          )}
-          overviewComponents={
-            <>
-              {e.optional ? <span>optional</span> : null}
-              {!isZeroLength(e.notes) ? <span>notes</span> : null}
-              {!isZeroLength(e.substitutes) ? <span>subs</span> : null}
-            </>
+              <OptionDialog.Substitutes
+                id={e.id}
+                curSubs={e.substitutes}
+                onAddSub={addEquipmentSubHandler}
+                onRemoveSub={removeEquipmentSubHandler}
+              />
+              <OptionDialog.Notes
+                curNotes={e.notes}
+                id={e.id}
+                onRaiseNotes={updateEquipmentHandler}
+              />
+            </OptionDialog.Card>
           }
-          optionInputComponents={(optionMode) => (
-            <>
-              {optionMode === 'notes' ? (
-                <NotesInput
-                  id={e.id}
-                  curNotes={e.notes}
-                  onRaiseNotes={updateEquipmentHandler}
-                />
-              ) : null}
-              {optionMode === 'substitutes' ? (
-                <AddSubstitutes
-                  id={e.id}
-                  curSubs={e.substitutes}
-                  onAddSub={addEquipmentSubHandler}
-                  onRemoveSub={removeEquipmentSubHandler}
-                  styles={{
-                    div: 'flex space-x-4 items-center',
-                  }}
-                />
-              ) : null}
-            </>
-          )}
         />
       ))}
     />
