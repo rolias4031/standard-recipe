@@ -53,7 +53,7 @@ model Equipment {
   name            EquipmentName   @relation(fields: [equipmentNameId], references: [id])
   equipmentNameId String
   notes           String?         @db.VarChar(250)
-  recipe          Recipe          @relation(fields: [recipeId], references: [id])
+  recipe          Recipe         @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String
   substitutes     EquipmentName[] @relation("substitutes")
   optional        Boolean         @default(false)
@@ -71,7 +71,7 @@ model Ingredient {
   id               String           @id @default(cuid())
   quantity         Float            @default(0)
   optional         Boolean          @default(false)
-  recipe           Recipe           @relation(fields: [recipeId], references: [id])
+  recipe           Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId         String
   name             IngredientName   @relation(fields: [ingredientNameId], references: [id])
   ingredientNameId String

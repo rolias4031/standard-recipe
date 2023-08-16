@@ -32,18 +32,23 @@ function PreviewController({
     });
   }
   return (
-    <div className="flex flex-col space-y-5">
-      <div className="flex justify-between">
-        <p className="whitespace-normal text-lg font-bold">{recipeName}</p>
+    <>
+      <div className="sticky top-0 z-10 flex w-full flex-col gap-2 bg-fern px-3 py-3 text-center shadow-md shadow-concrete md:flex-row md:items-center md:justify-center md:px-10">
+        <span className="text-white">
+          This is a preview. Some features will only be shown after publishing
+        </span>
         <button
-          className="w-fit rounded-lg text-sm hover:text-fern active:text-fern"
+          className="rounded-lg bg-white px-2 py-1 text-fern active:bg-jungle"
           onClick={exitPreviewModeHandler}
         >
-          <span className="">Editor</span>
+          Back to Editor
         </button>
       </div>
-      <div className="flex flex-col space-y-5">{children}</div>
-    </div>
+      <div className="flex flex-col space-y-3 p-4 md:px-10 md:py-6">
+        <p className="whitespace-normal text-lg text-concrete">{recipeName}</p>
+        <div className="flex flex-col space-y-5 text-lg">{children}</div>
+      </div>
+    </>
   );
 }
 

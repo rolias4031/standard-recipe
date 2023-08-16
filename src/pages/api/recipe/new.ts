@@ -2,9 +2,9 @@ import { validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
   ErrorPayload,
-  NewDraftRecipeMutationInputs,
-  NewDraftRecipeMutationPayload,
+  CreateNewRecipeMutationPayload,
   StandardRecipeApiRequest,
+  CreateNewRecipeMutationBody,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
@@ -13,8 +13,8 @@ import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/constants';
 
 export default async function handler(
-  req: StandardRecipeApiRequest<NewDraftRecipeMutationInputs>,
-  res: NextApiResponse<NewDraftRecipeMutationPayload | ErrorPayload>,
+  req: StandardRecipeApiRequest<CreateNewRecipeMutationBody>,
+  res: NextApiResponse<CreateNewRecipeMutationPayload | ErrorPayload>,
 ) {
   const session = getAuth(req);
   if (!session || !session.userId) {
@@ -24,10 +24,10 @@ export default async function handler(
     });
   }
 
-  const { newDraftRecipeInputs } = req.body;
+  const { name } = req.body;
 
   const recipe: Prisma.RecipeCreateInput = {
-    name: newDraftRecipeInputs.name,
+    name,
     authorId: session.userId,
   };
 
@@ -43,7 +43,7 @@ export default async function handler(
 
   const isValid = validateOneInput({
     schema: recipeNameSchema(draftRecipes.map((r) => r.name)),
-    input: newDraftRecipeInputs,
+    input: req.body,
   });
   if (!isValid) {
     return res.status(400).json({

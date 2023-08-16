@@ -8,9 +8,9 @@ interface HomeDockProps {
 }
 
 function HomeDock({ children }: HomeDockProps) {
-  const { data, status } = useGetUserRecipes();
-  if (data && status === 'success') {
-    return <>{children(data)}</>;
+  const { data: homeData, status } = useGetUserRecipes();
+  if (homeData && status === 'success') {
+    return <>{children(homeData)}</>;
   }
   if (status === 'loading') {
     return <LoadingPage />;

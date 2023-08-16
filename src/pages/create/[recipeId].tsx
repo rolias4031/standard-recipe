@@ -30,14 +30,14 @@ function CreateRecipePage() {
     return (
       <CreateRecipeDock recipeId={recipeId}>
         {(recipe, allUnits) => (
-          <PageFrame style="mx-auto h-screen min-h-screen max-h-screen md:w-5/6 lg:w-3/4 p-4">
+          // <PageFrame style="mx-auto h-screen min-h-screen max-h-screen md:w-5/6 lg:w-3/4 p-4">
             <CreateRecipeFlow
               key={recipe.id + recipe.updatedAt}
               recipe={recipe}
               allUnits={allUnits}
               stage={stage}
             />
-          </PageFrame>
+          // </PageFrame>
         )}
       </CreateRecipeDock>
     );

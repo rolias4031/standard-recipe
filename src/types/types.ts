@@ -58,6 +58,10 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface DeleteRecipeMutationBody {
+  recipeId: Recipe['id']
+}
+
 export interface UpdateInputMutationBody<T> {
   recipeId: Recipe['id'];
   inputs: T;
@@ -75,8 +79,8 @@ export interface DeleteRecipeInputMutationBody {
   id: string;
 }
 
-export interface NewDraftRecipeMutationInputs {
-  newDraftRecipeInputs: NewDraftRecipeInputs;
+export interface CreateNewRecipeMutationBody {
+  name: string;
 }
 export interface RecipeQueryPayload extends BasePayload {
   recipe: RecipeWithFull;
@@ -84,10 +88,9 @@ export interface RecipeQueryPayload extends BasePayload {
 
 export interface UserRecipesQueryPayload extends BasePayload {
   recipes: Recipe[];
-  recipeDraftNames: string[];
 }
 
-export interface NewDraftRecipeMutationPayload extends BasePayload {
+export interface CreateNewRecipeMutationPayload extends BasePayload {
   draftId: string;
 }
 

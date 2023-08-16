@@ -1,6 +1,11 @@
 import React, { ReactNode, useRef, useState } from 'react';
 import { ModalBackdrop } from '../ModalBackdrop';
 
+const dialogPositionConfig = {
+  'top': 'top-5',
+  'bottom': 'bottom-5'
+}
+
 interface TextWithDialogProps {
   text: string;
   dialogContent: ReactNode;
@@ -15,8 +20,7 @@ function TextWithDialog({ text, dialogContent, styles }: TextWithDialogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPosition, setDialogPosition] = useState<'top' | 'bottom'>('top');
 
-  const dialogPositionStyle =
-    dialogPosition === 'bottom' ? 'bottom-10' : 'top-10';
+  const dialogPositionStyle = dialogPositionConfig[dialogPosition]
 
   const handleOpenDialog = () => {
     const textElem = textRef.current;
@@ -42,7 +46,7 @@ function TextWithDialog({ text, dialogContent, styles }: TextWithDialogProps) {
           opacity="0"
           onClose={() => setIsDialogOpen(false)}
         >
-          <div className={`fixed left-10 right-10 ${dialogPositionStyle}`}>
+          <div className={`fixed left-5 right-5 ${dialogPositionStyle}`}>
             {dialogContent}
           </div>
         </ModalBackdrop>

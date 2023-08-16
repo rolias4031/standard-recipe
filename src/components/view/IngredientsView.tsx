@@ -2,26 +2,6 @@ import React from 'react';
 import { IngredientWithAll } from 'types/models';
 import ViewSectionContainer from './ViewSectionContainer';
 import { ItemBlock, ItemBlockDetail } from '.';
-import equipment from 'pages/api/recipe/update/equipment';
-
-interface IngredientBlockDetailProps {
-  ingredient: IngredientWithAll;
-}
-
-function IngredientBlockDetail({ ingredient }: IngredientBlockDetailProps) {
-  const substituteNames = ingredient.substitutes.map((s) => s.name);
-  return (
-    <div className="flex flex-col px-4">
-      <span>{ingredient.notes}</span>
-      <span>{ingredient.optional}</span>
-      <div>
-        {substituteNames.map((n) => (
-          <span key={n}>{n}</span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 interface IngredientBlockProps {
   ingredient: IngredientWithAll;

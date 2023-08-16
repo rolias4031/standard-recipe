@@ -9,6 +9,7 @@ import {
 import { ERRORS } from './constants';
 
 function errorHandler(res: NextApiResponse<ErrorPayload>, error: unknown) {
+  console.log(error)
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2025') {
       return res.status(200).json({

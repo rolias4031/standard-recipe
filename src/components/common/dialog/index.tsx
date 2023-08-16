@@ -19,7 +19,7 @@ export function DialogCard({ children, color }: DialogCardProps) {
   const cardColor = dialogCardColorConfig.get(color ?? 'fern');
   return (
     <div
-      className={`rounded-lg p-4 text-xs ${cardColor} text-white shadow-lg shadow-neutral-500`}
+      className={`rounded-xl p-4 border border-white ${cardColor} text-white shadow-lg shadow-neutral-500`}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
     >
       {children}
@@ -75,7 +75,7 @@ export function DialogSubs({ substitutes }: { substitutes: string[] }) {
 
 export function DialogOptional({ optional }: { optional: boolean }) {
   return optional ? (
-    <span className="text-xs italic text-smoke">optional</span>
+    <span className="font-mono italic text-smoke">optional</span>
   ) : null;
 }
 

@@ -2,6 +2,7 @@ import { getAuth } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
 import { ERRORS } from 'lib/constants';
 import { prisma } from 'lib/prismadb';
+import { apiHandler } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
   BasePayload,
@@ -10,7 +11,7 @@ import {
   StandardRecipeApiRequest,
 } from 'types/types';
 
-export default async function handler(
+async function handler(
   req: StandardRecipeApiRequest<DeleteRecipeInputMutationBody>,
   res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
@@ -22,25 +23,15 @@ export default async function handler(
     });
   }
 
-  try {
-    const deletedIngredient = await prisma.equipment.delete({
-      where: {
-        id: req.body.id,
-      },
-    });
-    console.log('deleteEquipment', deletedIngredient);
-  } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2025') {
-        console.log('That Equipment does not exist');
-        return res.status(200).json({
-          message: 'ok',
-        });
-      }
-    }
-  }
+  await prisma.equipment.delete({
+    where: {
+      id: req.body.id,
+    },
+  });
 
   return res.status(200).json({
     message: 'success',
   });
 }
+
+export default apiHandler(handler)

@@ -5,7 +5,7 @@ import {
   genInstruction,
   isZeroLength,
 } from 'lib/util-client';
-import debounce from 'lodash.debounce';
+import {debounce } from 'lodash';
 import {
   Dispatch,
   SetStateAction,

@@ -8,9 +8,9 @@ import {
   ErrorPayload,
   StandardRecipeApiRequest,
 } from 'types/types';
-import { Prisma } from '@prisma/client';
+import { apiHandler } from 'lib/util';
 
-export default async function handler(
+async function handler(
   req: StandardRecipeApiRequest<DeleteRecipeInputMutationBody>,
   res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
@@ -22,25 +22,15 @@ export default async function handler(
     });
   }
 
-  try {
-    const deletedIngredient = await prisma.ingredient.delete({
-      where: {
-        id: req.body.id,
-      },
-    });
-    console.log('deletedIngredient', deletedIngredient);
-  } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === 'P2025') {
-        console.log('That Ingredient does not exist');
-        return res.status(200).json({
-          message: 'ok',
-        });
-      }
-    }
-  }
+  await prisma.ingredient.delete({
+    where: {
+      id: req.body.id,
+    },
+  });
 
   return res.status(200).json({
     message: 'success',
   });
 }
+
+export default apiHandler(handler)

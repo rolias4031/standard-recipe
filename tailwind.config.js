@@ -12,7 +12,7 @@ module.exports = {
       colors: {
         abyss: '#262626',
         concrete: '#a3a3a3',
-        smoke: 'rgb(237, 237, 237)',
+        smoke: 'rgb(240, 240, 240)',
         fern: '#047857',
         jungle: '#064e3b',
       },

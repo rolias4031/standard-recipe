@@ -6,7 +6,7 @@ interface PageFrameProps {
 }
 
 function PageFrame({ children, style }: PageFrameProps) {
-  const frameClassName = style ? style : 'mx-auto min-h-screen';
+  const frameClassName = style ? style : '';
   return <div className={frameClassName}>{children}</div>;
 }
 

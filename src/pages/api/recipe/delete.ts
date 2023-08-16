@@ -1,24 +1,28 @@
 import { prisma } from 'lib/prismadb';
+import { apiHandler } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
   BasePayload,
-  DeleteRecipeInputMutationBody,
+  DeleteRecipeMutationBody,
   ErrorPayload,
   StandardRecipeApiRequest,
 } from 'types/types';
-import { apiHandler } from 'lib/util';
 
 async function handler(
-  req: StandardRecipeApiRequest<DeleteRecipeInputMutationBody>,
+  req: StandardRecipeApiRequest<DeleteRecipeMutationBody>,
   res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
-  await prisma.instruction.delete({
+  const { recipeId } = req.body;
+
+  console.log('RECIPE ID', recipeId)
+
+  await prisma.recipe.delete({
     where: {
-      id: req.body.id,
+      id: recipeId,
     },
   });
 
-  return res.status(200).json({
+  res.status(200).json({
     message: 'success',
   });
 }

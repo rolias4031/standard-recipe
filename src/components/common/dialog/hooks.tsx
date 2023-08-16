@@ -23,3 +23,12 @@ export function useDynamicDialog<T extends HTMLElement>() {
 
   return { handleToggleDialog, dialogPosition, anchorRef, isDialogOpen };
 }
+
+export function useFixedDialog() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  function handleToggleDialog(isOpen: boolean) {
+    return () => setIsDialogOpen(isOpen);
+  }
+
+  return { isDialogOpen, handleToggleDialog };
+}

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 const OpacityConfig = new Map<string, string>([
   ['50', 'bg-opacity-50'],
-  ['0', 'bg-opacity-50'],
+  ['0', 'bg-opacity-0'],
 ]);
 interface ModalBackdropProps {
   children: ReactNode;

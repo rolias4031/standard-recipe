@@ -5,12 +5,13 @@ import {
   BasePayload,
   CustomError,
   DeleteRecipeInputMutationBody,
+  DeleteRecipeMutationBody,
   ErrorPayload,
   MutateConfig,
-  NewDraftRecipeMutationInputs,
-  NewDraftRecipeMutationPayload,
+  CreateNewRecipeMutationPayload,
   UpdateInputMutationBody,
   UpdateInputMutationPayload,
+  CreateNewRecipeMutationBody,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 import { Dispatch, SetStateAction } from 'react';
@@ -34,11 +35,11 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
 }
 
 export async function createNewDraftRecipeMutation(
-  body: NewDraftRecipeMutationInputs,
-): Promise<NewDraftRecipeMutationPayload> {
+  body: CreateNewRecipeMutationBody,
+): Promise<CreateNewRecipeMutationPayload> {
   return mutateWithBody<
-    NewDraftRecipeMutationInputs,
-    NewDraftRecipeMutationPayload
+    CreateNewRecipeMutationBody,
+    CreateNewRecipeMutationPayload
   >({
     method: 'POST',
     apiRoute: 'api/recipe/new',
@@ -114,6 +115,20 @@ export async function updateRecipeNameMutation(
     apiRoute: 'api/recipe/update',
     body,
   });
+}
+
+export async function deleteRecipeMutation(
+  body: DeleteRecipeMutationBody,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'DELETE',
+    apiRoute: 'api/recipe/delete',
+    body,
+  });
+}
+
+export function useDeleteRecipe() {
+  return useMutation({ mutationFn: deleteRecipeMutation });
 }
 
 export function useUpdateRecipeName() {

@@ -3,6 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { FlowEquipment, FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
+export function capitalizeString(input: string): string {
+  if (!input || typeof input !== 'string' || input.length === 0) {
+    return '';
+  }
+  return input.charAt(0).toUpperCase() + input.slice(1);
+}
+
 export function isZeroLength(val: string | any[] | null) {
   return val ? val.length === 0 : true;
 }
@@ -62,7 +69,9 @@ export function genInstruction(): Instruction {
   };
 }
 
-export function assignInputOrderByIndex<T extends { order: number }>(inputs: T[]) {
+export function assignInputOrderByIndex<T extends { order: number }>(
+  inputs: T[],
+) {
   return inputs.map((i, idx) => {
     return { ...i, order: idx + 1 };
   });
@@ -91,7 +100,7 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
   return obj && typeof obj.message === 'string' && Array.isArray(obj.errors);
 }
 
-export type ToggleStylesInputArray = [boolean, string, string?];
+export type ToggleStylesInputArray = [boolean | undefined, string, string?];
 type Input = ToggleStylesInputArray | string;
 
 export function pickStyles(

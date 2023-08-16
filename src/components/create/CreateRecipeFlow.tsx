@@ -59,7 +59,7 @@ interface FlowControllerProps<T extends { id: string }> {
   extraHeaderComponent?: ReactNode;
 }
 
-function FlowController<T extends { id: string, order: number }>({
+function FlowController<T extends { id: string; order: number }>({
   children,
   stage,
   recipeName,
@@ -116,8 +116,8 @@ function FlowController<T extends { id: string, order: number }>({
       const newInput = genInput();
       const idExists = prev.findIndex((i) => i.id === newInput.id);
       if (idExists !== -1) return prev;
-      const newUnorderedInputs = [...prev, newInput]
-      return assignInputOrderByIndex(newUnorderedInputs)
+      const newUnorderedInputs = [...prev, newInput];
+      return assignInputOrderByIndex(newUnorderedInputs);
     });
   }
 
@@ -133,7 +133,7 @@ function FlowController<T extends { id: string, order: number }>({
   return (
     <>
       <div className="flex h-full flex-col">
-        <div className="flex-shrink-0 border-b-2 border-fern pb-3">
+        <div className="sticky top-0 bg-white p-4 shadow-md shadow-concrete md:px-10 md:py-6">
           <div className="w-full truncate text-lg text-concrete">
             {recipeName}
           </div>
@@ -142,6 +142,7 @@ function FlowController<T extends { id: string, order: number }>({
               {controllerConfig.stageLabel}
             </div>
             <div className="flex space-x-4 text-lg">
+              <StatusIconDisplay status={updateStatus} />
               <button className="rounded bg-fern p-1">
                 <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
               </button>
@@ -157,7 +158,7 @@ function FlowController<T extends { id: string, order: number }>({
                 }
                 dialogComponent={() => (
                   <FlowActionsMenu
-                    isPreviewDisabled={isAnyUpdateLoadingOrErrorOrTriggered}
+                    areButtonsDisabled={isAnyUpdateLoadingOrErrorOrTriggered}
                     onOpenEditName={() => setIsEditingName(true)}
                     onEnterPreviewMode={enterPreviewModeHandler}
                   />
@@ -167,8 +168,7 @@ function FlowController<T extends { id: string, order: number }>({
           </div>
           {extraHeaderComponent ? extraHeaderComponent : null}
         </div>
-        <div className="flex-grow overflow-y-auto px-2">
-          <div className="h-3" />
+        <div className="flex-grow overflow-y-auto px-4 py-5 md:p-10">
           {children}
           <div className="h-44" />
         </div>
@@ -427,7 +427,7 @@ function PanelCard({
 }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
-    <div className="flex h-fit md:basis-1/2 flex-col rounded-lg border py-2 px-3 text-concrete">
+    <div className="flex h-fit flex-col rounded-lg border py-2 px-3 text-concrete md:basis-1/2">
       <div className="flex items-center justify-between">
         <span className="text-lg text-abyss">{header}</span>
         <button onClick={() => setIsOpen((prev) => !prev)}>

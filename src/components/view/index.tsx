@@ -10,7 +10,7 @@ interface ItemBlockContainerProps {
 }
 
 export function ItemBlockContainer({ children }: ItemBlockContainerProps) {
-  return <div className="flex flex-col space-y-1">{children}</div>;
+  return <div className="flex flex-col space-y-1 pl-3">{children}</div>;
 }
 
 interface ItemBlockHeaderProps {
@@ -43,10 +43,10 @@ export function ItemBlock({
           {canExpand ? (
             <InfoCircleIcon
               styles={{
-                icon: pickStyles('w-4 h-4', [
+                icon: pickStyles('w-6 h-6', [
                   isExpanded && canExpand,
                   'text-fern',
-                  'text-neutral-200',
+                  'text-neutral-300',
                 ]),
               }}
             />
@@ -65,17 +65,18 @@ interface ItemBlockDetailProps {
   optional: boolean;
 }
 
-export function ItemBlockDetail({ notes, substitutes }: ItemBlockDetailProps) {
+export function ItemBlockDetail({ notes, substitutes, optional }: ItemBlockDetailProps) {
   const subs = substitutes.map((s) => (
     <SubstitutePill key={s} sub={s} pillStyle="abyss" />
   ));
   return (
     <div className="flex flex-col space-y-2 rounded-lg bg-smoke p-3 text-sm">
+      {optional ? <span className='italic'>optional</span> : null}
       {notes ? <div>{notes}</div> : null}
       {subs.length > 0 ? (
         <div className="flex flex-col space-y-1">
-          <div className="underline">Substitutes</div>
-          <div className="flex space-x-2 text-xs">{subs}</div>
+          <div className="text-concrete underline">Substitutes</div>
+          <div className="flex space-x-2">{subs}</div>
         </div>
       ) : null}
     </div>

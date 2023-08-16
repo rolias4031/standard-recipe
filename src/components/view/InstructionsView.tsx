@@ -2,7 +2,6 @@ import { IngredientUnit, Instruction } from '@prisma/client';
 import SmartInstruction, {
   SmartInstructionWrapper,
 } from 'components/common/SmartInstruction';
-import TemperatureTooltip from 'components/common/tooltip/TemperatureTooltip';
 import { genId } from 'lib/util-client';
 import React, { ReactNode, useMemo } from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
