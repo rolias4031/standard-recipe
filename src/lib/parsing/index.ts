@@ -15,6 +15,18 @@ import {
 import { IngredientUnit } from '@prisma/client';
 import { useMemo } from 'react';
 
+/*
+! guide
+
+* item
+- matches all occurrences of the exact ingredient and equipment names.
+
+* temperature
+- matches any float or integer followed by either C or F, with an optional space in between
+
+* measurement
+*/
+
 interface UseBuildSmartInstructionArrayArgs {
   description: string;
   items: Array<IngredientWithAll | EquipmentWithAll>;

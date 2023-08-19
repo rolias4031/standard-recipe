@@ -308,6 +308,8 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     [instructions],
   );
 
+  console.log('INSTRUCTIONS', instructions)
+
   const stageComponents = new Map<Stage, ReactNode>([
     [
       'ingredients',

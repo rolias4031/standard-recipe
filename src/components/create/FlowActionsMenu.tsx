@@ -46,6 +46,9 @@ function FlowActionsMenu({
         >
           Home
         </button>
+        {areButtonsDisabled ? (
+          <span className="font-mono text-concrete text-sm">saving, just a sec...</span>
+        ) : null}
       </div>
     </div>
   );
