@@ -7,16 +7,35 @@ import {
   StandardRecipeApiRequest,
 } from 'types/types';
 import { apiHandler } from 'lib/util';
+import { Prisma } from '@prisma/client';
 
 async function handler(
   req: StandardRecipeApiRequest<DeleteRecipeInputMutationBody>,
   res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
+  const { id, recipeId, replace } = req.body;
+
   await prisma.instruction.delete({
     where: {
       id: req.body.id,
     },
   });
+
+  if (replace) {
+    const instructionsCreateObject: Prisma.InstructionCreateInput = {
+      inUse: false,
+      order: 1,
+      description: '',
+      recipe: {
+        connect: {
+          id: recipeId,
+        },
+      },
+    };
+    await prisma.instruction.create({
+      data: instructionsCreateObject,
+    });
+  }
 
   return res.status(200).json({
     message: 'success',

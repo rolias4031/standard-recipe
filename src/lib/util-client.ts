@@ -1,6 +1,5 @@
-import { IngredientUnit, Instruction } from '@prisma/client';
+import { IngredientUnit } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
-import { FlowEquipment, FlowIngredient } from 'types/models';
 import { ErrorPayload } from 'types/types';
 
 export function capitalizeString(input: string): string {
@@ -31,50 +30,6 @@ export function genIngredientUnit(): IngredientUnit {
     plural: '',
     property: 'mass',
   };
-}
-
-export function genIngredient(): FlowIngredient {
-  return {
-    id: genId(),
-    recipeId: '',
-    name: '',
-    unit: genIngredientUnit(),
-    quantity: 0,
-    substitutes: [],
-    optional: false,
-    order: 1,
-    notes: '',
-  };
-}
-
-export function genEquipment(): FlowEquipment {
-  return {
-    id: genId(),
-    name: '',
-    optional: false,
-    notes: '',
-    order: 1,
-    substitutes: [],
-    recipeId: '',
-  };
-}
-
-export function genInstruction(): Instruction {
-  return {
-    id: genId(),
-    description: '',
-    order: 1,
-    optional: false,
-    recipeId: '',
-  };
-}
-
-export function assignInputOrderByIndex<T extends { order: number }>(
-  inputs: T[],
-) {
-  return inputs.map((i, idx) => {
-    return { ...i, order: idx + 1 };
-  });
 }
 
 export function findRecipeInputIndexById<T extends { id: string }>(

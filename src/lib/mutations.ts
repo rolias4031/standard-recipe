@@ -10,12 +10,9 @@ import {
   MutateConfig,
   CreateNewRecipeMutationPayload,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
   CreateNewRecipeMutationBody,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
-import { Dispatch, SetStateAction } from 'react';
-import { replaceRecipeInputIds } from 'components/create/utils';
 
 async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   const response = await fetch(createApiUrl(config.apiRoute), {
@@ -49,7 +46,7 @@ export async function createNewDraftRecipeMutation(
 
 export async function updateRecipeIngredientMutation(
   body: UpdateInputMutationBody<FlowIngredient[]>,
-): Promise<UpdateInputMutationPayload> {
+): Promise<BasePayload | ErrorPayload> {
   return mutateWithBody({
     method: 'POST',
     apiRoute: 'api/recipe/update/ingredient',
@@ -69,7 +66,7 @@ export async function deleteIngredientMutation(
 
 export async function updateRecipeEquipmentMutation(
   body: UpdateInputMutationBody<FlowEquipment[]>,
-): Promise<UpdateInputMutationPayload> {
+): Promise<BasePayload | ErrorPayload> {
   return mutateWithBody({
     method: 'POST',
     apiRoute: 'api/recipe/update/equipment',
@@ -89,7 +86,7 @@ export async function deleteEquipmentMutation(
 
 export async function updateRecipeInstructionMutation(
   body: UpdateInputMutationBody<Instruction[]>,
-): Promise<UpdateInputMutationPayload> {
+): Promise<BasePayload | ErrorPayload> {
   return mutateWithBody({
     method: 'POST',
     apiRoute: 'api/recipe/update/instruction',
@@ -139,36 +136,21 @@ export function useDeleteInstruction() {
   return useMutation({ mutationFn: deleteInstructionMutation });
 }
 
-export function useUpdateInstructions(
-  dispatchInstructions: Dispatch<SetStateAction<Instruction[]>>,
-) {
+export function useUpdateInstructions() {
   return useMutation({
     mutationFn: updateRecipeInstructionMutation,
-    onSuccess: (data) => {
-      replaceRecipeInputIds(data.inputIdPairs, dispatchInstructions);
-    },
   });
 }
 
-export function useUpdateIngredients(
-  dispatchIngredients: Dispatch<SetStateAction<FlowIngredient[]>>,
-) {
+export function useUpdateIngredients() {
   return useMutation({
     mutationFn: updateRecipeIngredientMutation,
-    onSuccess: (data) => {
-      replaceRecipeInputIds(data.inputIdPairs, dispatchIngredients);
-    },
   });
 }
 
-export function useUpdateEquipment(
-  dispatchEquipment: Dispatch<SetStateAction<FlowEquipment[]>>,
-) {
+export function useUpdateEquipment() {
   return useMutation({
     mutationFn: updateRecipeEquipmentMutation,
-    onSuccess: (data) => {
-      replaceRecipeInputIds(data.inputIdPairs, dispatchEquipment);
-    },
   });
 }
 

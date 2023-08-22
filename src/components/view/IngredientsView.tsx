@@ -15,7 +15,7 @@ function IngredientBlock({ ingredient }: IngredientBlockProps) {
 
   return (
     <ItemBlock
-      name={ingredient.name.name}
+      name={ingredient.name?.name ?? ''}
       suffixContent={
         <div className="flex space-x-1 font-mono">
           <div>{ingredient.quantity}</div>

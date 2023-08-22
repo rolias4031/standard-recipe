@@ -1,16 +1,13 @@
 import OptionalInput from 'components/common/OptionalInput';
 import {
-  assignInputOrderByIndex,
   findRecipeInputIndexById,
-  genEquipment,
   insertIntoPrevArray,
-  isClientId,
 } from 'lib/util-client';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
 import { useDeleteEquipment } from 'lib/mutations';
-import { addSubHandler, dragEndHandler, removeSubHandler } from './utils';
+import { addSubHandler, dragEndHandler, removeDeletedInputFromStateHandler, removeSubHandler } from './utils';
 import { FlowEquipment } from 'types/models';
 import FlowInputBlock from './FlowInputBlock';
 import { OptionDialog } from './OptionDialog';
@@ -37,12 +34,9 @@ function EquipmentStage({
 
   function deleteEquipmentHandler(id: string) {
     raiseEquipment((prev: FlowEquipment[]) => {
-      if (prev.length === 1) return [genEquipment()];
-      const newEquipment = prev.filter((i) => i.id !== id);
-      return assignInputOrderByIndex(newEquipment);
+      return removeDeletedInputFromStateHandler(prev, id)
     });
-    if (isClientId(id)) return;
-    deleteEquipment({ id });
+    deleteEquipment({ id, recipeId, replace: true });
   }
 
   function updateEquipmentHandler({
@@ -84,55 +78,57 @@ function EquipmentStage({
         triggerDebouncedUpdate();
       }}
       droppableId="equipment"
-      stageInputComponents={equipment.map((e, index) => (
-        <FlowInputBlock
-          key={e.id}
-          id={e.id}
-          order={index + 1}
-          mainInputComponent={() => (
-            <input
-              type="text"
-              name="name"
-              value={e.name}
-              className="inp-reg inp-primary w-full md:w-2/3"
-              onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-                updateEquipmentHandler({
-                  id: e.id,
-                  name: ev.target.name,
-                  value: cleanEquipmentInput(ev.target.value),
-                })
-              }
-              autoComplete="off"
-            />
-          )}
-          optionsComponent={
-            <OptionDialog.Card>
-              <OptionDialog.Heading
-                name={e.name}
-                onDeleteIngredient={() => deleteEquipmentHandler(e.id)}
+      stageInputComponents={equipment.map((e, index) =>
+        !e.inUse ? null : (
+          <FlowInputBlock
+            key={e.id}
+            id={e.id}
+            order={index + 1}
+            mainInputComponent={() => (
+              <input
+                type="text"
+                name="name"
+                value={e.name}
+                className="inp-reg inp-primary w-full md:w-2/3"
+                onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
+                  updateEquipmentHandler({
+                    id: e.id,
+                    name: ev.target.name,
+                    value: cleanEquipmentInput(ev.target.value),
+                  })
+                }
+                autoComplete="off"
               />
-              <div className="flex space-x-5 text-lg">
-                <OptionalInput
-                  id={e.id}
-                  curIsOptional={e.optional}
-                  onRaiseInput={updateEquipmentHandler}
+            )}
+            optionsComponent={
+              <OptionDialog.Card>
+                <OptionDialog.Heading
+                  name={e.name}
+                  onDeleteIngredient={() => deleteEquipmentHandler(e.id)}
                 />
-              </div>
-              <OptionDialog.Substitutes
-                id={e.id}
-                curSubs={e.substitutes}
-                onAddSub={addEquipmentSubHandler}
-                onRemoveSub={removeEquipmentSubHandler}
-              />
-              <OptionDialog.Notes
-                curNotes={e.notes}
-                id={e.id}
-                onRaiseNotes={updateEquipmentHandler}
-              />
-            </OptionDialog.Card>
-          }
-        />
-      ))}
+                <div className="flex space-x-5 text-lg">
+                  <OptionalInput
+                    id={e.id}
+                    curIsOptional={e.optional}
+                    onRaiseInput={updateEquipmentHandler}
+                  />
+                </div>
+                <OptionDialog.Substitutes
+                  id={e.id}
+                  curSubs={e.substitutes}
+                  onAddSub={addEquipmentSubHandler}
+                  onRemoveSub={removeEquipmentSubHandler}
+                />
+                <OptionDialog.Notes
+                  curNotes={e.notes}
+                  id={e.id}
+                  onRaiseNotes={updateEquipmentHandler}
+                />
+              </OptionDialog.Card>
+            }
+          />
+        ),
+      )}
     />
   );
 }

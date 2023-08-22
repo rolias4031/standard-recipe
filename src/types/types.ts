@@ -59,7 +59,7 @@ export interface CustomError extends Error {
 // queries and mutations
 
 export interface DeleteRecipeMutationBody {
-  recipeId: Recipe['id']
+  recipeId: Recipe['id'];
 }
 
 export interface UpdateInputMutationBody<T> {
@@ -67,15 +67,13 @@ export interface UpdateInputMutationBody<T> {
   inputs: T;
 }
 
-export interface UpdateInputMutationPayload extends BasePayload {
-  inputIdPairs: InputIdPairs;
-}
-
 export interface AllUnitsQueryPayload extends BasePayload {
   units: IngredientUnit[];
 }
 
 export interface DeleteRecipeInputMutationBody {
+  replace?: boolean;
+  recipeId: string;
   id: string;
 }
 
@@ -92,6 +90,10 @@ export interface UserRecipesQueryPayload extends BasePayload {
 
 export interface CreateNewRecipeMutationPayload extends BasePayload {
   draftId: string;
+}
+
+export interface CreateNewInputMutationPayload extends BasePayload {
+  inputIdPairs: InputIdPairs;
 }
 
 export interface BasePayload {

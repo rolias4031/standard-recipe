@@ -55,8 +55,7 @@ function SelectUnit({
       : unitOptions;
   return (
     <ButtonWithDialog
-      buttonContent={curUnit ? curUnit : 'Select'}
-      isDisabled={curUnit === null}
+      buttonContent={curUnit ? curUnit : 'No Unit'}
       styles={{
         button: {
           default:

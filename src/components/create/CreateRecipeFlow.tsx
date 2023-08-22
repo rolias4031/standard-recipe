@@ -4,10 +4,6 @@ import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
 import {
-  assignInputOrderByIndex,
-  genEquipment,
-  genIngredient,
-  genInstruction,
   isZeroLength,
   pickStyles,
 } from 'lib/util-client';
@@ -20,10 +16,10 @@ import React, {
 } from 'react';
 import { FlowIngredient, RecipeWithFull, FlowEquipment } from 'types/models';
 import {
+  BasePayload,
   BaseZodSchema,
   Stage,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
 } from 'types/types';
 import {
   equipmentSchema,
@@ -38,6 +34,7 @@ import UpdateRecipeNameModal from './UpdateRecipeNameModal';
 import { useRouter } from 'next/router';
 import {
   checkStatusesForLoadingOrError,
+  createOneInUseInput,
   getNextStageName,
   getPrevStageName,
   navigateToCreateStage,
@@ -59,7 +56,9 @@ interface FlowControllerProps<T extends { id: string }> {
   extraHeaderComponent?: ReactNode;
 }
 
-function FlowController<T extends { id: string; order: number }>({
+function FlowController<
+  T extends { id: string; order: number; inUse: boolean },
+>({
   children,
   stage,
   recipeName,
@@ -71,9 +70,8 @@ function FlowController<T extends { id: string; order: number }>({
   const router = useRouter();
   const {
     stageName,
-    inputs,
+    inUseInputs,
     dispatchInputs,
-    genInput,
     schema,
     updateInputsMutation,
     updateStatus,
@@ -86,9 +84,8 @@ function FlowController<T extends { id: string; order: number }>({
   }
 
   async function nextStageHandler() {
-    const curInputs = inputs;
-    if (!curInputs || !schema) return;
-    for (const input of curInputs) {
+    if (!inUseInputs || !schema) return;
+    for (const input of inUseInputs) {
       const isValid = schema.safeParse(input);
       if (!isValid.success) {
         setIsError(true);
@@ -97,27 +94,23 @@ function FlowController<T extends { id: string; order: number }>({
     }
     setIsError(false);
     if (updateInputsMutation) {
-      updateInputsMutation({ inputs, recipeId });
+      updateInputsMutation({ inputs: inUseInputs, recipeId });
     }
     changeStage(getNextStageName(stage));
   }
 
   function prevStageHandler() {
     setIsError(false);
-    if (updateInputsMutation && inputs) {
-      updateInputsMutation({ inputs, recipeId });
+    if (updateInputsMutation && inUseInputs) {
+      updateInputsMutation({ inputs: inUseInputs, recipeId });
     }
     changeStage(getPrevStageName(stage));
   }
 
   function createNewInputHandler() {
-    if (!dispatchInputs || !genInput) return;
+    if (!dispatchInputs) return;
     dispatchInputs((prev: T[]) => {
-      const newInput = genInput();
-      const idExists = prev.findIndex((i) => i.id === newInput.id);
-      if (idExists !== -1) return prev;
-      const newUnorderedInputs = [...prev, newInput];
-      return assignInputOrderByIndex(newUnorderedInputs);
+      return createOneInUseInput(prev);
     });
   }
 
@@ -143,13 +136,13 @@ function FlowController<T extends { id: string; order: number }>({
             </div>
             <div className="flex space-x-4 text-lg">
               <StatusIconDisplay status={updateStatus} />
-              <button className="rounded bg-fern p-1">
+              <button className="rounded-lg bg-fern p-1">
                 <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
               </button>
               <ButtonWithDialog
                 styles={{
                   button: {
-                    default: 'p-1 rounded bg-fern',
+                    default: 'p-1 rounded-lg bg-fern',
                     isDialogOpen: ['', ''],
                   },
                 }}
@@ -226,10 +219,10 @@ function FlowController<T extends { id: string; order: number }>({
 
 interface ControllerConfig<T> {
   inputs?: T[];
+  inUseInputs?: T[];
   dispatchInputs?: Dispatch<SetStateAction<T[]>>;
-  genInput?: () => T;
   updateInputsMutation?: UseMutateFunction<
-    UpdateInputMutationPayload,
+    BasePayload,
     unknown,
     UpdateInputMutationBody<T[]>,
     unknown
@@ -275,7 +268,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     stageLabel: 'Ingredients',
     inputs: ingredients.state,
     dispatchInputs: ingredients.set,
-    genInput: genIngredient,
+    inUseInputs: ingredients.inUse,
     schema: ingredientSchema(allUnits.map((u) => u.id)),
     updateInputsMutation: ingredients.update,
     updateStatus: ingredients.updateStatus,
@@ -285,8 +278,8 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     stageName: 'equipment',
     stageLabel: 'Equipment',
     inputs: equipment.state,
+    inUseInputs: equipment.inUse,
     dispatchInputs: equipment.set,
-    genInput: genEquipment,
     schema: equipmentSchema,
     updateInputsMutation: equipment.update,
     updateStatus: equipment.updateStatus,
@@ -296,8 +289,8 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     stageName: 'instructions',
     stageLabel: 'Instructions',
     inputs: instructions.state,
+    inUseInputs: instructions.inUse,
     dispatchInputs: instructions.set,
-    genInput: genInstruction,
     schema: instructionSchema,
     updateInputsMutation: instructions.update,
     updateStatus: instructions.updateStatus,
@@ -308,7 +301,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     [instructions],
   );
 
-  console.log('INSTRUCTIONS', instructions)
+  console.log('INSTRUCTIONS', instructions);
 
   const stageComponents = new Map<Stage, ReactNode>([
     [
@@ -320,7 +313,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
       >
         <IngredientsStage
           recipeId={recipe.id}
-          ingredients={ingredients.state}
+          ingredients={ingredients.inUse}
           raiseIngredients={ingredients.set}
           allUnits={allUnits}
           triggerDebouncedUpdate={ingredients.triggerUpdate}
@@ -335,7 +328,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
         controllerConfig={secondControllerConfig}
       >
         <EquipmentStage
-          equipment={equipment.state}
+          equipment={equipment.inUse}
           raiseEquipment={equipment.set}
           recipeId={recipe.id}
           triggerDebouncedUpdate={equipment.triggerUpdate}
@@ -364,7 +357,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
         <InstructionsStage
           allUnits={allUnits}
           recipeId={recipe.id}
-          instructions={instructions.state}
+          instructions={instructions.inUse}
           ingredients={ingredients.state}
           equipment={equipment.state}
           raiseInstructions={instructions.set}

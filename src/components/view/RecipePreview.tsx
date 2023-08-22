@@ -1,12 +1,26 @@
 import { IngredientUnit } from '@prisma/client';
 import { useRouter } from 'next/router';
-import React, { ReactNode } from 'react';
-import { RecipeWithFull } from 'types/models';
+import React, { ReactNode, useMemo } from 'react';
+import { RecipeWithAll, RecipeWithFull } from 'types/models';
 import InstructionsView from './InstructionsView';
-import { navigateToCreateStage } from 'components/create/utils';
+import {
+  navigateToCreateStage,
+  splitInputsByInUse,
+} from 'components/create/utils';
 import { Stage } from 'types/types';
 import IngredientsView from './IngredientsView';
 import EquipmentView from './EquipmentView';
+
+function useGetOnlyInUseInputs(recipe: RecipeWithFull) {
+  return useMemo(() => {
+    const { inUse: inUseIngredients } = splitInputsByInUse(recipe.ingredients);
+    const { inUse: inUseEquipment } = splitInputsByInUse(recipe.equipment);
+    const { inUse: inUseInstructions } = splitInputsByInUse(
+      recipe.instructions,
+    );
+    return { inUseIngredients, inUseEquipment, inUseInstructions };
+  }, [recipe]);
+}
 
 const defaultExitStage = 'ingredients';
 
@@ -58,15 +72,17 @@ interface RecipeViewProps {
 }
 
 function RecipePreview({ recipe, allUnits }: RecipeViewProps) {
+  const { inUseIngredients, inUseEquipment, inUseInstructions } =
+    useGetOnlyInUseInputs(recipe);
   return (
     <PreviewController recipeId={recipe.id} recipeName={recipe.name}>
-      <IngredientsView ingredients={recipe.ingredients} />
-      <EquipmentView equipment={recipe.equipment} />
+      <IngredientsView ingredients={inUseIngredients} />
+      <EquipmentView equipment={inUseEquipment} />
       <InstructionsView
         allUnits={allUnits}
-        equipment={recipe.equipment}
-        instructions={recipe.instructions}
-        ingredients={recipe.ingredients}
+        equipment={inUseEquipment}
+        instructions={inUseInstructions}
+        ingredients={inUseIngredients}
       />
     </PreviewController>
   );

@@ -1,11 +1,6 @@
 import { UseMutateFunction } from '@tanstack/react-query';
-import {
-  genEquipment,
-  genIngredient,
-  genInstruction,
-  isZeroLength,
-} from 'lib/util-client';
-import {debounce } from 'lodash';
+import { isZeroLength } from 'lib/util-client';
+import { debounce } from 'lodash';
 import {
   Dispatch,
   SetStateAction,
@@ -14,11 +9,16 @@ import {
   useState,
 } from 'react';
 import {
+  BasePayload,
   BaseZodSchema,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
 } from 'types/types';
-import { filterValidRecipeInputs } from './utils';
+import {
+  createOneInUseInput,
+  filterInUseInputs,
+  filterValidRecipeInputs,
+  splitInputsByInUse,
+} from './utils';
 import {
   useUpdateEquipment,
   useUpdateIngredients,
@@ -43,36 +43,45 @@ function sortInputByOrder<T extends { order: number }>(inputs: T[]): T[] {
 }
 
 function initIngredients(ingredients: IngredientWithAll[]): FlowIngredient[] {
-  if (ingredients.length > 0) {
-    const flowIngredients = ingredients.map((i) => {
-      const substituteNames = i.substitutes.map((s) => s.name);
-      const name = i.name.name;
-      const { ingredientNameId, ingredientUnitId, ...keep } = i;
-      return { ...keep, name, substitutes: substituteNames };
-    });
-    return sortInputByOrder(flowIngredients);
+  // convert all to Flow types
+  const convertedIngredients = ingredients.map((i) => {
+    const substituteNames = i.substitutes.map((s) => s.name);
+    const name = i.name ? i.name.name : '';
+    const { ingredientNameId, ingredientUnitId, ...keep } = i;
+    return { ...keep, name, substitutes: substituteNames };
+  });
+  // separate into inUse vs notInUse
+  const { notInUse, inUse } = splitInputsByInUse(convertedIngredients);
+  // order the inUse and put first
+  const sortedAndOrdered = sortInputByOrder(inUse).concat(notInUse);
+  if (!sortedAndOrdered[0]?.inUse) {
+    return createOneInUseInput(sortedAndOrdered);
   }
-  return [genIngredient(), genIngredient()];
+  return sortedAndOrdered;
 }
 
 function initEquipment(equipment: EquipmentWithAll[]): FlowEquipment[] {
-  if (equipment.length > 0) {
-    const flowEquipment = equipment.map((e) => {
-      const substituteNames = e.substitutes.map((s) => s.name);
-      const name = e.name.name;
-      const { equipmentNameId, ...keep } = e;
-      return { ...keep, name, substitutes: substituteNames };
-    });
-    return sortInputByOrder(flowEquipment);
+  const convertedEquipment = equipment.map((e) => {
+    const substituteNames = e.substitutes.map((s) => s.name);
+    const name = e.name ? e.name.name : '';
+    const { equipmentNameId, ...keep } = e;
+    return { ...keep, name, substitutes: substituteNames };
+  });
+  const { inUse, notInUse } = splitInputsByInUse(convertedEquipment);
+  const sortedAndOrdered = sortInputByOrder(inUse).concat(notInUse);
+  if (!sortedAndOrdered[0]?.inUse) {
+    return createOneInUseInput(sortedAndOrdered);
   }
-  return [genEquipment(), genEquipment()];
+  return sortedAndOrdered;
 }
 
 function initInstructions(instructions: Instruction[]): Instruction[] {
-  if (instructions.length > 0) {
-    return sortInputByOrder(instructions);
+  const { inUse, notInUse } = splitInputsByInUse(instructions);
+  const sortedAndOrdered = sortInputByOrder(inUse).concat(notInUse);
+  if (!sortedAndOrdered[0]?.inUse) {
+    return createOneInUseInput(sortedAndOrdered);
   }
-  return [genInstruction(), genInstruction()];
+  return sortedAndOrdered;
 }
 
 export function useInitCreateRecipeState(recipe: RecipeWithFull) {
@@ -90,14 +99,17 @@ export function useInitCreateRecipeState(recipe: RecipeWithFull) {
     ingredients: {
       state: ingredients,
       set: setIngredients,
+      inUse: filterInUseInputs(ingredients),
     },
     equipment: {
       state: equipment,
       set: setEquipment,
+      inUse: filterInUseInputs(equipment),
     },
     instructions: {
       state: instructions,
       set: setInstructions,
+      inUse: filterInUseInputs(instructions),
     },
   };
 }
@@ -110,7 +122,7 @@ interface DebouncedMutationArgs<T> {
 
 interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
   updateInputsMutation: UseMutateFunction<
-    UpdateInputMutationPayload,
+    BasePayload,
     unknown,
     UpdateInputMutationBody<T[]>,
     unknown
@@ -126,7 +138,7 @@ export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
     inputs,
     schema,
     updateInputsMutation,
-    debounceInMs = 1000,
+    debounceInMs = 5000,
   } = config;
   const [isUpdateTriggered, setIsUpdateTriggered] = useState<boolean>(false);
 
@@ -157,6 +169,7 @@ export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
 
   useEffect(() => {
     if (!isUpdateTriggered) return;
+    console.log('DEBOUNCED INPUTS', inputs)
     debouncedUpdateValidInputs({
       recipeId,
       inputs: inputs,
@@ -171,7 +184,7 @@ export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
 }
 
 interface CreateRecipeInputStateAndDispatch<T> {
-  state: T[];
+  inUse: T[];
   set: Dispatch<SetStateAction<T[]>>;
 }
 
@@ -191,20 +204,20 @@ export function useDebouncedUpdateRecipeMutations({
   instructions,
 }: UseCreateRecipeDebouncedMutationsArgs) {
   const { mutate: updateIngredientsMutation, status: updateIngredientsStatus } =
-    useUpdateIngredients(ingredients.set);
+    useUpdateIngredients();
   const { mutate: updateEquipmentMutation, status: updateEquipmentStatus } =
-    useUpdateEquipment(equipment.set);
+    useUpdateEquipment();
   const {
     mutate: updateInstructionsMutation,
     status: updateInstructionsStatus,
-  } = useUpdateInstructions(instructions.set);
+  } = useUpdateInstructions();
 
   const {
     triggerDebouncedUpdate: triggerDebouncedIngredientsUpdate,
     isUpdateTriggered: isIngredientsUpdateTriggered,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
-    inputs: ingredients.state,
+    inputs: ingredients.inUse,
     schema: ingredientSchema(allUnits.map((u) => u.id)),
     updateInputsMutation: updateIngredientsMutation,
   });
@@ -214,7 +227,7 @@ export function useDebouncedUpdateRecipeMutations({
     isUpdateTriggered: isEquipmentUpdateTriggered,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
-    inputs: equipment.state,
+    inputs: equipment.inUse,
     schema: equipmentSchema,
     updateInputsMutation: updateEquipmentMutation,
   });
@@ -224,7 +237,7 @@ export function useDebouncedUpdateRecipeMutations({
     isUpdateTriggered: isInstructionsUpdateTriggered,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
-    inputs: instructions.state,
+    inputs: instructions.inUse,
     schema: instructionSchema,
     updateInputsMutation: updateInstructionsMutation,
   });
@@ -257,6 +270,7 @@ export function useCreateRecipeStateAndControls(
 ) {
   const { ingredients, equipment, instructions } =
     useInitCreateRecipeState(recipe);
+
   const { ingredientControls, equipmentControls, instructionControls } =
     useDebouncedUpdateRecipeMutations({
       recipeId: recipe.id,
@@ -269,15 +283,15 @@ export function useCreateRecipeStateAndControls(
   return {
     ingredients: {
       ...ingredients,
-      ...ingredientControls
+      ...ingredientControls,
     },
     equipment: {
       ...equipment,
-      ...equipmentControls
+      ...equipmentControls,
     },
     instructions: {
       ...instructions,
-      ...instructionControls
-    }
-  }
+      ...instructionControls,
+    },
+  };
 }

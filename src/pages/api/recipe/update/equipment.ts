@@ -1,25 +1,23 @@
 import { getAuth } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
-import { ERRORS } from 'lib/constants';
+import { ERRORS } from 'lib/server/constants';
 import { prisma } from 'lib/prismadb';
 import { apiHandler, prepareSubsForUpsert, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import { FlowEquipment } from 'types/models';
 import {
+  BasePayload,
   ErrorPayload,
   StandardRecipeApiRequest,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
 } from 'types/types';
 import { equipmentSchema } from 'validation/schemas';
 
 async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment[]>>,
-  res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
+  res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
   const { recipeId, inputs: allEquipment } = req.body;
-
-  const equipmentIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
   for (const equipment of allEquipment) {
     const isValid = validateOneInput({
@@ -48,7 +46,15 @@ async function handler(
         equipment.substitutes,
       );
 
-    const equipmentUpsertObject = {
+    const equipmentUpdateObject: Prisma.EquipmentUpdateInput = {
+      inUse: equipment.inUse,
+      order: equipment.order,
+      notes: equipment.notes,
+      optional: equipment.optional,
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+        disconnect: disconnectSubstitutes,
+      },
       name: {
         connectOrCreate: {
           where: {
@@ -59,48 +65,18 @@ async function handler(
           },
         },
       },
-      order: equipment.order,
-      notes: equipment.notes,
-      optional: equipment.optional,
     };
 
-    const equipmentCreateObject: Prisma.EquipmentCreateInput = {
-      ...equipmentUpsertObject,
-      substitutes: {
-        connectOrCreate: connectOrCreateSubstitutes,
-      },
-      recipe: {
-        connect: {
-          id: recipeId,
-        },
-      },
-    };
-
-    const equipmentUpateObject: Prisma.EquipmentUpdateInput = {
-      ...equipmentUpsertObject,
-      substitutes: {
-        connectOrCreate: connectOrCreateSubstitutes,
-        disconnect: disconnectSubstitutes,
-      },
-    };
-
-    const newOrUpdatedEquipment = await prisma.equipment.upsert({
+    await prisma.equipment.update({
       where: {
         id: equipment.id,
       },
-      update: equipmentUpateObject,
-      create: equipmentCreateObject,
-    });
-
-    equipmentIdPairs.push({
-      oldId: equipment.id,
-      newId: newOrUpdatedEquipment.id,
+      data: equipmentUpdateObject,
     });
   }
 
   return res.status(200).json({
     message: 'success',
-    inputIdPairs: equipmentIdPairs,
   });
 }
 

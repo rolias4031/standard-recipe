@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { NextApiResponse } from 'next';
 import { ErrorPayload, Stage } from 'types/types';
 

@@ -3,64 +3,44 @@ import { prisma } from 'lib/prismadb';
 import { apiHandler, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
+  BasePayload,
+  ErrorPayload,
   StandardRecipeApiRequest,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
 } from 'types/types';
 import { instructionSchema } from 'validation/schemas';
 
 async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<Instruction[]>>,
-  res: NextApiResponse<UpdateInputMutationPayload>,
+  res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
   const { recipeId, inputs: instructions } = req.body;
-  const instructionIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
   for (const instruction of instructions) {
-    console.log('instruction', instruction, recipeId);
     const isValid = validateOneInput({
       schema: instructionSchema,
       input: instruction,
     });
     if (!isValid) continue;
 
-    const instructionUpsertObject = {
+    const instructionUpdateObject: Prisma.InstructionUpdateInput = {
       optional: instruction.optional,
       description: instruction.description,
       order: instruction.order,
+      inUse: instruction.inUse,
     };
 
-    const instructionCreateObject: Prisma.InstructionCreateInput = {
-      ...instructionUpsertObject,
-      recipe: {
-        connect: {
-          id: recipeId,
-        },
-      },
-    };
-
-    const instructionUpdateObject: Prisma.InstructionUpdateInput = {
-      ...instructionUpsertObject,
-    };
-
-    const newOrUpdateInstruction = await prisma.instruction.upsert({
+    await prisma.instruction.update({
       where: {
         id: instruction.id,
       },
-      create: instructionCreateObject,
-      update: instructionUpdateObject,
+      data: instructionUpdateObject,
     });
 
-    instructionIdPairs.push({
-      newId: newOrUpdateInstruction.id,
-      oldId: instruction.id,
+    return res.status(201).json({
+      message: 'success',
     });
   }
-
-  return res.status(201).json({
-    inputIdPairs: instructionIdPairs,
-    message: 'success',
-  });
 }
 
 export default apiHandler(handler);

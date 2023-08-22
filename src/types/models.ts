@@ -1,4 +1,4 @@
-import { IngredientUnit, Instruction, Prisma } from '@prisma/client';
+import { IngredientUnit, Instruction, Prisma, Recipe } from '@prisma/client';
 
 // * objects from prisma validator
 
@@ -49,7 +49,7 @@ export interface RecipeGeneralInfo {
   description: RecipeWithAll['description'];
 }
 
-export type RecipeWithFull = RecipeWithAll & {
+export type RecipeWithFull = Recipe & {
   ingredients: IngredientWithAll[];
   equipment: EquipmentWithAll[];
   instructions: Instruction[];

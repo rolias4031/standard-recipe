@@ -6,7 +6,7 @@ import {
   StandardRecipeApiHandler,
   StandardRecipeApiRequest,
 } from 'types/types';
-import { ERRORS } from './constants';
+import { ERRORS } from './server/constants';
 
 function errorHandler(res: NextApiResponse<ErrorPayload>, error: unknown) {
   console.log(error)

@@ -38,6 +38,7 @@ export function ingredientSchema(allowedUnitIds: string[]) {
     notes: sharedSchemas.notes,
     order: sharedSchemas.order,
     substitutes: sharedSchemas.substitutes,
+    inUse: z.boolean(),
   });
 }
 

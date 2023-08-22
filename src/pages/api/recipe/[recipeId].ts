@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from 'lib/prismadb';
 import { ErrorPayload, RecipeQueryPayload } from 'types/types';
 import { getAuth } from '@clerk/nextjs/server';
-import { ERRORS, ERROR_RESPONSES } from 'lib/constants';
+import { ERRORS, ERROR_RESPONSES } from 'lib/server/constants';
 
 export default async function handler(
   req: NextApiRequest,

@@ -2,18 +2,14 @@ import React, { Dispatch, SetStateAction } from 'react';
 import StageFrame from './StageFrame';
 import { IngredientUnit, Instruction } from '@prisma/client';
 import {
-  assignInputOrderByIndex,
   findRecipeInputIndexById,
-  genInstruction,
   insertIntoPrevArray,
-  isClientId,
 } from 'lib/util-client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import OptionalInput from 'components/common/OptionalInput';
 import { FlowEquipment, FlowIngredient } from 'types/models';
-import { dragEndHandler } from './utils';
+import { dragEndHandler, removeDeletedInputFromStateHandler } from './utils';
 import { useDeleteInstruction } from 'lib/mutations';
-import BaseButton from 'components/common/BaseButton';
 import CharCount from 'components/common/CharCount';
 import FlowInputBlock from './FlowInputBlock';
 import { OptionDialog } from './OptionDialog';
@@ -40,12 +36,9 @@ function InstructionsStage({
 
   function removeInstructionHandler(id: string) {
     raiseInstructions((prev: Instruction[]) => {
-      if (prev.length === 1) return [genInstruction()];
-      const newInstructions = prev.filter((i) => i.id !== id);
-      return assignInputOrderByIndex(newInstructions);
+      return removeDeletedInputFromStateHandler(prev, id);
     });
-    if (isClientId(id)) return;
-    deleteInstruction({ id });
+    deleteInstruction({ id, recipeId, replace: true });
   }
 
   function updateInstructionHandler({
@@ -70,8 +63,8 @@ function InstructionsStage({
     triggerDebouncedUpdate();
   }
 
-  const inputBlocks = instructions.map((i, idx) => {
-    return (
+  const inputBlocks = instructions.map((i, idx) =>
+    !i.inUse ? null : (
       <FlowInputBlock
         key={i.id}
         id={i.id}
@@ -94,10 +87,7 @@ function InstructionsStage({
               rows={5}
             />
             {isMainInputFocused ? (
-              <CharCount
-                charLimit={250}
-                string={i.description}
-              />
+              <CharCount charLimit={250} string={i.description} />
             ) : null}
           </div>
         )}
@@ -115,8 +105,8 @@ function InstructionsStage({
           </OptionDialog.Card>
         }
       />
-    );
-  });
+    ),
+  );
 
   return (
     <StageFrame

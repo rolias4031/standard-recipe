@@ -1,4 +1,4 @@
-import { validateOneInput } from 'lib/util';
+import { apiHandler, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
 import {
   ErrorPayload,
@@ -10,18 +10,46 @@ import { Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
 import { recipeNameSchema } from 'validation/schemas';
 import { getAuth } from '@clerk/nextjs/server';
-import { ERRORS } from 'lib/constants';
+import { ERROR_RESPONSES } from 'lib/server/constants';
 
-export default async function handler(
+function createIngredientHolders(numberOfHolders: number) {
+  const ingredientHolder: Prisma.IngredientCreateManyRecipeInput = {
+    inUse: false,
+    order: 1,
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...ingredientHolder }));
+}
+
+function createEquipmentHolders(numberOfHolders: number) {
+  const equipmentHolder: Prisma.EquipmentCreateManyRecipeInput = {
+    inUse: false,
+    order: 1
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...equipmentHolder }));
+}
+
+function createInstructionHolders(numberOfHolders: number) {
+  const instructionHolder: Prisma.InstructionCreateManyRecipeInput = {
+    description: '',
+    order: 1,
+    inUse: false
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...instructionHolder }));
+}
+
+async function handler(
   req: StandardRecipeApiRequest<CreateNewRecipeMutationBody>,
   res: NextApiResponse<CreateNewRecipeMutationPayload | ErrorPayload>,
 ) {
   const session = getAuth(req);
   if (!session || !session.userId) {
-    return res.status(401).json({
-      message: 'unauthorized',
-      errors: [ERRORS.UNAUTHORIZED],
-    });
+    return ERROR_RESPONSES.UNAUTHORIZED(res);
   }
 
   const { name } = req.body;
@@ -29,12 +57,26 @@ export default async function handler(
   const recipe: Prisma.RecipeCreateInput = {
     name,
     authorId: session.userId,
+    ingredients: {
+      createMany: {
+        data: createIngredientHolders(30),
+      },
+    },
+    equipment: {
+      createMany: {
+        data: createEquipmentHolders(15),
+      },
+    },
+    instructions: {
+      createMany: {
+        data: createInstructionHolders(25),
+      },
+    },
   };
 
-  const draftRecipes = await prisma.recipe.findMany({
+  const allRecipes = await prisma.recipe.findMany({
     where: {
       authorId: session.userId,
-      status: 'draft',
     },
     select: {
       name: true,
@@ -42,14 +84,11 @@ export default async function handler(
   });
 
   const isValid = validateOneInput({
-    schema: recipeNameSchema(draftRecipes.map((r) => r.name)),
+    schema: recipeNameSchema(allRecipes.map((r) => r.name)),
     input: req.body,
   });
   if (!isValid) {
-    return res.status(400).json({
-      message: 'failure',
-      errors: [ERRORS.INVALID_INPUT],
-    });
+    return ERROR_RESPONSES.INVALID_INPUT(res);
   }
 
   const newDraftRecipe = await prisma.recipe.create({
@@ -63,3 +102,5 @@ export default async function handler(
     draftId: newDraftRecipe.id,
   });
 }
+
+export default apiHandler(handler);

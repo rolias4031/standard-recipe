@@ -3,10 +3,10 @@ import { prepareSubsForUpsert, validateOneInput, apiHandler } from 'lib/util';
 import { NextApiResponse } from 'next';
 import { ingredientSchema } from 'validation/schemas';
 import {
+  BasePayload,
   ErrorPayload,
   StandardRecipeApiRequest,
   UpdateInputMutationBody,
-  UpdateInputMutationPayload,
 } from 'types/types';
 import { Prisma } from '@prisma/client';
 import { FlowIngredient } from 'types/models';
@@ -39,10 +39,9 @@ function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
 
 async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowIngredient[]>>,
-  res: NextApiResponse<UpdateInputMutationPayload | ErrorPayload>,
+  res: NextApiResponse<BasePayload | ErrorPayload>,
 ) {
   const { recipeId, inputs: ingredients } = req.body;
-  const ingredientIdPairs: UpdateInputMutationPayload['inputIdPairs'] = [];
 
   console.log('edit/ingredients ingredients', ingredients, recipeId);
 
@@ -51,16 +50,20 @@ async function handler(
       id: true,
     },
   });
+  const allUnitIds = allUnits.map((u) => u.id);
+
+  const ingredientsForUpdating: Prisma.IngredientUpdateInput[] = [];
 
   for (const ingredient of ingredients) {
     const isValid = validateOneInput({
-      schema: ingredientSchema(allUnits.map((u) => u.id)),
+      schema: ingredientSchema(allUnitIds),
       input: ingredient,
     });
 
-    if (!isValid) continue;
+    if (!isValid) {
+      continue;
+    }
 
-    // get existing substitutes and calc what needs connect/disconnect
     const ingredientWithSubs = await prisma.ingredient.findUnique({
       where: {
         id: ingredient.id,
@@ -80,8 +83,18 @@ async function handler(
         ingredient.substitutes,
       );
 
-    // upsert object to be spread into create and update objects
-    const ingredientUpsertObject = {
+    // prep each ingredient
+    const ingredientUpdateObject: Prisma.IngredientUpdateInput = {
+      inUse: ingredient.inUse,
+      notes: ingredient.notes,
+      optional: ingredient.optional,
+      order: ingredient.order,
+      quantity: ingredient.quantity,
+      substitutes: {
+        connectOrCreate: connectOrCreateSubstitutes,
+        disconnect: disconnectSubstitutes,
+      },
+      unit: connectOrDisconnectUnit(ingredient.unit),
       name: {
         connectOrCreate: {
           where: {
@@ -92,65 +105,18 @@ async function handler(
           },
         },
       },
-      order: ingredient.order,
-      quantity: ingredient.quantity,
-      notes:
-        ingredient.notes && ingredient.notes.length > 0
-          ? ingredient.notes
-          : null,
-      optional: ingredient.optional,
     };
 
-    // create object
-    const ingredientCreateObject: Prisma.IngredientCreateInput = {
-      ...ingredientUpsertObject,
-      unit: connectUnit(ingredient.unit),
-      substitutes: {
-        connectOrCreate: connectOrCreateSubstitutes,
-      },
-      recipe: {
-        connect: {
-          id: recipeId,
-        },
-      },
-    };
-
-    // update object
-    const ingredientUpdateObject: Prisma.IngredientUpdateInput = {
-      ...ingredientUpsertObject,
-      unit: connectOrDisconnectUnit(ingredient.unit),
-      substitutes: {
-        connectOrCreate: connectOrCreateSubstitutes,
-        disconnect: disconnectSubstitutes,
-      },
-    };
-
-    const newOrUpdatedIngredient = await prisma.ingredient.upsert({
+    await prisma.ingredient.update({
       where: {
-        id: ingredient.id,
+        id: ingredient.id
       },
-      update: ingredientUpdateObject,
-      create: ingredientCreateObject,
-      include: {
-        name: true,
-        unit: true,
-      },
-    });
-
-    // push id pair
-    ingredientIdPairs.push({
-      oldId: ingredient.id,
-      newId: newOrUpdatedIngredient.id,
-    });
-
-    console.log('edit/ingredient new ingredient', newOrUpdatedIngredient);
+      data: ingredientUpdateObject
+    })
   }
-
-  // as you cycle through ingredients, track which didn't have matching ids. store these in an array of objs. can use these ids to erase from ingredientIdsToUpdate.
 
   return res.status(200).json({
     message: 'success',
-    inputIdPairs: ingredientIdPairs,
   });
 }
 

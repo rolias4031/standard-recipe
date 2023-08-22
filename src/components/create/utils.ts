@@ -1,7 +1,7 @@
 import { DropResult } from '@hello-pangea/dnd';
 import { findRecipeInputIndexById, insertIntoPrevArray } from 'lib/util-client';
 import { Dispatch, SetStateAction } from 'react';
-import { BaseZodSchema, InputIdPairs, Stage } from 'types/types';
+import { BaseZodSchema, Stage } from 'types/types';
 import { stages } from './CreateRecipeFlow';
 import { NextRouter } from 'next/router';
 
@@ -104,6 +104,26 @@ export function removeSubHandler<
   });
 }
 
+export function createOneInUseInput<T extends { id: string; inUse: boolean }>(
+  inputs: T[],
+) {
+  const idx = inputs.findIndex((i) => !i.inUse);
+  if (idx === -1) return inputs;
+  const updatedInputs = [...inputs];
+  const holder = updatedInputs[idx];
+  if (!holder) return inputs;
+  updatedInputs[idx] = { ...holder, inUse: true };
+  return updatedInputs;
+}
+
+export function assignInputOrderByIndex<T extends { order: number }>(
+  inputs: T[],
+) {
+  return inputs.map((i, idx) => {
+    return { ...i, order: idx + 1 };
+  });
+}
+
 export function filterValidRecipeInputs<T extends { id: string }>(
   inputs: T[],
   schema: BaseZodSchema,
@@ -118,48 +138,57 @@ export function filterValidRecipeInputs<T extends { id: string }>(
   return validInputs;
 }
 
-export function replaceRecipeInputIds<T extends { id: string }>(
-  idPairs: InputIdPairs,
-  raiseInput: Dispatch<SetStateAction<T[]>>,
+export function filterInUseInputs<T extends { id: string; inUse: boolean }>(
+  inputs: T[],
 ) {
-  raiseInput((prev: T[]) => {
-    let prevIng = [...prev];
-    idPairs.forEach((pair) => {
-      if (pair.newId === pair.oldId) return;
-      const index = findRecipeInputIndexById(prevIng, pair.oldId);
-      if (index === -1) return;
-      const ingredientWithNewId = { ...prevIng[index], id: pair.newId };
-      prevIng = insertIntoPrevArray(prevIng, index, ingredientWithNewId as T);
-      console.log(prevIng);
-    });
-    return prevIng;
-  });
+  return inputs.filter((i) => i.inUse);
 }
 
-export function reorderDraggableInputs<T>(result: DropResult, prev: T[]) {
-  const newInputs = [...prev];
+export function splitInputsByInUse<T extends { id: string; inUse: boolean }>(
+  inputs: T[],
+) {
+  const notInUse: T[] = [];
+  const inUse: T[] = [];
+  inputs.forEach((i) => {
+    if (!i.inUse) notInUse.push(i);
+    else inUse.push(i);
+  });
+  return { inUse, notInUse };
+}
 
+export function reorderDraggableInputs<T extends { inUse: boolean }>(
+  result: DropResult,
+  inputs: T[],
+) {
+  const newInputs = [...inputs];
   const [movedInput] = newInputs.splice(result.source.index, 1);
   if (
     result.destination?.index === null ||
     result.destination?.index === undefined ||
     !movedInput
   ) {
-    return prev;
+    return inputs;
   }
   newInputs.splice(result.destination?.index, 0, movedInput);
   return newInputs;
 }
 
-export function dragEndHandler<T extends { id: string }>(
-  result: DropResult,
-  dispatchInputs: Dispatch<SetStateAction<T[]>>,
-) {
+export function dragEndHandler<
+  T extends { id: string; inUse: boolean; order: number },
+>(result: DropResult, dispatchInputs: Dispatch<SetStateAction<T[]>>) {
   if (!result.destination) return;
   dispatchInputs((prev: T[]) => {
-    const reorderedInputs = reorderDraggableInputs(result, prev);
-    return reorderedInputs.map((input, index) => {
-      return { ...input, order: index + 1 };
-    });
+    const { inUse, notInUse } = splitInputsByInUse([...prev]);
+    const reorderedInputs = reorderDraggableInputs(result, inUse);
+    return assignInputOrderByIndex(reorderedInputs).concat(notInUse);
   });
+}
+
+export function removeDeletedInputFromStateHandler<
+  T extends { id: string; inUse: boolean; order: number },
+>(inputs: T[], idToDelete: string) {
+  const newInputs = [...inputs];
+  const filteredInputs = newInputs.filter((i) => i.id !== idToDelete);
+  const { inUse, notInUse } = splitInputsByInUse(filteredInputs);
+  return assignInputOrderByIndex(inUse).concat(notInUse);
 }

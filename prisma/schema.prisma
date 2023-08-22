@@ -46,18 +46,20 @@ model Instruction {
   optional    Boolean @default(false)
   recipe      Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId    String
+  inUse       Boolean @default(true)
 }
 
 model Equipment {
   id              String          @id @default(cuid())
-  name            EquipmentName   @relation(fields: [equipmentNameId], references: [id])
-  equipmentNameId String
+  name            EquipmentName?   @relation(fields: [equipmentNameId], references: [id])
+  equipmentNameId String?
   notes           String?         @db.VarChar(250)
-  recipe          Recipe         @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe          Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId        String
   substitutes     EquipmentName[] @relation("substitutes")
   optional        Boolean         @default(false)
   order           Int             @default(0)
+  inUse           Boolean         @default(true)
 }
 
 model EquipmentName {
@@ -71,15 +73,16 @@ model Ingredient {
   id               String           @id @default(cuid())
   quantity         Float            @default(0)
   optional         Boolean          @default(false)
-  recipe           Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe           Recipe           @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId         String
-  name             IngredientName   @relation(fields: [ingredientNameId], references: [id])
-  ingredientNameId String
+  name             IngredientName?   @relation(fields: [ingredientNameId], references: [id])
+  ingredientNameId String?
   unit             IngredientUnit?  @relation(fields: [ingredientUnitId], references: [id])
   ingredientUnitId String?
   notes            String?          @db.VarChar(250)
   substitutes      IngredientName[] @relation("substitutes")
   order            Int              @default(0)
+  inUse            Boolean          @default(true)
 }
 
 model IngredientUnit {

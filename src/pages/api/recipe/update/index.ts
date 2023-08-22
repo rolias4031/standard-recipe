@@ -1,5 +1,5 @@
 import { getAuth } from '@clerk/nextjs/server';
-import { ERROR_RESPONSES } from 'lib/constants';
+import { ERROR_RESPONSES } from 'lib/server/constants';
 import { prisma } from 'lib/prismadb';
 import { apiHandler, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';

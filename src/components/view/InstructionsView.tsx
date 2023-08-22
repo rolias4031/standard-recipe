@@ -66,14 +66,15 @@ function InstructionsView({
         items={ingredientsAndEquipment}
         ingredientTooltipComponent={(ingredient) => (
           <TextWithDialog
-            text={ingredient.name.name}
+            key={ingredient.id + genId()}
+            text={ingredient.name?.name ?? ''}
             dialogContent={<IngredientDialog ingredient={ingredient} />}
           />
         )}
         equipmentTooltipComponent={(equipment) => (
           <TextWithDialog
-            key={`${equipment.id}${genId()}`}
-            text={equipment.name.name}
+            key={equipment.id + genId()}
+            text={equipment.name?.name ?? ''}
             dialogContent={<EquipmentDialog equipment={equipment} />}
           />
         )}

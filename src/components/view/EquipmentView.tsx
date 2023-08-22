@@ -15,7 +15,7 @@ function EquipmentBlock({ equipment }: EquipmentBlockProps) {
 
   return (
     <ItemBlock
-      name={equipment.name.name}
+      name={equipment.name?.name ?? ''}
       canExpand={hasDetails}
       expandedContent={
         hasDetails ? (
