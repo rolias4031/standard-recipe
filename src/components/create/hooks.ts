@@ -14,6 +14,7 @@ import {
   UpdateInputMutationBody,
 } from 'types/types';
 import {
+  assignInputOrderByIndex,
   createOneInUseInput,
   filterInUseInputs,
   filterValidRecipeInputs,
@@ -130,7 +131,9 @@ interface UseDebounceControllerArgs<T> extends DebouncedMutationArgs<T> {
   debounceInMs?: number;
 }
 
-export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
+export function useDebouncedUpdateRecipeMutation<
+  T extends { id: string; order: number },
+>(
   config: UseDebounceControllerArgs<T>,
 ): { triggerDebouncedUpdate: () => void; isUpdateTriggered: boolean } {
   const {
@@ -156,7 +159,8 @@ export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
       clearTriggeredUpdate();
       if (isZeroLength(args.inputs)) return;
       console.log('debounced validation', args.inputs);
-      const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
+      const inputsWithFreshOrder = assignInputOrderByIndex(args.inputs);
+      const validInputs = filterValidRecipeInputs(inputsWithFreshOrder, args.schema);
       if (isZeroLength(validInputs)) return;
       console.log('debounced mutation', validInputs);
       updateInputsMutation({
@@ -169,7 +173,7 @@ export function useDebouncedUpdateRecipeMutation<T extends { id: string }>(
 
   useEffect(() => {
     if (!isUpdateTriggered) return;
-    console.log('DEBOUNCED INPUTS', inputs)
+    console.log('DEBOUNCED INPUTS', inputs);
     debouncedUpdateValidInputs({
       recipeId,
       inputs: inputs,

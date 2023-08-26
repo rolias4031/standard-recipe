@@ -18,7 +18,7 @@ function ViewSectionContainer({
     <div className="flex flex-col space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-xl font-mono font-bold">{title}</span>
+          <span className="text-xl font-mono">{title}</span>
           <div className="flex justify-center rounded-md bg-abyss px-2 font-mono text-sm">
             <div className="text-white">{totalItems}</div>
           </div>
@@ -30,7 +30,6 @@ function ViewSectionContainer({
                 isSectionOpen,
                 'rotate-90',
               ]),
-              // icon: 'w-5 h-5'
             }}
           />
         </button>

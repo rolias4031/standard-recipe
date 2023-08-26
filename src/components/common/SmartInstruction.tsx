@@ -6,10 +6,12 @@ import {
   InstructionMeasurement,
   IngredientWithAll,
   InstructionTemperature,
-  isEquipmentWithAllType,
   isInstructionMeasurementType,
-  isIngredientWithAllType,
   isInstructionTemperatureType,
+  IngredientForSmartInstruction,
+  EquipmentForSmartInstruction,
+  isIngredientForSmartInstructionType,
+  isEquipmentForSmartInstructionType,
 } from 'types/models';
 
 interface SmartInstructionWrapperProps {
@@ -25,8 +27,10 @@ export function SmartInstructionWrapper({
 interface SmartInstructionProps {
   description: string;
   items: Array<IngredientWithAll | EquipmentWithAll>;
-  ingredientTooltipComponent: (ingredient: IngredientWithAll) => ReactNode;
-  equipmentTooltipComponent: (equipment: EquipmentWithAll) => ReactNode;
+  ingredientTooltipComponent: (
+    ingredient: IngredientForSmartInstruction,
+  ) => ReactNode;
+  equipmentTooltipComponent: (equipment: EquipmentForSmartInstruction) => ReactNode;
   measurementPopoverComponent: (
     measurement: InstructionMeasurement,
   ) => ReactNode;
@@ -59,10 +63,10 @@ function SmartInstruction({
       {smartInstructionsArray.map((segment) => {
         console.log('Segment', segment);
         if (typeof segment === 'string') return segment;
-        if (isIngredientWithAllType(segment)) {
+        if (isIngredientForSmartInstructionType(segment)) {
           return ingredientTooltipComponent(segment);
         }
-        if (isEquipmentWithAllType(segment)) {
+        if (isEquipmentForSmartInstructionType(segment)) {
           return equipmentTooltipComponent(segment);
         }
         if (isInstructionMeasurementType(segment)) {

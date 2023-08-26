@@ -15,7 +15,7 @@ interface TextWithDialogProps {
   disabled?: boolean;
 }
 
-function TextWithDialog({ text, dialogContent, styles }: TextWithDialogProps) {
+function TextWithDialog({ text, dialogContent, styles, disabled }: TextWithDialogProps) {
   const textRef = useRef<HTMLSpanElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPosition, setDialogPosition] = useState<'top' | 'bottom'>('top');
@@ -37,10 +37,10 @@ function TextWithDialog({ text, dialogContent, styles }: TextWithDialogProps) {
 
   return (
     <>
-      <span className={styles?.text} onClick={handleOpenDialog} ref={textRef}>
+      <span className={disabled ? undefined : styles?.text} onClick={handleOpenDialog} ref={textRef}>
         {text}
       </span>
-      {isDialogOpen ? (
+      {isDialogOpen && !disabled ? (
         <ModalBackdrop
           modalRoot="modal-root"
           opacity="0"

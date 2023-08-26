@@ -16,11 +16,15 @@ async function handler(
 ) {
   const { recipeId, inputs: instructions } = req.body;
 
+  console.log('instructions', instructions)
+
   for (const instruction of instructions) {
     const isValid = validateOneInput({
       schema: instructionSchema,
       input: instruction,
     });
+    console.log(isValid, instruction)
+
     if (!isValid) continue;
 
     const instructionUpdateObject: Prisma.InstructionUpdateInput = {
@@ -36,11 +40,10 @@ async function handler(
       },
       data: instructionUpdateObject,
     });
-
-    return res.status(201).json({
-      message: 'success',
-    });
   }
+  return res.status(201).json({
+    message: 'success',
+  });
 }
 
 export default apiHandler(handler);

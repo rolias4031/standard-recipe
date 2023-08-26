@@ -3,10 +3,7 @@ import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
-import {
-  isZeroLength,
-  pickStyles,
-} from 'lib/util-client';
+import { isZeroLength, pickStyles } from 'lib/util-client';
 import React, {
   Dispatch,
   SetStateAction,
@@ -46,6 +43,9 @@ import FlowActionsMenu from './FlowActionsMenu';
 import ButtonWithDialog from 'components/common/dialog/ButtonWithDialog';
 import HamburgerIcon from 'components/common/icons/HamburgerIcon';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
+import {
+  TipDialog,
+} from './TipDialog';
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
   stage: Stage;
@@ -136,9 +136,18 @@ function FlowController<
             </div>
             <div className="flex space-x-4 text-lg">
               <StatusIconDisplay status={updateStatus} />
-              <button className="rounded-lg bg-fern p-1">
-                <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-              </button>
+              <ButtonWithDialog
+                styles={{
+                  button: {
+                    default: 'p-1 rounded-lg bg-fern',
+                    isDialogOpen: ['', ''],
+                  },
+                }}
+                buttonContent={
+                  <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+                }
+                dialogComponent={() => <TipDialog />}
+              />
               <ButtonWithDialog
                 styles={{
                   button: {
@@ -463,11 +472,14 @@ function CurrentIngredientsPanel({
             ])}
           >
             <span>{i.name}</span>
-            <div className="flex justify-between space-x-1">
+            <div className="flex justify-between space-x-1 font-mono">
               {i.unit ? (
                 <>
                   <span>{i.quantity}</span>
                   <span>{i.unit.unit}</span>
+                  {i.unit.abbreviation ? (
+                    <span>{`(${i.unit.abbreviation})`}</span>
+                  ) : null}
                 </>
               ) : null}
             </div>

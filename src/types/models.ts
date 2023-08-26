@@ -72,6 +72,14 @@ export interface FlowEquipment
   substitutes: string[];
 }
 
+export interface IngredientForSmartInstruction extends IngredientWithAll {
+  text: string
+}
+
+export interface EquipmentForSmartInstruction extends EquipmentWithAll {
+  text: string
+}
+
 export interface InstructionMeasurement extends IngredientUnit {
   text: string;
   quantity: number;
@@ -103,13 +111,14 @@ export function isInstructionMeasurementType(
   );
 }
 
-export function isIngredientWithAllType(obj: any): obj is IngredientWithAll {
-  return 'unit' in obj && 'quantity' in obj && 'name' in obj;
+export function isIngredientForSmartInstructionType(obj: any): obj is IngredientWithAll {
+  return 'unit' in obj && 'quantity' in obj && 'name' in obj && 'text' in obj;
 }
 
-export function isEquipmentWithAllType(obj: any): obj is EquipmentWithAll {
+export function isEquipmentForSmartInstructionType(obj: any): obj is EquipmentWithAll {
   return (
     'name' in obj &&
+    'text' in obj &&
     !('unit' in obj) &&
     !('description' in obj) &&
     !('quantity' in obj)

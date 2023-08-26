@@ -13,6 +13,26 @@ import EquipmentDialog from 'components/common/dialog/EquipmentDialog';
 import MeasurementDialog from 'components/common/dialog/MeasurementDialog';
 import TemperatureDialog from 'components/common/dialog/TemperatureDialog';
 
+function hasEquipmentDialogContent(equipment: EquipmentWithAll) {
+  const hasSomething = !!(
+    equipment.notes ||
+    equipment.optional ||
+    equipment.substitutes.length > 0
+  );
+  return hasSomething;
+}
+
+function hasIngredientDialogContent(ingredient: IngredientWithAll) {
+  const hasSomething = !!(
+    ingredient.notes ||
+    ingredient.optional ||
+    ingredient.substitutes.length > 0 ||
+    ingredient.unit ||
+    ingredient.quantity
+  );
+  return hasSomething;
+}
+
 interface InstructionBlockProps {
   order: number;
   children: ReactNode;
@@ -66,22 +86,24 @@ function InstructionsView({
         items={ingredientsAndEquipment}
         ingredientTooltipComponent={(ingredient) => (
           <TextWithDialog
+            disabled={!hasIngredientDialogContent(ingredient)}
             key={ingredient.id + genId()}
-            text={ingredient.name?.name ?? ''}
+            text={ingredient.text}
             dialogContent={<IngredientDialog ingredient={ingredient} />}
           />
         )}
         equipmentTooltipComponent={(equipment) => (
           <TextWithDialog
+            disabled={!hasEquipmentDialogContent(equipment)}
             key={equipment.id + genId()}
-            text={equipment.name?.name ?? ''}
+            text={equipment.text}
             dialogContent={<EquipmentDialog equipment={equipment} />}
           />
         )}
         measurementPopoverComponent={(measurement) => (
           <TextWithDialog
             disabled={measurement.property === 'other'}
-            key={measurement.quantity + measurement.id}
+            key={measurement.quantity + measurement.id + genId()}
             text={measurement.text}
             styles={{ text: 'text-indigo-500' }}
             dialogContent={
@@ -101,7 +123,7 @@ function InstructionsView({
         )}
         temperatureTooltipComponent={(temp) => (
           <TextWithDialog
-            key={temp.temperature + temp.unit}
+            key={temp.temperature + temp.unit + genId()}
             text={temp.text}
             styles={{ text: 'text-indigo-500' }}
             dialogContent={

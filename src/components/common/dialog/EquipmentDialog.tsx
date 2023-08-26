@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { EquipmentWithAll } from 'types/models';
-import { DialogCard, DialogNotes, DialogSubs } from '.';
+import { DialogCard, DialogNotes, DialogOptional, DialogSubs } from '.';
 
 interface EquipmentDialogProps {
   equipment: EquipmentWithAll;
@@ -14,6 +14,7 @@ function EquipmentDialog({ equipment }: EquipmentDialogProps) {
   return (
     <DialogCard>
       <div className="flex flex-col space-y-2">
+        <DialogOptional optional={equipment.optional} />
         <DialogNotes notes={equipment.notes} />
         <DialogSubs substitutes={names} />
       </div>

@@ -3,6 +3,8 @@ import {
   InstructionMeasurement,
   IngredientWithAll,
   InstructionTemperature,
+  IngredientForSmartInstruction,
+  EquipmentForSmartInstruction,
 } from 'types/models';
 import {
   addMarkdown,
@@ -20,11 +22,17 @@ import { useMemo } from 'react';
 
 * item
 - matches all occurrences of the exact ingredient and equipment names.
+- case insensitive.
+- rigatoni pasta matches: Rigatoni pasta, Rigatoni Pasta, even RiGaToNi PaStA.
+- cast iron pan matches: all capitalization variations of that string.
 
 * temperature
 - matches any float or integer followed by either C or F, with an optional space in between
+- 400C/F 550 C/F
 
 * measurement
+- matches any float or integer followed by a measurement name, plural, or abbreviation, case insensitive.
+- 5 Ounces, 5 ounces, 5 ounce, 5 oz, 5 OZ.
 */
 
 interface UseBuildSmartInstructionArrayArgs {
@@ -41,14 +49,15 @@ export function useBuildSmartInstructionArray({
   unitMap,
 }: UseBuildSmartInstructionArrayArgs): Array<
   | string
-  | IngredientWithAll
-  | EquipmentWithAll
+  | IngredientForSmartInstruction
+  | EquipmentForSmartInstruction
   | InstructionMeasurement
   | InstructionTemperature
 > {
   return useMemo(() => {
     console.log('items', items);
     console.log('unitStringsForRegex', unitStringsForRegex)
+
     // sort items by number of words in name - largest go first otherwise small will break large.
     const sortedItems = sortItemsInDescending(items);
 

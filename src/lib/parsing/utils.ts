@@ -79,7 +79,7 @@ export const addMarkdown = {
     sortedItems: Array<IngredientWithAll | EquipmentWithAll>,
     description: string,
   ) => {
-    const sortedItemNames = sortedItems.map((i) => i.name.name);
+    const sortedItemNames = sortedItems.map((i) => i.name?.name ?? '');
     const itemsRegex = createRegex.items(sortedItemNames);
     const newDescription = description.replace(itemsRegex, (match) => {
       return createMarkdown(match, markdownConfig.items);
@@ -94,8 +94,9 @@ export const buildObject = {
     segment: string,
     itemMap: Map<string, IngredientWithAll | EquipmentWithAll>,
   ) => {
-    const obj = itemMap.get(removeMarkdown(segment));
-    return obj ? obj : segment;
+    const itemText = removeMarkdown(segment)
+    const obj = itemMap.get(itemText.toLowerCase());
+    return obj ? {...obj, text: itemText} : segment;
   },
   measurements: (
     segment: string,
@@ -104,7 +105,7 @@ export const buildObject = {
     const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
     if (!unit || !quantity) return segment;
     const numberQuantity = parseFloat(quantity);
-    const obj = unitMap.get(unit.toLocaleLowerCase());
+    const obj = unitMap.get(unit.toLowerCase());
     return obj
       ? { text: quantity + ' ' + unit, quantity: numberQuantity, ...obj }
       : segment;
@@ -121,9 +122,11 @@ export function sortItemsInDescending(
   tags: Array<IngredientWithAll | EquipmentWithAll>,
 ) {
   return tags.sort((a, b) => {
-    const aWords = a.name.name.split(' ').length;
-    const bWords = b.name.name.split(' ').length;
-    return bWords - aWords;
+    const aName = a.name?.name ?? '';
+    const bName = b.name?.name ?? '';
+    const aWordCount = aName.split(' ').length;
+    const bWordCount = bName.split(' ').length;
+    return bWordCount - aWordCount;
   });
 }
 
@@ -132,7 +135,9 @@ export function buildItemMap(
 ): Map<string, IngredientWithAll | EquipmentWithAll> {
   const itemMap = new Map();
   items.forEach((i) => {
-    itemMap.set(i.name.name, i);
+    const itemName = i.name?.name;
+    if (!itemName) return;
+    itemMap.set(itemName, i);
   });
   return itemMap;
 }
