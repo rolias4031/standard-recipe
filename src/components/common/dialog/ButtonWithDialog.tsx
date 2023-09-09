@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react';
-import { useDynamicDialog } from './hooks';
+import { useDynamicDialog, useFixedDialog } from './hooks';
 import { ModalBackdrop } from '../ModalBackdrop';
 import { pickStyles } from 'lib/util-client';
 
 interface ButtonWithDialogProps {
   dialogComponent: (
-    handleToggleDialog: (command: 'open' | 'close') => void,
+    handleToggleDialog: (open: boolean) => () => void,
   ) => ReactNode;
   buttonContent: ReactNode;
   isDisabled?: boolean;
@@ -23,13 +23,12 @@ function ButtonWithDialog({
   isDisabled,
   styles,
 }: ButtonWithDialogProps) {
-  const { anchorRef, dialogPosition, handleToggleDialog, isDialogOpen } =
-    useDynamicDialog<HTMLButtonElement>();
+
+  const { isDialogOpen, handleToggleDialog } = useFixedDialog()
   return (
     <>
       <button
-        ref={anchorRef}
-        onClick={() => handleToggleDialog('open')}
+        onClick={handleToggleDialog(true)}
         disabled={isDisabled}
         className={pickStyles(styles?.button.default, [
           isDialogOpen,
@@ -43,7 +42,7 @@ function ButtonWithDialog({
         <ModalBackdrop
           modalRoot="modal-root"
           opacity="50"
-          onClose={() => handleToggleDialog('close')}
+          onClose={handleToggleDialog(false)}
         >
           {dialogComponent(handleToggleDialog)}
         </ModalBackdrop>

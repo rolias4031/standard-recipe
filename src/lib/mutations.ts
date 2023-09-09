@@ -11,6 +11,7 @@ import {
   CreateNewRecipeMutationPayload,
   UpdateInputMutationBody,
   CreateNewRecipeMutationBody,
+  PublishRecipeMutationBody,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
@@ -122,6 +123,20 @@ export async function deleteRecipeMutation(
     apiRoute: 'api/recipe/delete',
     body,
   });
+}
+
+export async function publishRecipeMutation(
+  body: PublishRecipeMutationBody,
+): Promise<BasePayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/recipe/publish',
+    body,
+  });
+}
+
+export function usePublishRecipe() {
+  return useMutation({ mutationFn: publishRecipeMutation });
 }
 
 export function useDeleteRecipe() {

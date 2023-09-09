@@ -1,3 +1,4 @@
+import XIcon from 'components/common/icons/XIcon';
 import { pickStyles, stopRootDivPropagation } from 'lib/util-client';
 import React, { ReactNode, useState } from 'react';
 
@@ -9,7 +10,7 @@ const subheaderClass = 'text-lg underline';
 export function TipDialogCard({ children }: { children: ReactNode }) {
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 overflow-auto max-h-[90vh] rounded-t-2xl bg-white p-5 md:p-10"
+      className="fixed flex flex-col bottom-0 left-0 right-0 max-h-[90vh] rounded-t-2xl bg-white p-5 md:px-10 md:py-5"
       onClick={stopRootDivPropagation}
     >
       {children}
@@ -17,7 +18,7 @@ export function TipDialogCard({ children }: { children: ReactNode }) {
   );
 }
 
-export function TipDialog() {
+export function TipDialog({ onClose }: { onClose: () => void }) {
   const [curTip, setCurTip] = useState<TipMode>('ingredients & equipment');
 
   function changeTipHandler(val: TipMode) {
@@ -25,31 +26,40 @@ export function TipDialog() {
   }
 
   function createButtonStyles(val: TipMode) {
-    return pickStyles('p-2 rounded-lg basis-1/2', [
+    return pickStyles('p-2 rounded-t-lg basis-1/2', [
       curTip === val,
       'bg-fern text-white',
     ]);
   }
   return (
     <TipDialogCard>
-      <div className="sticky top-0 mb-5 flex space-x-3 rounded-xl bg-white border border-fern font-mono md:text-lg">
-        <button
-          className={createButtonStyles('ingredients & equipment')}
-          onClick={changeTipHandler('ingredients & equipment')}
-        >
-          Ingredients & Equipment
-        </button>
-        <button
-          className={createButtonStyles('instructions')}
-          onClick={changeTipHandler('instructions')}
-        >
-          Instructions
-        </button>
+      <div className="sticky top-0 flex flex-col gap-2 border-b border-fern font-mono md:text-lg">
+        <div className="flex justify-end">
+          <button onClick={onClose}>
+            <XIcon styles={{ icon: 'w-8 h-8 text-concrete' }} />
+          </button>
+        </div>
+        <div className="flex items-stretch">
+          <button
+            className={createButtonStyles('ingredients & equipment')}
+            onClick={changeTipHandler('ingredients & equipment')}
+          >
+            Ingredients & Equipment
+          </button>
+          <button
+            className={createButtonStyles('instructions')}
+            onClick={changeTipHandler('instructions')}
+          >
+            Instructions
+          </button>
+        </div>
       </div>
-      {curTip === 'ingredients & equipment' ? (
-        <IngredientAndEquipmentTip />
-      ) : null}
-      {curTip === 'instructions' ? <InstructionTip /> : null}
+      <div className="flex-1 overflow-auto py-3">
+        {curTip === 'ingredients & equipment' ? (
+          <IngredientAndEquipmentTip />
+        ) : null}
+        {curTip === 'instructions' ? <InstructionTip /> : null}
+      </div>
     </TipDialogCard>
   );
 }
@@ -64,8 +74,8 @@ export function IngredientAndEquipmentTip() {
             "Stick to the simplest name for your ingredient or equipment by including only what's necessary for the recipe. Add extra info like brand names and specifiers in the notes (you'll see why in the instructions section)."
           }
         </p>
-        <ul className="py-2 list-inside list-disc">
-          <li className='list-item'>
+        <ul className="list-inside list-disc py-2">
+          <li className="list-item">
             <s>Whole Foods</s> <span className="text-fern">rigatoni pasta</span>
           </li>
           <li>

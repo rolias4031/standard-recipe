@@ -58,6 +58,10 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface PublishRecipeMutationBody {
+  recipeId: Recipe['id']
+}
+
 export interface DeleteRecipeMutationBody {
   recipeId: Recipe['id'];
 }

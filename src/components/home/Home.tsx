@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserRecipesQueryPayload } from 'types/types';
 import { MyRecipesView } from './MyRecipesView';
-import { UserButton, UserProfile } from '@clerk/nextjs';
+import { SignOutButton, UserProfile } from '@clerk/nextjs';
 import Link from 'next/link';
 
 export type HomeView = 'recipes' | 'profile';
@@ -52,14 +52,17 @@ function NavBar({ view }: NavBarProps) {
         >
           <button>My Recipes</button>
         </Link>
-        <Link
-          href={{
-            pathname: '/me',
-            query: { view: 'profile' },
-          }}
-        >
-          <button>Profile</button>
-        </Link>
+        <div className="flex space-x-5">
+          <Link
+            href={{
+              pathname: '/me',
+              query: { view: 'profile' },
+            }}
+          >
+            <button>Profile</button>
+          </Link>
+          <SignOutButton />
+        </div>
       </div>
     </div>
   );

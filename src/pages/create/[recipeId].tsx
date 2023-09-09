@@ -2,18 +2,16 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import CreateRecipeDock from 'components/create/CreateRecipeDock';
 import CreateRecipeFlow, { stages } from 'components/create/CreateRecipeFlow';
-import PageFrame from 'components/common/PageFrame';
 import { Stage } from 'types/types';
+import { isStringType } from 'types/util';
 
 function useExtractQueryParams() {
   const router = useRouter();
-  const { recipeId, stage } = router.query;
+  const { recipeId, stage = 'ingredients' } = router.query;
   console.log('slug', router.query);
   if (
-    recipeId &&
-    !Array.isArray(recipeId) &&
-    stage &&
-    !Array.isArray(stage) &&
+    isStringType(recipeId) &&
+    isStringType(stage) &&
     stages.includes(stage as Stage)
   ) {
     const castedStage = stage as Stage;
@@ -30,14 +28,12 @@ function CreateRecipePage() {
     return (
       <CreateRecipeDock recipeId={recipeId}>
         {(recipe, allUnits) => (
-          // <PageFrame style="mx-auto h-screen min-h-screen max-h-screen md:w-5/6 lg:w-3/4 p-4">
-            <CreateRecipeFlow
-              key={recipe.id + recipe.updatedAt}
-              recipe={recipe}
-              allUnits={allUnits}
-              stage={stage}
-            />
-          // </PageFrame>
+          <CreateRecipeFlow
+            key={recipe.id + recipe.updatedAt}
+            recipe={recipe}
+            allUnits={allUnits}
+            stage={stage}
+          />
         )}
       </CreateRecipeDock>
     );

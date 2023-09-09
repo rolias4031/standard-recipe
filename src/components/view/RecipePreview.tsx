@@ -11,7 +11,7 @@ import { Stage } from 'types/types';
 import IngredientsView from './IngredientsView';
 import EquipmentView from './EquipmentView';
 
-function useGetOnlyInUseInputs(recipe: RecipeWithFull) {
+export function useGetOnlyInUseInputs(recipe: RecipeWithFull) {
   return useMemo(() => {
     const { inUse: inUseIngredients } = splitInputsByInUse(recipe.ingredients);
     const { inUse: inUseEquipment } = splitInputsByInUse(recipe.equipment);
@@ -66,7 +66,7 @@ function PreviewController({
   );
 }
 
-interface RecipeViewProps {
+export interface RecipeViewProps {
   recipe: RecipeWithFull;
   allUnits: IngredientUnit[];
 }

@@ -3,7 +3,11 @@ import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import XIcon from 'components/common/icons/XIcon';
-import { isZeroLength, pickStyles } from 'lib/util-client';
+import {
+  isZeroLength,
+  pickStyles,
+  stopRootDivPropagation,
+} from 'lib/util-client';
 import React, {
   Dispatch,
   SetStateAction,
@@ -43,9 +47,10 @@ import FlowActionsMenu from './FlowActionsMenu';
 import ButtonWithDialog from 'components/common/dialog/ButtonWithDialog';
 import HamburgerIcon from 'components/common/icons/HamburgerIcon';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
-import {
-  TipDialog,
-} from './TipDialog';
+import { TipDialog } from './TipDialog';
+import CheckIcon from 'components/common/icons/CheckIcon';
+import { ModalBackdrop } from 'components/common/ModalBackdrop';
+import { usePublishRecipe } from 'lib/mutations';
 interface FlowControllerProps<T extends { id: string }> {
   children: ReactNode;
   stage: Stage;
@@ -77,6 +82,7 @@ function FlowController<
     updateStatus,
   } = controllerConfig;
   const [isEditingName, setIsEditingName] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isError, setIsError] = useState<boolean>(false);
 
   function changeStage(newStage: Stage) {
@@ -146,7 +152,9 @@ function FlowController<
                 buttonContent={
                   <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
                 }
-                dialogComponent={() => <TipDialog />}
+                dialogComponent={(handleToggleDialog) => (
+                  <TipDialog onClose={handleToggleDialog(false)} />
+                )}
               />
               <ButtonWithDialog
                 styles={{
@@ -202,7 +210,14 @@ function FlowController<
               {stage !== 'instructions' ? (
                 <FlowProgress curStage={stage} />
               ) : (
-                <button>Publish!</button>
+                <button
+                  disabled={isAnyUpdateLoadingOrErrorOrTriggered}
+                  className="flex items-center space-x-2 rounded-lg bg-fern px-5 py-1 font-mono text-lg text-white disabled:bg-smoke"
+                  onClick={() => setIsPublishModalOpen(true)}
+                >
+                  <span>Publish</span>
+                  <CheckIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+                </button>
               )}
               <button
                 className="disabled:opacity-20"
@@ -215,13 +230,19 @@ function FlowController<
           </ControlPanel>
         </div>
       </div>
-      {isEditingName && (
+      {isEditingName ? (
         <UpdateRecipeNameModal
           recipeId={recipeId}
           curRecipeName={recipeName}
           onCloseModal={() => setIsEditingName(false)}
         />
-      )}
+      ) : null}
+      {isPublishModalOpen ? (
+        <PublishModal
+          recipeId={recipeId}
+          onClose={() => setIsPublishModalOpen(false)}
+        />
+      ) : null}
     </>
   );
 }
@@ -516,6 +537,70 @@ function CurrentEquipmentPanel({
         );
       })}
     </PanelCard>
+  );
+}
+
+interface PublishModalProps {
+  onClose: () => void;
+  recipeId: string;
+}
+
+function PublishModal({ onClose, recipeId }: PublishModalProps) {
+  const { mutate, status } = usePublishRecipe();
+  const router = useRouter();
+  function handlePublishRecipe() {
+    mutate(
+      { recipeId },
+      {
+        onSuccess: () => {
+          const viewUrl = `/view/[recipeId]`;
+          router.push({
+            pathname: viewUrl,
+            query: { recipeId, new: 'true' },
+          });
+        },
+      },
+    );
+  }
+  return (
+    <ModalBackdrop modalRoot="modal-root" onClose={onClose}>
+      <div
+        className="fixed left-0 right-0 bottom-0 rounded-t-2xl bg-white p-5"
+        onClick={stopRootDivPropagation}
+      >
+        <div className="mb-10 flex flex-col space-y-4 text-xl">
+          <h1 className="text-center font-mono text-3xl">Wait!</h1>
+          <p className="text-center">
+            {"Have you taken advantage of Standard Recipe's best features?"}
+          </p>
+        </div>
+        <div className="flex flex-col space-y-3">
+          <button
+            className="rounded-lg bg-smoke py-5 px-2 text-2xl"
+            onClick={onClose}
+          >
+            <div className="text-center">
+              <span>No, view our </span>
+              <span className="">
+                tips{' '}
+                <LightBulbIcon
+                  styles={{
+                    icon: 'w-8 h-8 bg-fern text-white inline p-1 rounded',
+                  }}
+                />
+              </span>
+              <span> before publishing</span>
+            </div>
+          </button>
+          <button
+            className="rounded-lg bg-fern py-5 px-2 text-2xl text-white"
+            onClick={handlePublishRecipe}
+          >
+            {'Yes, publish my recipe!'}
+          </button>
+        </div>
+      </div>
+    </ModalBackdrop>
   );
 }
 

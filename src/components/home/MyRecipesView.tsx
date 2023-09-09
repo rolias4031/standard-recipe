@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { IngredientUnit, Recipe } from '@prisma/client';
+import { Recipe } from '@prisma/client';
 import Link from 'next/link';
 import VerticalEllipsisIcon from 'components/common/icons/VerticalEllipsisIcon';
 import { useFixedDialog } from 'components/common/dialog/hooks';
@@ -12,6 +12,7 @@ import ChevronDownIcon from 'components/common/icons/ChevronDownIcon';
 import { capitalize } from 'lodash';
 import PlusIcon from 'components/common/icons/PlusIcon';
 import NewRecipeDialog from './NewRecipeDialog';
+import { Url } from 'next/dist/shared/lib/router/router';
 
 interface MyRecipesViewProps {
   recipes: Recipe[];
@@ -50,7 +51,7 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
             <input
               type="text"
               placeholder="Search"
-              className="w-full rounded-lg border px-2 py-2"
+              className="w-full rounded-lg border px-2 py-2 outline-fern"
               value={recipeSearchText}
               onChange={handleUpdateSearchText}
             />
@@ -126,6 +127,11 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
   );
 }
 
+function buildLinkHref(isDraftRecipe: boolean, recipeId: string): Url {
+  const path = isDraftRecipe ? '/create/[recipeId]' : '/view/[recipeId]';
+  return { pathname: path, query: { recipeId } };
+}
+
 interface RecipeLinkProps {
   recipe: Recipe;
 }
@@ -134,16 +140,14 @@ function RecipeBlock({ recipe }: RecipeLinkProps) {
   const { isDialogOpen, handleToggleDialog } = useFixedDialog();
 
   const date = new Date(recipe.createdAt);
+
   return (
     <>
       <div className="flex items-center justify-between rounded-lg bg-smoke px-3 py-2">
         <div className="flex flex-col">
           <Link
             className="text-xl"
-            href={{
-              pathname: '/view/[recipeId]',
-              query: { recipeId: recipe.id },
-            }}
+            href={buildLinkHref(recipe.status === 'draft', recipe.id)}
           >
             {recipe.name}
           </Link>
