@@ -8,10 +8,8 @@ import StageFrame from './StageFrame';
 import { useDeleteIngredient } from 'lib/mutations';
 import {
   addSubHandler,
-  assignInputOrderByIndex,
   removeDeletedInputFromStateHandler,
   removeSubHandler,
-  splitInputsByInUse,
 } from './utils';
 import { dragEndHandler } from './utils';
 import SelectUnit from './SelectUnit';
@@ -26,12 +24,16 @@ function cleanQuantityInput(value: string) {
   return value ? parseFloat(value) : '';
 }
 
-interface IngredientStageProps {
+export interface StageSharedProps {
+  isDisabled?: boolean;
   recipeId: string;
+  triggerDebouncedUpdate?: () => void;
+}
+
+interface IngredientStageProps extends StageSharedProps {
   ingredients: FlowIngredient[];
   raiseIngredients: Dispatch<SetStateAction<FlowIngredient[]>>;
   allUnits: IngredientUnit[];
-  triggerDebouncedUpdate: () => void;
 }
 
 function IngredientsStage({
@@ -40,20 +42,24 @@ function IngredientsStage({
   raiseIngredients,
   allUnits,
   triggerDebouncedUpdate,
+  isDisabled,
 }: IngredientStageProps) {
-  console.log('IngredientStage', ingredients);
+  function triggerUpdateIfProvided() {
+    if (!triggerDebouncedUpdate) return;
+    triggerDebouncedUpdate();
+  }
 
   const { mutate: deleteIngredient, status: deleteStatus } =
     useDeleteIngredient();
 
   function addIngredientSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided;
   }
 
   function removeIngredientSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseIngredients });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided;
   }
 
   function deleteIngredientHandler(id: string) {
@@ -81,7 +87,7 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   function updateUnitHandler({
@@ -108,119 +114,133 @@ function IngredientsStage({
         updatedIngredient as FlowIngredient,
       );
     });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   return (
-    <StageFrame
-      onDragEnd={(result) => {
-        dragEndHandler(result, raiseIngredients);
-        triggerDebouncedUpdate();
-      }}
-      droppableId="ingredients"
-      stageInputComponents={ingredients.map((i, index) => {
-        return !i.inUse ? null : (
-          <FlowInputBlock
-            id={i.id}
-            key={i.id}
-            order={index + 1}
-            mainInputComponent={() => (
-              <input
-                type="text"
-                className="w-full rounded bg-smoke px-2 py-1 focus:bg-white focus:outline-fern"
-                value={i.name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  updateIngredientHandler({
-                    value: cleanNameInput(e.target.value),
-                    id: i.id,
-                    name: 'name',
-                  })
-                }
-              />
-            )}
-            secondaryInputComponent={
-              <>
+    <>
+      <StageFrame
+        onDragEnd={(result) => {
+          dragEndHandler(result, raiseIngredients);
+          triggerUpdateIfProvided();
+        }}
+        droppableId="ingredients"
+        stageInputComponents={ingredients.map((i, index) => {
+          return !i.inUse ? null : (
+            <FlowInputBlock
+              id={i.id}
+              key={i.id}
+              order={index + 1}
+              isDisabled={isDisabled}
+              mainInputComponent={() => (
                 <input
-                  type="number"
-                  className="w-1/2 rounded bg-smoke px-2 py-1 font-mono focus:bg-white focus:outline-fern"
-                  value={i.quantity}
+                  disabled={isDisabled}
+                  type="text"
+                  className="w-full rounded bg-smoke px-2 py-1 focus:bg-white focus:outline-fern disabled:text-concrete"
+                  value={i.name}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateIngredientHandler({
-                      value: cleanQuantityInput(e.target.value),
+                      value: cleanNameInput(e.target.value),
                       id: i.id,
-                      name: 'quantity',
+                      name: 'name',
                     })
                   }
                 />
-                <SelectUnit
-                  curUnit={i.unit ? i.unit.unit : null}
-                  onSelectUnit={({ value }) =>
-                    updateUnitHandler({ id: i.id, unitInput: value })
-                  }
-                  unitOptions={allUnits}
-                  ingredientName={i.name}
-                />
-              </>
-            }
-            optionsComponent={
-              <>
-                <OptionDialog.Card>
-                  <OptionDialog.Heading
-                    name={i.name}
-                    onDeleteIngredient={() => deleteIngredientHandler(i.id)}
+              )}
+              secondaryInputComponent={
+                <>
+                  <input
+                    disabled={isDisabled}
+                    type="number"
+                    className="w-1/2 rounded bg-smoke px-2 py-1 font-mono focus:bg-white focus:outline-fern disabled:text-concrete"
+                    value={i.quantity}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      updateIngredientHandler({
+                        value: cleanQuantityInput(e.target.value),
+                        id: i.id,
+                        name: 'quantity',
+                      })
+                    }
                   />
-                  <div className="flex space-x-5 text-lg">
-                    <OptionalInput
-                      id={i.id}
-                      curIsOptional={i.optional}
-                      onRaiseInput={updateIngredientHandler}
+                  <SelectUnit
+                    isDisabled={isDisabled}
+                    curUnit={i.unit ? i.unit.unit : null}
+                    onSelectUnit={({ value }) => 
+                      updateUnitHandler({ id: i.id, unitInput: value })
+                    }
+                    unitOptions={allUnits}
+                    ingredientName={i.name}
+                  />
+                </>
+              }
+              optionsComponent={
+                <>
+                  <OptionDialog.Card>
+                    <OptionDialog.Heading
+                      name={i.name}
+                      onDeleteIngredient={() => deleteIngredientHandler(i.id)}
                     />
-                    <div className="flex items-center space-x-1">
-                      <input
-                        id={`no-units-${i.id}`}
-                        name="unit"
-                        type="checkbox"
-                        className="h-6 w-6 cursor-pointer accent-fern"
-                        checked={i.unit === null}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          updateUnitHandler({
-                            id: i.id,
-                            unitInput: e.target.checked ? null : 'clear',
-                          });
-                          if (!e.target.checked) return;
-                          updateIngredientHandler({
-                            id: i.id,
-                            name: 'quantity',
-                            value: 0,
-                          });
-                        }}
+                    <div className="flex space-x-5 text-lg">
+                      <OptionalInput
+                        id={i.id}
+                        curIsOptional={i.optional}
+                        onRaiseInput={updateIngredientHandler}
                       />
-                      <label
-                        htmlFor={`no units-${i.id}`}
-                        className="cursor-pointer"
-                      >
-                        No Units
-                      </label>
+                      <div className="flex items-center space-x-1">
+                        <input
+                          id={`no-units-${i.id}`}
+                          name="unit"
+                          type="checkbox"
+                          className="h-6 w-6 cursor-pointer accent-fern"
+                          checked={i.unit === null}
+                          onChange={(
+                            e: React.ChangeEvent<HTMLInputElement>,
+                          ) => {
+                            updateUnitHandler({
+                              id: i.id,
+                              unitInput: e.target.checked ? null : 'clear',
+                            });
+                            if (!e.target.checked) return;
+                            updateIngredientHandler({
+                              id: i.id,
+                              name: 'quantity',
+                              value: 0,
+                            });
+                          }}
+                        />
+                        <label
+                          htmlFor={`no units-${i.id}`}
+                          className="cursor-pointer"
+                        >
+                          No Units
+                        </label>
+                      </div>
                     </div>
-                  </div>
-                  <OptionDialog.Substitutes
-                    id={i.id}
-                    curSubs={i.substitutes}
-                    onAddSub={addIngredientSubHandler}
-                    onRemoveSub={removeIngredientSubHandler}
-                  />
-                  <OptionDialog.Notes
-                    curNotes={i.notes}
-                    id={i.id}
-                    onRaiseNotes={updateIngredientHandler}
-                  />
-                </OptionDialog.Card>
-              </>
-            }
-          />
-        );
-      })}
-    />
+                    <OptionDialog.Substitutes
+                      id={i.id}
+                      curSubs={i.substitutes}
+                      onAddSub={addIngredientSubHandler}
+                      onRemoveSub={removeIngredientSubHandler}
+                    />
+                    <OptionDialog.Notes
+                      curNotes={i.notes}
+                      id={i.id}
+                      onRaiseNotes={updateIngredientHandler}
+                    />
+                  </OptionDialog.Card>
+                </>
+              }
+            />
+          );
+        })}
+      />
+    {isDisabled ? (
+        <div
+          className="absolute top-0 bottom-0 cursor-not-allowed bg-abyss bg-smoke/40"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ) : null}
+    </>
   );
 }
 

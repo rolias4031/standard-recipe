@@ -14,7 +14,7 @@ export function isZeroLength(val: string | any[] | null) {
 }
 
 export function genId() {
-  return 'CLIENT-' + uuidv4();
+  return uuidv4();
 }
 
 export function isClientId(id: string) {

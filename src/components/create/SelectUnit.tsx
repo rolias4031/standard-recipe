@@ -36,6 +36,7 @@ interface SelectUnitProps {
   curUnit: string | null;
   onSelectUnit: ({ value }: { value: string }) => void;
   ingredientName: string;
+  isDisabled?: boolean;
 }
 
 function SelectUnit({
@@ -43,6 +44,7 @@ function SelectUnit({
   onSelectUnit,
   unitOptions,
   ingredientName,
+  isDisabled,
 }: SelectUnitProps) {
   const [searchText, setSearchText] = useState('');
   const filteredOptions =
@@ -55,6 +57,7 @@ function SelectUnit({
       : unitOptions;
   return (
     <ButtonWithDialog
+      isDisabled={isDisabled}
       buttonContent={curUnit ? curUnit : 'No Unit'}
       styles={{
         button: {
@@ -95,7 +98,7 @@ function SelectUnit({
                 key={u.id}
                 onClick={() => {
                   onSelectUnit({ value: u.unit });
-                  handleToggleDialog('close');
+                  handleToggleDialog(false)();
                 }}
               />
             ))}

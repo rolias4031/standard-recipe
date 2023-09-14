@@ -4,7 +4,7 @@ import React, { ReactNode, useMemo } from 'react';
 import { RecipeWithAll, RecipeWithFull } from 'types/models';
 import InstructionsView from './InstructionsView';
 import {
-  navigateToCreateStage,
+  navigateToStage,
   splitInputsByInUse,
 } from 'components/create/utils';
 import { Stage } from 'types/types';
@@ -40,7 +40,7 @@ function PreviewController({
   function exitPreviewModeHandler() {
     const previousStage: string | null =
       window.localStorage.getItem('previous_stage');
-    navigateToCreateStage(router, {
+    navigateToStage(router, {
       recipeId,
       stage: (previousStage as Stage) ?? defaultExitStage,
     });

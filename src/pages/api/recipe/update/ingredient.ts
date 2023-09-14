@@ -10,6 +10,7 @@ import {
 } from 'types/types';
 import { Prisma } from '@prisma/client';
 import { FlowIngredient } from 'types/models';
+import { assignInputOrderByIndex } from 'components/create/utils';
 
 /*
     - this route creates/updates an array of ingredients and attaches it to recipe
@@ -43,7 +44,7 @@ async function handler(
 ) {
   const { recipeId, inputs: ingredients } = req.body;
 
-  console.log('edit/ingredients ingredients', ingredients, recipeId);
+  const reorderedIngredients = assignInputOrderByIndex(ingredients);
 
   const allUnits = await prisma.ingredientUnit.findMany({
     select: {
@@ -52,9 +53,27 @@ async function handler(
   });
   const allUnitIds = allUnits.map((u) => u.id);
 
-  const ingredientsForUpdating: Prisma.IngredientUpdateInput[] = [];
+  const allIngredientsWithSubs = await prisma.ingredient.findMany({
+    where: {
+      recipeId,
+      AND: {
+        inUse: {
+          equals: true,
+        },
+      },
+    },
+    include: {
+      substitutes: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
 
-  for (const ingredient of ingredients) {
+  console.log(allIngredientsWithSubs);
+
+  for (const ingredient of reorderedIngredients) {
     const isValid = validateOneInput({
       schema: ingredientSchema(allUnitIds),
       input: ingredient,
@@ -64,18 +83,9 @@ async function handler(
       continue;
     }
 
-    const ingredientWithSubs = await prisma.ingredient.findUnique({
-      where: {
-        id: ingredient.id,
-      },
-      include: {
-        substitutes: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
+    const ingredientWithSubs = allIngredientsWithSubs.find(
+      (i) => ingredient.id === i.id,
+    );
 
     const { disconnectSubstitutes, connectOrCreateSubstitutes } =
       prepareSubsForUpsert(
@@ -109,10 +119,10 @@ async function handler(
 
     await prisma.ingredient.update({
       where: {
-        id: ingredient.id
+        id: ingredient.id,
       },
-      data: ingredientUpdateObject
-    })
+      data: ingredientUpdateObject,
+    });
   }
 
   return res.status(200).json({

@@ -1,27 +1,8 @@
 import { IngredientUnit, Instruction } from '@prisma/client';
-import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
-import ArrowRightIcon from 'components/common/icons/ArrowRightIcon';
-import PlusIcon from 'components/common/icons/PlusIcon';
-import XIcon from 'components/common/icons/XIcon';
-import {
-  isZeroLength,
-  pickStyles,
-  stopRootDivPropagation,
-} from 'lib/util-client';
-import React, {
-  Dispatch,
-  SetStateAction,
-  ReactNode,
-  useState,
-  useMemo,
-} from 'react';
+import { isZeroLength, pickStyles } from 'lib/util-client';
+import React, { ReactNode, useState, useMemo } from 'react';
 import { FlowIngredient, RecipeWithFull, FlowEquipment } from 'types/models';
-import {
-  BasePayload,
-  BaseZodSchema,
-  Stage,
-  UpdateInputMutationBody,
-} from 'types/types';
+import { Stage } from 'types/types';
 import {
   equipmentSchema,
   ingredientSchema,
@@ -30,247 +11,17 @@ import {
 import EquipmentStage from './EquipmentStage';
 import IngredientsStage from './IngredientsStage';
 import InstructionsStage from './InstructionsStage';
-import { UseMutateFunction } from '@tanstack/react-query';
-import UpdateRecipeNameModal from './UpdateRecipeNameModal';
-import { useRouter } from 'next/router';
-import {
-  checkStatusesForLoadingOrError,
-  createOneInUseInput,
-  getNextStageName,
-  getPrevStageName,
-  navigateToCreateStage,
-} from './utils';
+import { checkStatusesForLoadingOrError } from './utils';
 import { useCreateRecipeStateAndControls } from './hooks';
-import { StatusIconDisplay } from 'components/common/StatusIconDisplay';
-import LightBulbIcon from 'components/common/icons/LightBulbIcon';
-import FlowActionsMenu from './FlowActionsMenu';
-import ButtonWithDialog from 'components/common/dialog/ButtonWithDialog';
-import HamburgerIcon from 'components/common/icons/HamburgerIcon';
 import ChevronRightIcon from 'components/common/icons/ChevronRightIcon';
-import { TipDialog } from './TipDialog';
-import CheckIcon from 'components/common/icons/CheckIcon';
-import { ModalBackdrop } from 'components/common/ModalBackdrop';
-import { usePublishRecipe } from 'lib/mutations';
-interface FlowControllerProps<T extends { id: string }> {
-  children: ReactNode;
-  stage: Stage;
-  recipeName: string;
-  recipeId: string;
-  isAnyUpdateLoadingOrErrorOrTriggered: boolean;
-  controllerConfig: ControllerConfig<T>;
-  extraHeaderComponent?: ReactNode;
-}
-
-function FlowController<
-  T extends { id: string; order: number; inUse: boolean },
->({
-  children,
-  stage,
-  recipeName,
-  recipeId,
-  isAnyUpdateLoadingOrErrorOrTriggered,
-  controllerConfig,
-  extraHeaderComponent,
-}: FlowControllerProps<T>) {
-  const router = useRouter();
-  const {
-    stageName,
-    inUseInputs,
-    dispatchInputs,
-    schema,
-    updateInputsMutation,
-    updateStatus,
-  } = controllerConfig;
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
-  const [isError, setIsError] = useState<boolean>(false);
-
-  function changeStage(newStage: Stage) {
-    navigateToCreateStage(router, { recipeId, stage: newStage, shallow: true });
-  }
-
-  async function nextStageHandler() {
-    if (!inUseInputs || !schema) return;
-    for (const input of inUseInputs) {
-      const isValid = schema.safeParse(input);
-      if (!isValid.success) {
-        setIsError(true);
-        return;
-      }
-    }
-    setIsError(false);
-    if (updateInputsMutation) {
-      updateInputsMutation({ inputs: inUseInputs, recipeId });
-    }
-    changeStage(getNextStageName(stage));
-  }
-
-  function prevStageHandler() {
-    setIsError(false);
-    if (updateInputsMutation && inUseInputs) {
-      updateInputsMutation({ inputs: inUseInputs, recipeId });
-    }
-    changeStage(getPrevStageName(stage));
-  }
-
-  function createNewInputHandler() {
-    if (!dispatchInputs) return;
-    dispatchInputs((prev: T[]) => {
-      return createOneInUseInput(prev);
-    });
-  }
-
-  function enterPreviewModeHandler() {
-    if (isAnyUpdateLoadingOrErrorOrTriggered) return;
-    window.localStorage.setItem('previous_stage', stage);
-    router.push({
-      pathname: '/view/[recipeId]',
-      query: { recipeId },
-    });
-  }
-
-  return (
-    <>
-      <div className="flex h-full flex-col">
-        <div className="sticky top-0 bg-white p-4 shadow-md shadow-concrete md:px-10 md:py-6">
-          <div className="w-full truncate text-lg text-concrete">
-            {recipeName}
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="font-mono text-xl text-abyss">
-              {controllerConfig.stageLabel}
-            </div>
-            <div className="flex space-x-4 text-lg">
-              <StatusIconDisplay status={updateStatus} />
-              <ButtonWithDialog
-                styles={{
-                  button: {
-                    default: 'p-1 rounded-lg bg-fern',
-                    isDialogOpen: ['', ''],
-                  },
-                }}
-                buttonContent={
-                  <LightBulbIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-                }
-                dialogComponent={(handleToggleDialog) => (
-                  <TipDialog onClose={handleToggleDialog(false)} />
-                )}
-              />
-              <ButtonWithDialog
-                styles={{
-                  button: {
-                    default: 'p-1 rounded-lg bg-fern',
-                    isDialogOpen: ['', ''],
-                  },
-                }}
-                buttonContent={
-                  <HamburgerIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-                }
-                dialogComponent={() => (
-                  <FlowActionsMenu
-                    areButtonsDisabled={isAnyUpdateLoadingOrErrorOrTriggered}
-                    onOpenEditName={() => setIsEditingName(true)}
-                    onEnterPreviewMode={enterPreviewModeHandler}
-                  />
-                )}
-              />
-            </div>
-          </div>
-          {extraHeaderComponent ? extraHeaderComponent : null}
-        </div>
-        <div className="flex-grow overflow-y-auto px-4 py-5 md:p-10">
-          {children}
-          <div className="h-44" />
-        </div>
-        <div className="fixed left-0 right-0 bottom-0 flex flex-col items-center space-y-2 transition-all">
-          {isError ? (
-            <StageError
-              stageName={stageName.toLowerCase()}
-              raiseIsError={setIsError}
-            />
-          ) : null}
-          <div className="w-full">
-            <button
-              type="button"
-              className="ml-auto flex w-fit items-center justify-center rounded-l-xl bg-fern px-3 py-2 text-white shadow-md shadow-abyss/50 transition-all hover:bg-jungle active:bg-jungle lg:w-32"
-              onClick={createNewInputHandler}
-            >
-              <PlusIcon styles={{ icon: 'w-12 h-12 text-white' }} />
-            </button>
-          </div>
-          <ControlPanel>
-            <div className="flex w-full items-center justify-between md:w-5/6 lg:w-3/4">
-              <button
-                className="disabled:opacity-20"
-                onClick={prevStageHandler}
-                disabled={stage === 'ingredients'}
-              >
-                <ArrowLeftIcon styles={{ icon: 'w-10 h-10 text-fern' }} />
-              </button>
-              {stage !== 'instructions' ? (
-                <FlowProgress curStage={stage} />
-              ) : (
-                <button
-                  disabled={isAnyUpdateLoadingOrErrorOrTriggered}
-                  className="flex items-center space-x-2 rounded-lg bg-fern px-5 py-1 font-mono text-lg text-white disabled:bg-smoke"
-                  onClick={() => setIsPublishModalOpen(true)}
-                >
-                  <span>Publish</span>
-                  <CheckIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-                </button>
-              )}
-              <button
-                className="disabled:opacity-20"
-                onClick={nextStageHandler}
-                disabled={stage === 'instructions'}
-              >
-                <ArrowRightIcon styles={{ icon: 'w-10 h-10 text-fern' }} />
-              </button>
-            </div>
-          </ControlPanel>
-        </div>
-      </div>
-      {isEditingName ? (
-        <UpdateRecipeNameModal
-          recipeId={recipeId}
-          curRecipeName={recipeName}
-          onCloseModal={() => setIsEditingName(false)}
-        />
-      ) : null}
-      {isPublishModalOpen ? (
-        <PublishModal
-          recipeId={recipeId}
-          onClose={() => setIsPublishModalOpen(false)}
-        />
-      ) : null}
-    </>
-  );
-}
-
-interface ControllerConfig<T> {
-  inputs?: T[];
-  inUseInputs?: T[];
-  dispatchInputs?: Dispatch<SetStateAction<T[]>>;
-  updateInputsMutation?: UseMutateFunction<
-    BasePayload,
-    unknown,
-    UpdateInputMutationBody<T[]>,
-    unknown
-  >;
-  updateStatus: string;
-  schema?: BaseZodSchema;
-  stageName: string;
-  stageLabel: string;
-}
-
-export const stages: Stage[] = ['ingredients', 'equipment', 'instructions'];
-interface CreateRecipeFlowProps {
+import CreateController, { CreateControllerConfig } from './CreateController';
+interface CreateRecipeProps {
   recipe: RecipeWithFull;
   allUnits: IngredientUnit[];
   stage: Stage;
 }
 
-function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
+function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeProps) {
   const { ingredients, equipment, instructions } =
     useCreateRecipeStateAndControls(recipe, allUnits);
 
@@ -293,7 +44,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     stage,
   };
 
-  const firstControllerConfig: ControllerConfig<FlowIngredient> = {
+  const firstControllerConfig: CreateControllerConfig<FlowIngredient> = {
     stageName: 'ingredients',
     stageLabel: 'Ingredients',
     inputs: ingredients.state,
@@ -302,9 +53,10 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     schema: ingredientSchema(allUnits.map((u) => u.id)),
     updateInputsMutation: ingredients.update,
     updateStatus: ingredients.updateStatus,
+    cancelTriggeredUpdate: ingredients.cancelTriggeredUpdate,
   };
 
-  const secondControllerConfig: ControllerConfig<FlowEquipment> = {
+  const secondControllerConfig: CreateControllerConfig<FlowEquipment> = {
     stageName: 'equipment',
     stageLabel: 'Equipment',
     inputs: equipment.state,
@@ -313,9 +65,10 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     schema: equipmentSchema,
     updateInputsMutation: equipment.update,
     updateStatus: equipment.updateStatus,
+    cancelTriggeredUpdate: equipment.cancelTriggeredUpdate,
   };
 
-  const thirdControllerConfig: ControllerConfig<Instruction> = {
+  const thirdControllerConfig: CreateControllerConfig<Instruction> = {
     stageName: 'instructions',
     stageLabel: 'Instructions',
     inputs: instructions.state,
@@ -324,6 +77,7 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     schema: instructionSchema,
     updateInputsMutation: instructions.update,
     updateStatus: instructions.updateStatus,
+    cancelTriggeredUpdate: instructions.cancelTriggeredUpdate,
   };
 
   const instructionString = useMemo<string>(
@@ -331,12 +85,10 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
     [instructions],
   );
 
-  console.log('INSTRUCTIONS', instructions);
-
   const stageComponents = new Map<Stage, ReactNode>([
     [
       'ingredients',
-      <FlowController
+      <CreateController
         key={recipe.id + firstControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={firstControllerConfig}
@@ -348,11 +100,11 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
           allUnits={allUnits}
           triggerDebouncedUpdate={ingredients.triggerUpdate}
         />
-      </FlowController>,
+      </CreateController>,
     ],
     [
       'equipment',
-      <FlowController
+      <CreateController
         key={recipe.id + secondControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={secondControllerConfig}
@@ -363,11 +115,11 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
           recipeId={recipe.id}
           triggerDebouncedUpdate={equipment.triggerUpdate}
         />
-      </FlowController>,
+      </CreateController>,
     ],
     [
       'instructions',
-      <FlowController
+      <CreateController
         key={recipe.id + thirdControllerConfig.stageName}
         {...sharedControllerConfig}
         controllerConfig={thirdControllerConfig}
@@ -388,59 +140,14 @@ function CreateRecipeFlow({ recipe, allUnits, stage }: CreateRecipeFlowProps) {
           allUnits={allUnits}
           recipeId={recipe.id}
           instructions={instructions.inUse}
-          ingredients={ingredients.state}
-          equipment={equipment.state}
           raiseInstructions={instructions.set}
           triggerDebouncedUpdate={instructions.triggerUpdate}
         />
-      </FlowController>,
+      </CreateController>,
     ],
   ]);
 
   return <>{stageComponents.get(stage)}</>;
-}
-
-function ControlPanel({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex w-full items-center justify-center border-t bg-white p-3">
-      {children}
-    </div>
-  );
-}
-
-function FlowProgress({ curStage }: { curStage: Stage }) {
-  const dots = stages.map((i) => {
-    return (
-      <div
-        key={i}
-        className={pickStyles('h-3 w-3 rounded-full border-2 border-fern', [
-          i === curStage,
-          'bg-fern',
-        ])}
-      />
-    );
-  });
-  return <div className="flex items-center space-x-1">{dots}</div>;
-}
-
-function StageError({
-  stageName,
-  raiseIsError,
-}: {
-  stageName?: string;
-  raiseIsError: Dispatch<SetStateAction<boolean>>;
-}) {
-  return (
-    <div className="flex flex-col rounded-lg bg-red-400 p-1 text-white">
-      <button className="ml-auto" onClick={() => raiseIsError(false)}>
-        <XIcon styles={{ icon: 'w-5 h-5' }} />
-      </button>
-      <p className="px-3 pb-3">
-        {`One or more of your ${stageName} has missing or invalid info. Recheck each field for errors.
-    `}
-      </p>
-    </div>
-  );
 }
 
 function PanelCard({
@@ -537,70 +244,6 @@ function CurrentEquipmentPanel({
         );
       })}
     </PanelCard>
-  );
-}
-
-interface PublishModalProps {
-  onClose: () => void;
-  recipeId: string;
-}
-
-function PublishModal({ onClose, recipeId }: PublishModalProps) {
-  const { mutate, status } = usePublishRecipe();
-  const router = useRouter();
-  function handlePublishRecipe() {
-    mutate(
-      { recipeId },
-      {
-        onSuccess: () => {
-          const viewUrl = `/view/[recipeId]`;
-          router.push({
-            pathname: viewUrl,
-            query: { recipeId, new: 'true' },
-          });
-        },
-      },
-    );
-  }
-  return (
-    <ModalBackdrop modalRoot="modal-root" onClose={onClose}>
-      <div
-        className="fixed left-0 right-0 bottom-0 rounded-t-2xl bg-white p-5"
-        onClick={stopRootDivPropagation}
-      >
-        <div className="mb-10 flex flex-col space-y-4 text-xl">
-          <h1 className="text-center font-mono text-3xl">Wait!</h1>
-          <p className="text-center">
-            {"Have you taken advantage of Standard Recipe's best features?"}
-          </p>
-        </div>
-        <div className="flex flex-col space-y-3">
-          <button
-            className="rounded-lg bg-smoke py-5 px-2 text-2xl"
-            onClick={onClose}
-          >
-            <div className="text-center">
-              <span>No, view our </span>
-              <span className="">
-                tips{' '}
-                <LightBulbIcon
-                  styles={{
-                    icon: 'w-8 h-8 bg-fern text-white inline p-1 rounded',
-                  }}
-                />
-              </span>
-              <span> before publishing</span>
-            </div>
-          </button>
-          <button
-            className="rounded-lg bg-fern py-5 px-2 text-2xl text-white"
-            onClick={handlePublishRecipe}
-          >
-            {'Yes, publish my recipe!'}
-          </button>
-        </div>
-      </div>
-    </ModalBackdrop>
   );
 }
 

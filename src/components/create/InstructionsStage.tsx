@@ -1,36 +1,32 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import StageFrame from './StageFrame';
 import { IngredientUnit, Instruction } from '@prisma/client';
-import {
-  findRecipeInputIndexById,
-  insertIntoPrevArray,
-} from 'lib/util-client';
+import { findRecipeInputIndexById, insertIntoPrevArray } from 'lib/util-client';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import OptionalInput from 'components/common/OptionalInput';
-import { FlowEquipment, FlowIngredient } from 'types/models';
 import { dragEndHandler, removeDeletedInputFromStateHandler } from './utils';
 import { useDeleteInstruction } from 'lib/mutations';
 import CharCount from 'components/common/CharCount';
 import FlowInputBlock from './FlowInputBlock';
 import { OptionDialog } from './OptionDialog';
-interface InstructionsStageProps {
-  recipeId: string;
+import { StageSharedProps } from './IngredientsStage';
+interface InstructionsStageProps extends StageSharedProps {
   instructions: Instruction[];
-  ingredients: FlowIngredient[];
-  equipment: FlowEquipment[];
   raiseInstructions: Dispatch<SetStateAction<Instruction[]>>;
   allUnits: IngredientUnit[];
-  triggerDebouncedUpdate: () => void;
 }
 
 function InstructionsStage({
   recipeId,
   instructions,
-  ingredients,
-  equipment,
   raiseInstructions,
   triggerDebouncedUpdate,
+  isDisabled,
 }: InstructionsStageProps) {
+  function triggerUpdateIfProvided() {
+    if (!triggerDebouncedUpdate) return;
+    triggerDebouncedUpdate();
+  }
   const { mutate: deleteInstruction, status: deleteStatus } =
     useDeleteInstruction();
 
@@ -60,7 +56,7 @@ function InstructionsStage({
       );
       return newInstructionArray as Instruction[];
     });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   const inputBlocks = instructions.map((i, idx) =>
@@ -69,12 +65,14 @@ function InstructionsStage({
         key={i.id}
         id={i.id}
         order={idx + 1}
+        isDisabled={isDisabled}
         mainInputComponent={(isMainInputFocused, setIsMainInputFocused) => (
           <div className="flex w-full flex-col gap-1">
             <textarea
+              disabled={isDisabled}
               name="description"
               value={i.description}
-              className="inp-primary w-full resize-none p-2"
+              className="inp-primary w-full resize-none p-2 disabled:text-concrete"
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 updateInstructionHandler({
                   id: i.id,
@@ -113,7 +111,7 @@ function InstructionsStage({
       droppableId="instructions"
       onDragEnd={(result) => {
         dragEndHandler(result, raiseInstructions);
-        triggerDebouncedUpdate();
+        triggerUpdateIfProvided();
       }}
       stageInputComponents={inputBlocks}
     />

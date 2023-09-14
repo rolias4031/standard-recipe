@@ -1,26 +1,27 @@
 import OptionalInput from 'components/common/OptionalInput';
-import {
-  findRecipeInputIndexById,
-  insertIntoPrevArray,
-} from 'lib/util-client';
+import { findRecipeInputIndexById, insertIntoPrevArray } from 'lib/util-client';
 import React, { Dispatch, SetStateAction } from 'react';
 import { UpdateRecipeInputHandlerArgs } from 'types/types';
 import StageFrame from './StageFrame';
 import { useDeleteEquipment } from 'lib/mutations';
-import { addSubHandler, dragEndHandler, removeDeletedInputFromStateHandler, removeSubHandler } from './utils';
+import {
+  addSubHandler,
+  dragEndHandler,
+  removeDeletedInputFromStateHandler,
+  removeSubHandler,
+} from './utils';
 import { FlowEquipment } from 'types/models';
 import FlowInputBlock from './FlowInputBlock';
 import { OptionDialog } from './OptionDialog';
+import { StageSharedProps } from './IngredientsStage';
 
 function cleanEquipmentInput(value: string) {
   return value.toLowerCase();
 }
 
-interface EquipmentStageProps {
+interface EquipmentStageProps extends StageSharedProps {
   equipment: FlowEquipment[];
   raiseEquipment: Dispatch<SetStateAction<FlowEquipment[]>>;
-  recipeId: string;
-  triggerDebouncedUpdate: () => void;
 }
 
 function EquipmentStage({
@@ -28,13 +29,18 @@ function EquipmentStage({
   raiseEquipment,
   recipeId,
   triggerDebouncedUpdate,
+  isDisabled,
 }: EquipmentStageProps) {
+  function triggerUpdateIfProvided() {
+    if (!triggerDebouncedUpdate) return;
+    triggerDebouncedUpdate();
+  }
   const { mutate: deleteEquipment, status: deleteStatus } =
     useDeleteEquipment();
 
   function deleteEquipmentHandler(id: string) {
     raiseEquipment((prev: FlowEquipment[]) => {
-      return removeDeletedInputFromStateHandler(prev, id)
+      return removeDeletedInputFromStateHandler(prev, id);
     });
     deleteEquipment({ id, recipeId, replace: true });
   }
@@ -58,24 +64,24 @@ function EquipmentStage({
       );
       return newIngredientsArray as FlowEquipment[];
     });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   function addEquipmentSubHandler(subValue: string, id: string) {
     addSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   function removeEquipmentSubHandler(subValue: string, id: string) {
     removeSubHandler({ subValue, id, raiseInput: raiseEquipment });
-    triggerDebouncedUpdate();
+    triggerUpdateIfProvided();
   }
 
   return (
     <StageFrame
       onDragEnd={(result) => {
         dragEndHandler(result, raiseEquipment);
-        triggerDebouncedUpdate();
+        triggerUpdateIfProvided();
       }}
       droppableId="equipment"
       stageInputComponents={equipment.map((e, index) =>
@@ -84,12 +90,14 @@ function EquipmentStage({
             key={e.id}
             id={e.id}
             order={index + 1}
+            isDisabled={isDisabled}
             mainInputComponent={() => (
               <input
+                disabled={isDisabled}
                 type="text"
                 name="name"
                 value={e.name}
-                className="inp-reg inp-primary w-full md:w-2/3"
+                className="inp-reg inp-primary w-full disabled:text-concrete md:w-2/3"
                 onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
                   updateEquipmentHandler({
                     id: e.id,

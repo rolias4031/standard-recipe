@@ -1,6 +1,4 @@
-import { getAuth } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
-import { ERRORS } from 'lib/server/constants';
 import { prisma } from 'lib/prismadb';
 import { apiHandler, prepareSubsForUpsert, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
@@ -12,6 +10,7 @@ import {
   UpdateInputMutationBody,
 } from 'types/types';
 import { equipmentSchema } from 'validation/schemas';
+import { assignInputOrderByIndex } from 'components/create/utils';
 
 async function handler(
   req: StandardRecipeApiRequest<UpdateInputMutationBody<FlowEquipment[]>>,
@@ -19,7 +18,27 @@ async function handler(
 ) {
   const { recipeId, inputs: allEquipment } = req.body;
 
-  for (const equipment of allEquipment) {
+  const reorderedEquipment = assignInputOrderByIndex(allEquipment);
+
+  const allEquipmentWithSubs = await prisma.equipment.findMany({
+    where: {
+      recipeId,
+      AND: {
+        inUse: {
+          equals: true,
+        },
+      },
+    },
+    include: {
+      substitutes: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  for (const equipment of reorderedEquipment) {
     const isValid = validateOneInput({
       schema: equipmentSchema,
       input: equipment,
@@ -27,18 +46,9 @@ async function handler(
     if (!isValid) continue;
 
     // get existing equipment substitutes
-    const equipmentWithSubs = await prisma.equipment.findUnique({
-      where: {
-        id: equipment.id,
-      },
-      include: {
-        substitutes: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
+    const equipmentWithSubs = allEquipmentWithSubs.find(
+      (e) => equipment.id === e.id,
+    );
 
     const { disconnectSubstitutes, connectOrCreateSubstitutes } =
       prepareSubsForUpsert(

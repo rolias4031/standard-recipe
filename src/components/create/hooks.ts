@@ -11,6 +11,7 @@ import {
 import {
   BasePayload,
   BaseZodSchema,
+  Stage,
   UpdateInputMutationBody,
 } from 'types/types';
 import {
@@ -19,6 +20,7 @@ import {
   filterInUseInputs,
   filterValidRecipeInputs,
   splitInputsByInUse,
+  stages,
 } from './utils';
 import {
   useUpdateEquipment,
@@ -38,6 +40,8 @@ import {
   RecipeWithFull,
 } from 'types/models';
 import { IngredientUnit, Instruction } from '@prisma/client';
+import { useRouter } from 'next/router';
+import { isStringType } from 'types/util';
 
 function sortInputByOrder<T extends { order: number }>(inputs: T[]): T[] {
   return inputs.sort((a, b) => a.order - b.order);
@@ -85,7 +89,7 @@ function initInstructions(instructions: Instruction[]): Instruction[] {
   return sortedAndOrdered;
 }
 
-export function useInitCreateRecipeState(recipe: RecipeWithFull) {
+export function useInitEditRecipeState(recipe: RecipeWithFull) {
   const [ingredients, setIngredients] = useState<FlowIngredient[]>(() =>
     initIngredients(recipe.ingredients),
   );
@@ -115,6 +119,26 @@ export function useInitCreateRecipeState(recipe: RecipeWithFull) {
   };
 }
 
+export function useUpdateRecipeMutations() {
+  const { mutate: updateIngredientsMutation, status: updateIngredientsStatus } =
+    useUpdateIngredients();
+  const { mutate: updateEquipmentMutation, status: updateEquipmentStatus } =
+    useUpdateEquipment();
+  const {
+    mutate: updateInstructionsMutation,
+    status: updateInstructionsStatus,
+  } = useUpdateInstructions();
+
+  return {
+    updateIngredientsMutation,
+    updateIngredientsStatus,
+    updateEquipmentMutation,
+    updateEquipmentStatus,
+    updateInstructionsMutation,
+    updateInstructionsStatus,
+  };
+}
+
 interface DebouncedMutationArgs<T> {
   recipeId: string;
   inputs: T[];
@@ -135,7 +159,11 @@ export function useDebouncedUpdateRecipeMutation<
   T extends { id: string; order: number },
 >(
   config: UseDebounceControllerArgs<T>,
-): { triggerDebouncedUpdate: () => void; isUpdateTriggered: boolean } {
+): {
+  triggerDebouncedUpdate: () => void;
+  isUpdateTriggered: boolean;
+  cancelTriggeredUpdate: () => void;
+} {
   const {
     recipeId,
     inputs,
@@ -158,11 +186,9 @@ export function useDebouncedUpdateRecipeMutation<
     debounce((args: DebouncedMutationArgs<T>) => {
       clearTriggeredUpdate();
       if (isZeroLength(args.inputs)) return;
-      console.log('debounced validation', args.inputs);
-      const inputsWithFreshOrder = assignInputOrderByIndex(args.inputs);
-      const validInputs = filterValidRecipeInputs(inputsWithFreshOrder, args.schema);
+      const validInputs = filterValidRecipeInputs(args.inputs, args.schema);
       if (isZeroLength(validInputs)) return;
-      console.log('debounced mutation', validInputs);
+      console.log('DEBOUNCED FIRED', validInputs);
       updateInputsMutation({
         recipeId: args.recipeId,
         inputs: validInputs,
@@ -184,7 +210,11 @@ export function useDebouncedUpdateRecipeMutation<
     };
   }, [inputs, debouncedUpdateValidInputs, isUpdateTriggered, recipeId, schema]);
 
-  return { triggerDebouncedUpdate, isUpdateTriggered };
+  return {
+    triggerDebouncedUpdate,
+    isUpdateTriggered,
+    cancelTriggeredUpdate: clearTriggeredUpdate,
+  };
 }
 
 interface CreateRecipeInputStateAndDispatch<T> {
@@ -219,6 +249,7 @@ export function useDebouncedUpdateRecipeMutations({
   const {
     triggerDebouncedUpdate: triggerDebouncedIngredientsUpdate,
     isUpdateTriggered: isIngredientsUpdateTriggered,
+    cancelTriggeredUpdate: cancelTriggeredIngredientsUpdate,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
     inputs: ingredients.inUse,
@@ -229,6 +260,7 @@ export function useDebouncedUpdateRecipeMutations({
   const {
     triggerDebouncedUpdate: triggerDebouncedEquipmentUpdate,
     isUpdateTriggered: isEquipmentUpdateTriggered,
+    cancelTriggeredUpdate: cancelTriggeredEquipmentUpdate,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
     inputs: equipment.inUse,
@@ -239,6 +271,7 @@ export function useDebouncedUpdateRecipeMutations({
   const {
     triggerDebouncedUpdate: triggerDebouncedInstructionsUpdate,
     isUpdateTriggered: isInstructionsUpdateTriggered,
+    cancelTriggeredUpdate: cancelTriggeredInstructionsUpdate,
   } = useDebouncedUpdateRecipeMutation({
     recipeId,
     inputs: instructions.inUse,
@@ -250,18 +283,21 @@ export function useDebouncedUpdateRecipeMutations({
     ingredientControls: {
       triggerUpdate: triggerDebouncedIngredientsUpdate,
       isUpdateTriggered: isIngredientsUpdateTriggered,
+      cancelTriggeredUpdate: cancelTriggeredIngredientsUpdate,
       update: updateIngredientsMutation,
       updateStatus: updateIngredientsStatus,
     },
     equipmentControls: {
       triggerUpdate: triggerDebouncedEquipmentUpdate,
       isUpdateTriggered: isEquipmentUpdateTriggered,
+      cancelTriggeredUpdate: cancelTriggeredEquipmentUpdate,
       update: updateEquipmentMutation,
       updateStatus: updateEquipmentStatus,
     },
     instructionControls: {
       triggerUpdate: triggerDebouncedInstructionsUpdate,
       isUpdateTriggered: isInstructionsUpdateTriggered,
+      cancelTriggeredUpdate: cancelTriggeredInstructionsUpdate,
       update: updateInstructionsMutation,
       updateStatus: updateInstructionsStatus,
     },
@@ -273,7 +309,7 @@ export function useCreateRecipeStateAndControls(
   allUnits: IngredientUnit[],
 ) {
   const { ingredients, equipment, instructions } =
-    useInitCreateRecipeState(recipe);
+    useInitEditRecipeState(recipe);
 
   const { ingredientControls, equipmentControls, instructionControls } =
     useDebouncedUpdateRecipeMutations({
@@ -298,4 +334,19 @@ export function useCreateRecipeStateAndControls(
       ...instructionControls,
     },
   };
+}
+
+export function useExtractCreatePageQueryParams() {
+  const router = useRouter();
+  const { recipeId, stage = 'ingredients' } = router.query;
+  console.log('slug', router.query);
+  if (
+    isStringType(recipeId) &&
+    isStringType(stage) &&
+    stages.includes(stage as Stage)
+  ) {
+    const castedStage = stage as Stage;
+    return { recipeId, stage: castedStage };
+  }
+  return { recipeId: undefined, stage: undefined };
 }

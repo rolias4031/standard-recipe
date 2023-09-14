@@ -2,8 +2,9 @@ import { DropResult } from '@hello-pangea/dnd';
 import { findRecipeInputIndexById, insertIntoPrevArray } from 'lib/util-client';
 import { Dispatch, SetStateAction } from 'react';
 import { BaseZodSchema, Stage } from 'types/types';
-import { stages } from './CreateRecipeFlow';
 import { NextRouter } from 'next/router';
+
+export const stages: Stage[] = ['ingredients', 'equipment', 'instructions'];
 
 export function checkStatusesForLoadingOrError(statuses: string[]) {
   const isLoading = statuses.some((status) => status === 'loading');
@@ -11,7 +12,7 @@ export function checkStatusesForLoadingOrError(statuses: string[]) {
   return isLoading || isError;
 }
 
-export function navigateToCreateStage(
+export function navigateToStage(
   router: NextRouter,
   {
     recipeId,
@@ -21,7 +22,6 @@ export function navigateToCreateStage(
 ) {
   return router.push(
     {
-      pathname: '/create/[recipeId]/',
       query: { recipeId, stage },
     },
     undefined,

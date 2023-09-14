@@ -12,12 +12,12 @@ interface NewRecipeInputs {
 }
 
 interface NewRecipeDialogProps {
-  onCloseModal: () => void;
+  onCloseDialog: () => void;
   existingRecipeNames: string[];
 }
 
 function NewRecipeDialog({
-  onCloseModal,
+  onCloseDialog,
   existingRecipeNames,
 }: NewRecipeDialogProps) {
   const schema = recipeNameSchema(existingRecipeNames);
@@ -63,7 +63,7 @@ function NewRecipeDialog({
   }
 
   return (
-    <ModalBackdrop modalRoot="modal-root" onClose={onCloseModal}>
+    <ModalBackdrop modalRoot="modal-root" onClose={onCloseDialog}>
       <div
         className="fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white px-5 py-10 md:px-10"
         onClick={stopRootDivPropagation}

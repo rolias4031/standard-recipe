@@ -1,4 +1,5 @@
 import { Instruction, Prisma } from '@prisma/client';
+import { assignInputOrderByIndex } from 'components/create/utils';
 import { prisma } from 'lib/prismadb';
 import { apiHandler, validateOneInput } from 'lib/util';
 import { NextApiResponse } from 'next';
@@ -16,14 +17,14 @@ async function handler(
 ) {
   const { recipeId, inputs: instructions } = req.body;
 
-  console.log('instructions', instructions)
+  const reorderedInstructions = assignInputOrderByIndex(instructions);
 
-  for (const instruction of instructions) {
+  for (const instruction of reorderedInstructions) {
     const isValid = validateOneInput({
       schema: instructionSchema,
       input: instruction,
     });
-    console.log(isValid, instruction)
+    console.log(isValid, instruction);
 
     if (!isValid) continue;
 

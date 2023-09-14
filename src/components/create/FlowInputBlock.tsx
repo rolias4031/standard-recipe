@@ -1,6 +1,9 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
-import { useDynamicDialog } from 'components/common/dialog/hooks';
+import {
+  useDynamicDialog,
+  useFixedDialog,
+} from 'components/common/dialog/hooks';
 import { pickStyles } from 'lib/util-client';
 import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
 
@@ -13,6 +16,7 @@ interface FlowInputBlockProps {
   ) => ReactNode;
   secondaryInputComponent?: ReactNode;
   optionsComponent: ReactNode;
+  isDisabled?: boolean;
 }
 
 function FlowInputBlock({
@@ -21,19 +25,21 @@ function FlowInputBlock({
   mainInputComponent,
   secondaryInputComponent,
   optionsComponent,
+  isDisabled,
 }: FlowInputBlockProps) {
-  const {
-    anchorRef,
-    isDialogOpen: isOptionDialogOpen,
-    dialogPosition: OptionDialogPosition,
-    handleToggleDialog,
-  } = useDynamicDialog<HTMLDivElement>();
+  const { isDialogOpen: isOptionDialogOpen, handleToggleDialog } =
+    useFixedDialog();
 
   const [isMainInputFocused, setIsMainInputFocused] = useState(false);
 
   return (
     <>
-      <Draggable key={id} draggableId={id} index={order - 1}>
+      <Draggable
+        key={id}
+        draggableId={id}
+        index={order - 1}
+        isDragDisabled={isDisabled}
+      >
         {(provided) => (
           <div
             ref={provided.innerRef}
@@ -46,13 +52,17 @@ function FlowInputBlock({
                 'flex items-center rounded px-2 font-mono text-white',
                 [isOptionDialogOpen, 'bg-fern', 'bg-abyss'],
               )}
-              onClick={() => handleToggleDialog('open')}
-              ref={anchorRef}
+              onClick={() => {
+                if (isDisabled) return;
+                return handleToggleDialog(true)();
+              }}
             >
               <span className="">{order}</span>
             </div>
             <div className="flex basis-full flex-col gap-2 md:flex-row">
-              <div className="flex-grow">{mainInputComponent(isMainInputFocused, setIsMainInputFocused)}</div>
+              <div className="flex-grow">
+                {mainInputComponent(isMainInputFocused, setIsMainInputFocused)}
+              </div>
               {secondaryInputComponent ? (
                 <div className="flex gap-2 md:basis-1/2">
                   {secondaryInputComponent}
@@ -66,7 +76,7 @@ function FlowInputBlock({
         <ModalBackdrop
           modalRoot="modal-root"
           opacity="50"
-          onClose={() => handleToggleDialog('close')}
+          onClose={handleToggleDialog(false)}
         >
           <div
             className="fixed left-0 right-0 bottom-0"

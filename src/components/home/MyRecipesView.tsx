@@ -20,7 +20,7 @@ interface MyRecipesViewProps {
 
 export function MyRecipesView({ recipes }: MyRecipesViewProps) {
   const [isFilterOptionsOpen, setIsFilterOptionsOpen] = useState(false);
-  const [isNewRecipeDialogOpen, setIsNewRecipeDialogOpen] = useState(false);
+  const { isDialogOpen: isNewRecipeDialogOpen, handleToggleDialog } = useFixedDialog()
 
   const existingRecipeNames = useMemo(
     () => recipes.map((r) => r.name),
@@ -109,7 +109,7 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
         <div className="fixed bottom-5 right-0">
           <button
             className="flex items-center rounded-l-xl bg-fern px-4 py-3 opacity-90 shadow-md shadow-neutral-600 hover:opacity-100 active:opacity-100"
-            onClick={() => setIsNewRecipeDialogOpen(true)}
+            onClick={handleToggleDialog(true)}
           >
             <PlusIcon
               styles={{ icon: 'w-10 h-10 text-white md:w-12 md:h-12' }}
@@ -119,7 +119,7 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
       </div>
       {isNewRecipeDialogOpen ? (
         <NewRecipeDialog
-          onCloseModal={() => setIsNewRecipeDialogOpen(false)}
+          onCloseDialog={handleToggleDialog(false)}
           existingRecipeNames={existingRecipeNames}
         />
       ) : null}
@@ -163,13 +163,10 @@ function RecipeBlock({ recipe }: RecipeLinkProps) {
         </button>
       </div>
       {isDialogOpen ? (
-        <ModalBackdrop
-          opacity="50"
-          modalRoot="modal-root"
-          onClose={handleToggleDialog(false)}
-        >
-          <RecipeOptionDialog recipe={recipe} />
-        </ModalBackdrop>
+        <RecipeOptionDialog
+          onCloseDialog={handleToggleDialog(false)}
+          recipe={recipe}
+        />
       ) : null}
     </>
   );

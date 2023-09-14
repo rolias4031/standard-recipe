@@ -2,17 +2,19 @@ import { stopRootDivPropagation } from 'lib/util-client';
 import { useRouter } from 'next/router';
 import React from 'react';
 
-interface FlowActionsMenuProps {
-  onEnterPreviewMode: () => void;
+interface CreateActionsMenuProps {
+  onEnterPreviewMode?: () => void;
   onOpenEditName: () => void;
   areButtonsDisabled: boolean;
+  recipeId?: string;
 }
 
-function FlowActionsMenu({
+function CreateActionsMenu({
   onEnterPreviewMode,
   onOpenEditName,
   areButtonsDisabled,
-}: FlowActionsMenuProps) {
+  recipeId,
+}: CreateActionsMenuProps) {
   const router = useRouter();
   return (
     <div
@@ -27,13 +29,25 @@ function FlowActionsMenu({
         >
           Edit Name
         </button>
-        <button
-          className="hover:text-fern active:text-fern disabled:text-concrete"
-          onClick={onEnterPreviewMode}
-          disabled={areButtonsDisabled}
-        >
-          Preview
-        </button>
+        {onEnterPreviewMode ? (
+          <button
+            className="hover:text-fern active:text-fern disabled:text-concrete"
+            onClick={onEnterPreviewMode}
+            disabled={areButtonsDisabled}
+          >
+            Preview
+          </button>
+        ) : (
+          <button
+            className="hover:text-fern active:text-fern disabled:text-concrete"
+            onClick={() =>
+              router.push({ pathname: '/view/[recipeId]', query: { recipeId } })
+            }
+            disabled={areButtonsDisabled}
+          >
+            View
+          </button>
+        )}
         <button
           disabled={areButtonsDisabled}
           className="hover:text-fern active:text-fern disabled:text-concrete"
@@ -47,11 +61,13 @@ function FlowActionsMenu({
           Home
         </button>
         {areButtonsDisabled ? (
-          <span className="font-mono text-concrete text-sm">saving, just a sec...</span>
+          <span className="font-mono text-sm text-concrete">
+            saving, just a sec...
+          </span>
         ) : null}
       </div>
     </div>
   );
 }
 
-export default FlowActionsMenu;
+export default CreateActionsMenu;
