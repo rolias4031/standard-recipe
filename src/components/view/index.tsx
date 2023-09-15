@@ -34,9 +34,11 @@ export function ItemBlock({
           !isExpanded || !canExpand,
           'border-b pb-1',
         ])}
-        onClick={() => setIsExpanded((prev) => !prev)}
       >
-        <div className="flex items-center space-x-2">
+        <div
+          className="flex items-center space-x-2"
+          onClick={() => setIsExpanded((prev) => !prev)}
+        >
           <span className={pickStyles([isExpanded && canExpand, 'text-fern'])}>
             {name}
           </span>
@@ -65,13 +67,17 @@ interface ItemBlockDetailProps {
   optional: boolean;
 }
 
-export function ItemBlockDetail({ notes, substitutes, optional }: ItemBlockDetailProps) {
+export function ItemBlockDetail({
+  notes,
+  substitutes,
+  optional,
+}: ItemBlockDetailProps) {
   const subs = substitutes.map((s) => (
     <SubstitutePill key={s} sub={s} pillStyle="abyss" />
   ));
   return (
     <div className="flex flex-col space-y-2 rounded-lg bg-smoke p-3 text-sm">
-      {optional ? <span className='italic'>optional</span> : null}
+      {optional ? <span className="italic">optional</span> : null}
       {notes ? <div>{notes}</div> : null}
       {subs.length > 0 ? (
         <div className="flex flex-col space-y-1">

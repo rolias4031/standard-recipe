@@ -5,7 +5,10 @@ import SmartInstruction, {
 import { genId } from 'lib/util-client';
 import React, { ReactNode, useMemo } from 'react';
 import { EquipmentWithAll, IngredientWithAll } from 'types/models';
-import { useDissectUnitStructures } from 'lib/parsing/utils';
+import {
+  getAppropriateUnitsByProperty,
+  useDissectUnitStructures,
+} from 'lib/parsing/utils';
 import ViewSectionContainer from './ViewSectionContainer';
 import TextWithDialog from 'components/common/dialog/TextWithDialog';
 import IngredientDialog from 'components/common/dialog/IngredientDialog';
@@ -89,7 +92,12 @@ function InstructionsView({
             disabled={!hasIngredientDialogContent(ingredient)}
             key={ingredient.id + genId()}
             text={ingredient.text}
-            dialogContent={<IngredientDialog ingredient={ingredient} />}
+            dialogContent={(handleCloseDialog) => (
+              <IngredientDialog
+                ingredient={ingredient}
+                onCloseDialog={handleCloseDialog}
+              />
+            )}
           />
         )}
         equipmentTooltipComponent={(equipment) => (
@@ -97,7 +105,12 @@ function InstructionsView({
             disabled={!hasEquipmentDialogContent(equipment)}
             key={equipment.id + genId()}
             text={equipment.text}
-            dialogContent={<EquipmentDialog equipment={equipment} />}
+            dialogContent={(handleCloseDialog) => (
+              <EquipmentDialog
+                equipment={equipment}
+                onCloseDialog={handleCloseDialog}
+              />
+            )}
           />
         )}
         measurementPopoverComponent={(measurement) => (
@@ -106,19 +119,16 @@ function InstructionsView({
             key={measurement.quantity + measurement.id + genId()}
             text={measurement.text}
             styles={{ text: 'text-indigo-500' }}
-            dialogContent={
+            dialogContent={(handleCloseDialog) => (
               <MeasurementDialog
                 measurement={measurement}
-                propertyUnits={
-                  measurement.property === 'mass' ||
-                  measurement.property === 'weight'
-                    ? unitsByProperty['mass']?.concat(
-                        unitsByProperty['weight'] ?? [],
-                      )
-                    : unitsByProperty[measurement.property]
-                }
+                propertyUnits={getAppropriateUnitsByProperty(
+                  measurement.property,
+                  unitsByProperty,
+                )}
+                onCloseDialog={handleCloseDialog}
               />
-            }
+            )}
           />
         )}
         temperatureTooltipComponent={(temp) => (
@@ -126,12 +136,12 @@ function InstructionsView({
             key={temp.temperature + temp.unit + genId()}
             text={temp.text}
             styles={{ text: 'text-indigo-500' }}
-            dialogContent={
+            dialogContent={(handleCloseDialog) => (
               <TemperatureDialog
-                temperature={temp.temperature}
-                unit={temp.unit}
+                temperature={temp}
+                onCloseDialog={handleCloseDialog}
               />
-            }
+            )}
           />
         )}
       />

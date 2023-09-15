@@ -3,6 +3,10 @@ import { ReactNode, useMemo } from 'react';
 import SubstitutePill from '../SubstitutePill';
 import { isZeroLength } from 'lib/util-client';
 
+export interface DialogProps {
+  onCloseDialog?: () => void;
+}
+
 type DialogCardColor = 'fern' | 'indigo';
 
 const dialogCardColorConfig = new Map<DialogCardColor, string>([
@@ -19,10 +23,24 @@ export function DialogCard({ children, color }: DialogCardProps) {
   const cardColor = dialogCardColorConfig.get(color ?? 'fern');
   return (
     <div
-      className={`rounded-xl p-4 border border-white ${cardColor} text-white shadow-lg shadow-neutral-500`}
+      className={`rounded-xl border border-white p-4 ${cardColor} flex flex-col space-y-3 text-white shadow-lg shadow-neutral-500`}
       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
     >
       {children}
+    </div>
+  );
+}
+
+export function DialogHeader({ children }: { children: ReactNode }) {
+  return <div className="text-center font-mono text-xl">{children}</div>;
+}
+
+export function CloseDialog({ onCloseDialog }: { onCloseDialog: () => void }) {
+  return (
+    <div className="flex w-full justify-center">
+      <button className="w-full font-mono text-lg" onClick={onCloseDialog}>
+        close
+      </button>
     </div>
   );
 }
@@ -39,7 +57,9 @@ export function DialogUnit({
     content = (
       <div className="flex space-x-1 font-mono">
         <span>{`${quantity} ${ingredientUnit.unit}`}</span>
-        <span>{`(${ingredientUnit.abbreviation})`}</span>
+        {ingredientUnit.abbreviation ? (
+          <span>{`(${ingredientUnit.abbreviation})`}</span>
+        ) : null}
       </div>
     );
   }
@@ -86,7 +106,9 @@ interface DialogConversionProps {
 }
 
 export function DialogConversionList({ children }: { children: ReactNode }) {
-  return <ul className="divide-y divide-dashed divide-white">{children}</ul>;
+  return (
+    <ul className="divide-y divide-dashed divide-neutral-300">{children}</ul>
+  );
 }
 
 export function DialogConversionItem({

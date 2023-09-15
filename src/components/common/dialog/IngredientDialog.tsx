@@ -1,21 +1,28 @@
 import React from 'react';
 import { IngredientWithAll } from 'types/models';
 import {
+  CloseDialog,
   DialogCard,
+  DialogHeader,
   DialogNotes,
   DialogOptional,
+  DialogProps,
   DialogSubs,
   DialogUnit,
 } from '.';
 
-interface IngredientDialogProps {
+interface IngredientDialogProps extends DialogProps {
   ingredient: IngredientWithAll;
 }
 
-function IngredientDialog({ ingredient }: IngredientDialogProps) {
+function IngredientDialog({
+  ingredient,
+  onCloseDialog,
+}: IngredientDialogProps) {
   const substituteNames = ingredient.substitutes.map((s) => s.name);
   return (
     <DialogCard>
+      <DialogHeader>{ingredient.name?.name}</DialogHeader>
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between">
           <DialogUnit
@@ -27,6 +34,7 @@ function IngredientDialog({ ingredient }: IngredientDialogProps) {
         <DialogNotes notes={ingredient.notes} />
         <DialogSubs substitutes={substituteNames} />
       </div>
+      {onCloseDialog ? <CloseDialog onCloseDialog={onCloseDialog} /> : null}
     </DialogCard>
   );
 }

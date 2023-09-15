@@ -5,20 +5,22 @@ export function useDynamicDialog<T extends HTMLElement>() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogPosition, setDialogPosition] = useState<'top' | 'bottom'>('top');
 
-  const handleToggleDialog = (command: 'open' | 'close') => {
-    const textElem = anchorRef.current;
-    if (textElem && command === 'open') {
-      const rect = textElem.getBoundingClientRect();
-      if (rect.top > window.innerHeight / 2) {
-        setDialogPosition('top');
-      } else {
-        setDialogPosition('bottom');
+  const handleToggleDialog = (isOpen: boolean) => {
+    return () => {
+      const textElem = anchorRef.current;
+      if (textElem && isOpen) {
+        const rect = textElem.getBoundingClientRect();
+        if (rect.top > window.innerHeight / 2) {
+          setDialogPosition('top');
+        } else {
+          setDialogPosition('bottom');
+        }
+        setIsDialogOpen(true);
       }
-      setIsDialogOpen(true);
-    }
-    if (textElem && command === 'close') {
-      setIsDialogOpen(false);
-    }
+      if (textElem && !isOpen) {
+        setIsDialogOpen(false);
+      }
+    };
   };
 
   return { handleToggleDialog, dialogPosition, anchorRef, isDialogOpen };

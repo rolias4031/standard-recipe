@@ -1,4 +1,4 @@
-import { IngredientUnit } from '@prisma/client';
+import { IngredientUnit, UnitProperty } from '@prisma/client';
 import { useMemo } from 'react';
 import {
   EquipmentWithAll,
@@ -94,9 +94,9 @@ export const buildObject = {
     segment: string,
     itemMap: Map<string, IngredientWithAll | EquipmentWithAll>,
   ) => {
-    const itemText = removeMarkdown(segment)
+    const itemText = removeMarkdown(segment);
     const obj = itemMap.get(itemText.toLowerCase());
-    return obj ? {...obj, text: itemText} : segment;
+    return obj ? { ...obj, text: itemText } : segment;
   },
   measurements: (
     segment: string,
@@ -149,6 +149,16 @@ type SmartInstructionSegment = Array<
   | InstructionMeasurement
   | InstructionTemperature
 >;
+
+export function getAppropriateUnitsByProperty(
+  property: UnitProperty | undefined,
+  unitsByProperty: Partial<Record<UnitProperty, IngredientUnit[] | undefined>>,
+) {
+  if (!property) return
+  return property === 'mass' || property === 'weight'
+    ? unitsByProperty['mass']?.concat(unitsByProperty['weight'] ?? [])
+    : unitsByProperty[property];
+}
 
 export function useSortUnitsByProperty(allUnits: IngredientUnit[]) {
   return useMemo(() => {

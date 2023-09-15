@@ -1,7 +1,6 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import {
-  useDynamicDialog,
   useFixedDialog,
 } from 'components/common/dialog/hooks';
 import { pickStyles } from 'lib/util-client';

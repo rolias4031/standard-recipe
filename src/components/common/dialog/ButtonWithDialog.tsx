@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react';
-import { useDynamicDialog, useFixedDialog } from './hooks';
+import { useFixedDialog } from './hooks';
 import { ModalBackdrop } from '../ModalBackdrop';
 import { pickStyles } from 'lib/util-client';
 
 interface ButtonWithDialogProps {
-  dialogComponent: (
+  dialogComponent?: (
     handleToggleDialog: (open: boolean) => () => void,
   ) => ReactNode;
   buttonContent: ReactNode;
@@ -38,7 +38,7 @@ function ButtonWithDialog({
       >
         {buttonContent}
       </button>
-      {isDialogOpen ? (
+      {isDialogOpen && dialogComponent ? (
         <ModalBackdrop
           modalRoot="modal-root"
           opacity="50"

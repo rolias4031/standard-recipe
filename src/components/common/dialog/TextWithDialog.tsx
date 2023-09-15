@@ -1,54 +1,49 @@
 import React, { ReactNode, useRef, useState } from 'react';
 import { ModalBackdrop } from '../ModalBackdrop';
+import { useDynamicDialog } from './hooks';
 
 const dialogPositionConfig = {
-  'top': 'top-3',
-  'bottom': 'bottom-3'
-}
+  top: 'top-3 md:top-10',
+  bottom: 'bottom-3 md:bottom-10',
+};
 
 interface TextWithDialogProps {
   text: string;
-  dialogContent: ReactNode;
+  dialogContent: (onCloseDialog: () => void) => ReactNode;
   styles?: {
     text: string;
   };
   disabled?: boolean;
-
 }
 
-function TextWithDialog({ text, dialogContent, styles, disabled }: TextWithDialogProps) {
-  const textRef = useRef<HTMLSpanElement>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogPosition, setDialogPosition] = useState<'top' | 'bottom'>('top');
+function TextWithDialog({
+  text,
+  dialogContent,
+  styles,
+  disabled,
+}: TextWithDialogProps) {
+  const { isDialogOpen, handleToggleDialog, dialogPosition, anchorRef } =
+    useDynamicDialog<HTMLSpanElement>();
 
-  const dialogPositionStyle = dialogPositionConfig[dialogPosition]
-
-  const handleOpenDialog = () => {
-    const textElem = textRef.current;
-    if (textElem) {
-      const rect = textElem.getBoundingClientRect();
-      if (rect.top > window.innerHeight / 2) {
-        setDialogPosition('top');
-      } else {
-        setDialogPosition('bottom');
-      }
-    }
-    setIsDialogOpen(true);
-  };
+  const dialogPositionStyle = dialogPositionConfig[dialogPosition];
 
   return (
     <>
-      <span className={disabled ? undefined : styles?.text} onClick={handleOpenDialog} ref={textRef}>
+      <span
+        className={disabled ? undefined : styles?.text}
+        onClick={handleToggleDialog(true)}
+        ref={anchorRef}
+      >
         {text}
       </span>
       {isDialogOpen && !disabled ? (
         <ModalBackdrop
           modalRoot="modal-root"
           opacity="0"
-          onClose={() => setIsDialogOpen(false)}
+          onClose={handleToggleDialog(false)}
         >
-          <div className={`fixed left-3 right-3 ${dialogPositionStyle}`}>
-            {dialogContent}
+          <div className={`fixed left-3 right-3 md:left-1/4 md:right-1/4 ${dialogPositionStyle}`}>
+            {dialogContent(handleToggleDialog(false))}
           </div>
         </ModalBackdrop>
       ) : null}

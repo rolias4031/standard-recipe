@@ -3,13 +3,20 @@ import { IngredientUnit } from '@prisma/client';
 import { sortBy } from 'lodash';
 import React from 'react';
 import { InstructionMeasurement } from 'types/models';
-import { DialogCard, DialogConversionItem, DialogConversionList } from '.';
+import {
+  CloseDialog,
+  DialogCard,
+  DialogConversionItem,
+  DialogConversionList,
+  DialogHeader,
+  DialogProps,
+} from '.';
+import XIcon from '../icons/XIcon';
 
 export function formatConversion(num: number): string {
   console.log(num);
   return num % 1 !== 0 ? num.toFixed(2) : num.toLocaleString('en-US');
 }
-
 interface ConvertedMeasurement {
   quantity: string;
   unit: string;
@@ -17,7 +24,7 @@ interface ConvertedMeasurement {
 }
 
 function useConvertMeasurement(
-  measurement: InstructionMeasurement,
+  measurement: Omit<InstructionMeasurement, 'text'>,
   propertyUnits: IngredientUnit[] | undefined,
 ): ConvertedMeasurement[] {
   if (!propertyUnits || measurement.property === 'other') return [];
@@ -38,6 +45,7 @@ function useConvertMeasurement(
       return;
     }
   });
+
   const filteredAndSortedConversions = sortBy(
     unfilteredConversions.filter((c) => {
       return c.unit !== measurement.unit;
@@ -47,20 +55,22 @@ function useConvertMeasurement(
   return filteredAndSortedConversions;
 }
 
-interface MeasurementDialogProps {
-  measurement: InstructionMeasurement;
+interface MeasurementDialogProps extends DialogProps {
+  measurement: Omit<InstructionMeasurement, 'text'>;
   propertyUnits: IngredientUnit[] | undefined;
-  onClosePopover?: () => void;
 }
 
 function MeasurementDialog({
   measurement,
   propertyUnits,
-  onClosePopover,
+  onCloseDialog,
 }: MeasurementDialogProps) {
   const conversions = useConvertMeasurement(measurement, propertyUnits);
   return (
     <DialogCard color="indigo">
+      <DialogHeader>
+        {measurement.quantity} {measurement.unit}
+      </DialogHeader>
       <DialogConversionList>
         {conversions.map((c) => {
           return (
@@ -73,6 +83,7 @@ function MeasurementDialog({
           );
         })}
       </DialogConversionList>
+      {onCloseDialog ? <CloseDialog onCloseDialog={onCloseDialog} /> : null}
     </DialogCard>
   );
 }

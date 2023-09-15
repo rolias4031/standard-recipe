@@ -20,7 +20,8 @@ interface MyRecipesViewProps {
 
 export function MyRecipesView({ recipes }: MyRecipesViewProps) {
   const [isFilterOptionsOpen, setIsFilterOptionsOpen] = useState(false);
-  const { isDialogOpen: isNewRecipeDialogOpen, handleToggleDialog } = useFixedDialog()
+  const { isDialogOpen: isNewRecipeDialogOpen, handleToggleDialog } =
+    useFixedDialog();
 
   const existingRecipeNames = useMemo(
     () => recipes.map((r) => r.name),
@@ -103,7 +104,7 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
             </div>
           ) : null}
         </div>
-        <div className="flex flex-col space-y-3 px-5 md:px-16">
+        <div className="flex w-full flex-col space-y-3 px-5 md:w-2/3 mx-auto">
           {recipeBlocks}
         </div>
         <div className="fixed bottom-5 right-0">

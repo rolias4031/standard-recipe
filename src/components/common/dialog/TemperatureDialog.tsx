@@ -1,6 +1,13 @@
 import React from 'react';
 import convert, { Unit } from 'convert-units';
-import { DialogCard, DialogConversionItem, DialogConversionList } from '.';
+import {
+  CloseDialog,
+  DialogCard,
+  DialogConversionItem,
+  DialogConversionList,
+  DialogHeader,
+  DialogProps,
+} from '.';
 import { InstructionTemperature } from 'types/models';
 import { formatConversion } from './MeasurementDialog';
 
@@ -29,7 +36,7 @@ function useConvertTemperature(temperature: number, unit: string) {
       unfilteredConversions.push({
         temperature: formatConversion(convertedTemperature),
         unit: u.unit,
-        name: u.name
+        name: u.name,
       });
     } catch (e) {
       console.log(e);
@@ -39,12 +46,23 @@ function useConvertTemperature(temperature: number, unit: string) {
   return unfilteredConversions.filter((c) => c.unit !== unit);
 }
 
-type TemperatureDialogProps = Omit<InstructionTemperature, 'text'>;
+interface TemperatureDialogProps extends DialogProps {
+  temperature: Omit<InstructionTemperature, 'text'>;
+}
 
-function TemperatureDialog({ temperature, unit }: TemperatureDialogProps) {
-  const convertedTemperatures = useConvertTemperature(temperature, unit);
+function TemperatureDialog({
+  temperature,
+  onCloseDialog,
+}: TemperatureDialogProps) {
+  const convertedTemperatures = useConvertTemperature(
+    temperature.temperature,
+    temperature.unit,
+  );
   return (
     <DialogCard color="indigo">
+      <DialogHeader>
+        {temperature.temperature} {temperature.unit}
+      </DialogHeader>
       <DialogConversionList>
         {convertedTemperatures.map((c) => {
           return (
@@ -53,11 +71,11 @@ function TemperatureDialog({ temperature, unit }: TemperatureDialogProps) {
               quantity={c.temperature}
               unit={c.name}
               abbreviation={c.unit}
-              
             />
           );
         })}
       </DialogConversionList>
+      {onCloseDialog ? <CloseDialog onCloseDialog={onCloseDialog} /> : null}
     </DialogCard>
   );
 }
