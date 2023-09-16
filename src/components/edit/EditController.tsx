@@ -92,14 +92,6 @@ export function EditController<
     });
   }
 
-  function enterPreviewModeHandler() {
-    if (isAnyUpdateLoadingOrErrorOrTriggered) return;
-    window.localStorage.setItem('previous_stage', stage);
-    router.push({
-      pathname: '/view/[recipeId]',
-      query: { recipeId },
-    });
-  }
   return (
     <>
       <ControllerContainer>

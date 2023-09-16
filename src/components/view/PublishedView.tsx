@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode } from 'react';
 import { RecipeViewProps, useGetOnlyInUseInputs } from './RecipePreview';
 import IngredientsView from './IngredientsView';
 import EquipmentView from './EquipmentView';
@@ -9,40 +9,7 @@ import XIcon from 'components/common/icons/XIcon';
 import Link from 'next/link';
 import { createShareUrl } from 'lib/util-client';
 import ClipboardIcon from 'components/common/icons/ClipboardIcon';
-import CheckIcon from 'components/common/icons/CheckIcon';
-import { ModalBackdrop } from 'components/common/ModalBackdrop';
-
-function useCopyToClipboard() {
-  const [isCopiedToClipboard, setIsCopiedToClipboard] = useState(false);
-
-  useEffect(() => {
-    if (!isCopiedToClipboard) return;
-    const id = setTimeout(() => {
-      setIsCopiedToClipboard(false);
-    }, 5000);
-    return () => clearTimeout(id);
-  }, [isCopiedToClipboard]);
-
-  async function copyToClipboardHandler(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setIsCopiedToClipboard(true);
-    } catch (err) {
-      alert('Error in copying text: ' + err);
-    }
-  }
-
-  return { isCopiedToClipboard, copyToClipboardHandler };
-}
-
-async function copyToClipboardHandler(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    alert('Text copied to clipboard');
-  } catch (err) {
-    alert('Error in copying text: ' + err);
-  }
-}
+import { useCopyToClipboard } from 'components/common/hooks';
 
 interface ControllerProps {
   children: ReactNode;
@@ -51,9 +18,6 @@ interface ControllerProps {
 }
 
 function Controller({ children, recipeName, recipeId }: ControllerProps) {
-  // needs menu for: home button, share, etc
-  // can either use ButtonWithDialog or just manually render
-
   const { isCopiedToClipboard, copyToClipboardHandler } = useCopyToClipboard();
 
   const { isDialogOpen, handleToggleDialog } = useFixedDialog();
@@ -74,19 +38,20 @@ function Controller({ children, recipeName, recipeId }: ControllerProps) {
           {isDialogOpen ? (
             <div className="flex flex-col items-center gap-3 sm:flex-row">
               <button
-                className="flex w-full space-x-2 items-center justify-center rounded-lg bg-fern p-2 font-mono text-lg text-white"
+                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-fern py-2 font-mono text-lg text-white"
                 onClick={() => copyToClipboardHandler(createShareUrl(recipeId))}
               >
-                <p className="inline">Share</p>
                 {isCopiedToClipboard ? (
-                  // <CheckIcon styles={{ icon: 'w-7 h-7 text-white' }} />
-                  <p className="bg-white py-1 px-2 text-sm text-fern rounded-full">
-                    url copied!
+                  <p className="">
+                    url copied
                   </p>
                 ) : (
-                  <ClipboardIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+                  <>
+                    <p className="inline">Share</p>
+                    <ClipboardIcon styles={{ icon: 'w-7 h-7 text-white' }} />
+                  </>
                 )}
-              </button>
+              </button>{' '}
               <Link
                 className="w-full rounded-lg bg-fern p-2 text-center font-mono text-lg text-white"
                 href={'/me'}
