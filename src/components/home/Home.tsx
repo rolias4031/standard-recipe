@@ -31,7 +31,6 @@ function Home({ homeData, view }: HomeProps) {
     <>
       <NavBar view={view} />
       {ViewConfig[view]}
-      <div className="w-screen"></div>
     </>
   );
 }
