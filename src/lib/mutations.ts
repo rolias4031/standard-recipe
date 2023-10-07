@@ -12,6 +12,8 @@ import {
   UpdateInputMutationBody,
   CreateNewRecipeMutationBody,
   PublishRecipeMutationBody,
+  ImportRecipeMutationBody,
+  ImportRecipeMutationPayload,
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
@@ -26,6 +28,7 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   if (!response.ok && isErrorPayload(result)) {
     const error = new Error() as CustomError;
     error.errors = result.errors;
+    console.log(error.errors)
     throw error;
   }
   console.log('mutateWithBody', result);
@@ -133,6 +136,20 @@ export async function publishRecipeMutation(
     apiRoute: 'api/recipe/publish',
     body,
   });
+}
+
+export async function importRecipeMutation(
+  body: ImportRecipeMutationBody,
+): Promise<ImportRecipeMutationPayload | ErrorPayload> {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/recipe/import',
+    body,
+  });
+}
+
+export function useImportRecipe() {
+  return useMutation({ mutationFn: importRecipeMutation });
 }
 
 export function usePublishRecipe() {

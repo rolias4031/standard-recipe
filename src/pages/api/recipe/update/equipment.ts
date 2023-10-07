@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
-import { apiHandler, prepareSubsForUpsert, validateOneInput } from 'lib/util';
+import { apiHandler, prepareSubsForUpsert, validateOneInput } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import { FlowEquipment } from 'types/models';
 import {

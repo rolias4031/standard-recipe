@@ -12,7 +12,7 @@ interface ButtonWithDialogProps {
   styles?: {
     button: {
       default: string;
-      isDialogOpen: [string, string];
+      isDialogOpen?: [string, string];
     };
   };
 }
@@ -25,6 +25,11 @@ function ButtonWithDialog({
 }: ButtonWithDialogProps) {
 
   const { isDialogOpen, handleToggleDialog } = useFixedDialog()
+
+  const isOpenStyle = styles?.button?.isDialogOpen ? styles.button.isDialogOpen[0] : undefined
+  const isNotOpenStyle = styles?.button?.isDialogOpen ? styles.button.isDialogOpen[1] : undefined
+
+  
   return (
     <>
       <button
@@ -32,8 +37,8 @@ function ButtonWithDialog({
         disabled={isDisabled}
         className={pickStyles(styles?.button.default, [
           isDialogOpen,
-          styles ? styles.button.isDialogOpen[0] : '',
-          styles ? styles.button.isDialogOpen[1] : '',
+          isOpenStyle,
+          isNotOpenStyle
         ])}
       >
         {buttonContent}

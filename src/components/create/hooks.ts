@@ -345,8 +345,7 @@ export function useExtractCreatePageQueryParams() {
     isStringType(stage) &&
     stages.includes(stage as Stage)
   ) {
-    const castedStage = stage as Stage;
-    return { recipeId, stage: castedStage };
+    return { recipeId, stage: stage as Stage };
   }
   return { recipeId: undefined, stage: undefined };
 }

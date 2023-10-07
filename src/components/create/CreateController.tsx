@@ -7,13 +7,7 @@ import {
   Stage,
   UpdateInputMutationBody,
 } from 'types/types';
-import {
-  createOneInUseInput,
-  getNextStageName,
-  getPrevStageName,
-  navigateToStage,
-  stages,
-} from './utils';
+import { createOneInUseInput, navigateToStage } from './utils';
 import { StatusIconDisplay } from 'components/common/StatusIconDisplay';
 import ButtonWithDialog from 'components/common/dialog/ButtonWithDialog';
 import LightBulbIcon from 'components/common/icons/LightBulbIcon';
@@ -31,6 +25,17 @@ import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import { usePublishRecipe } from 'lib/mutations';
 import { StageTab } from 'components/edit/EditController';
 import { useFixedDialog } from 'components/common/dialog/hooks';
+import { isStringType } from 'types/util';
+import FailedImportsModal from './FailedImportsModal';
+
+function useExtractQueryParams() {
+  const router = useRouter();
+  const { failedImports } = router.query;
+  if (Array.isArray(failedImports) && !isStringType(failedImports)) {
+    return { router, failedImports };
+  }
+  return { router, failedImports: undefined };
+}
 
 export function useControllerModalStates() {
   const {
@@ -87,7 +92,8 @@ export default function CreateController<
   controllerConfig,
   extraHeaderComponent,
 }: CreateControllerProps<T>) {
-  const router = useRouter();
+  const { router, failedImports } = useExtractQueryParams();
+
   const {
     stageName,
     inUseInputs,
@@ -111,7 +117,7 @@ export default function CreateController<
     return () => {
       if (!inUseInputs || !schema) return;
       if (cancelTriggeredUpdate) {
-        console.log('CANCELED')
+        console.log('CANCELED');
         cancelTriggeredUpdate();
       }
       for (const input of inUseInputs) {
@@ -123,7 +129,7 @@ export default function CreateController<
       }
       setIsError(false);
       if (updateInputsMutation) {
-        console.log('MUTATION FIRED')
+        console.log('MUTATION FIRED');
         updateInputsMutation({ inputs: inUseInputs, recipeId });
       }
       navigateToStage(router, { recipeId, stage: newStage, shallow: true });
@@ -151,15 +157,31 @@ export default function CreateController<
       <ControllerContainer>
         <div className="sticky top-0 z-10 bg-white px-4 pt-4 shadow-md shadow-neutral-600 md:px-10 md:pt-6">
           <div className="flex items-center">
-            <div className="w-full truncate text-lg text-concrete">
+            <div className="flex-1 truncate text-lg text-concrete">
               {recipeName}
             </div>
             <div className="flex space-x-4 text-lg">
+              {failedImports ? (
+                <ButtonWithDialog
+                  styles={{
+                    button: {
+                      default:
+                        'px-2 bg-indigo-500 text-white font-mono text-sm rounded-lg',
+                    },
+                  }}
+                  buttonContent={'failed imports'}
+                  dialogComponent={(handleToggleDialog) => (
+                    <FailedImportsModal
+                      onToggleDialog={handleToggleDialog(false)}
+                      failedImports={failedImports}
+                    />
+                  )}
+                />
+              ) : null}
               <ButtonWithDialog
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',
-                    isDialogOpen: ['', ''],
                   },
                 }}
                 buttonContent={
@@ -173,7 +195,6 @@ export default function CreateController<
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',
-                    isDialogOpen: ['', ''],
                   },
                 }}
                 buttonContent={

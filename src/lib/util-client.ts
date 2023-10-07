@@ -59,7 +59,7 @@ export function isErrorPayload(obj: any): obj is ErrorPayload {
   return obj && typeof obj.message === 'string' && Array.isArray(obj.errors);
 }
 
-export type ToggleStylesInputArray = [boolean | undefined, string, string?];
+export type ToggleStylesInputArray = [boolean | undefined, string?, string?];
 type Input = ToggleStylesInputArray | string;
 
 export function pickStyles(
@@ -71,7 +71,7 @@ export function pickStyles(
     if (Array.isArray(inputItem)) {
       const [condition, trueString, falseString] = inputItem;
 
-      if (condition) {
+      if (condition && trueString) {
         combinedStringArray.push(trueString);
       } else if (falseString !== undefined) {
         combinedStringArray.push(falseString);

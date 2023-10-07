@@ -22,6 +22,7 @@ export function navigateToStage(
 ) {
   return router.push(
     {
+      pathname: '/create/[recipeId]',
       query: { recipeId, stage },
     },
     undefined,

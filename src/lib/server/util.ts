@@ -6,10 +6,11 @@ import {
   StandardRecipeApiHandler,
   StandardRecipeApiRequest,
 } from 'types/types';
-import { ERRORS } from './server/constants';
+import { ERRORS } from './constants';
+import { FlowIngredient } from 'types/models';
 
 function errorHandler(res: NextApiResponse<ErrorPayload>, error: unknown) {
-  console.log(error)
+  console.log(error);
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2025') {
       return res.status(200).json({
@@ -19,7 +20,7 @@ function errorHandler(res: NextApiResponse<ErrorPayload>, error: unknown) {
     }
   }
   return res.status(500).json({
-    errors: [ERRORS.UKNOWN_SERVER],
+    errors: [ERRORS.UNKNOWN_SERVER],
     message: 'failure',
   });
 }
@@ -82,4 +83,55 @@ export function validateOneInput({
 }): boolean {
   const isValid = schema.safeParse(input);
   return isValid.success;
+}
+
+export function createIngredientHolders(numberOfHolders: number) {
+  if (numberOfHolders < 1) {
+    return [];
+  }
+  const ingredientHolder: Prisma.IngredientCreateManyRecipeInput = {
+    inUse: false,
+    order: 1,
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...ingredientHolder }));
+}
+
+export function createEquipmentHolders(numberOfHolders: number) {
+  if (numberOfHolders < 1) {
+    return [];
+  }
+  const equipmentHolder: Prisma.EquipmentCreateManyRecipeInput = {
+    inUse: false,
+    order: 1,
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...equipmentHolder }));
+}
+
+export function createInstructionHolders(numberOfHolders: number) {
+  if (numberOfHolders < 1) {
+    return [];
+  }
+  const instructionHolder: Prisma.InstructionCreateManyRecipeInput = {
+    description: '',
+    order: 1,
+    inUse: false,
+  };
+  return Array(numberOfHolders)
+    .fill(null)
+    .map(() => ({ ...instructionHolder }));
+}
+
+export function connectIngredientUnit(ingredientUnit: FlowIngredient['unit'] | undefined) {
+  if (ingredientUnit) {
+    return {
+      connect: {
+        id: ingredientUnit.id,
+      },
+    };
+  }
+  return undefined;
 }

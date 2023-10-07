@@ -1,7 +1,7 @@
 import { Instruction, Prisma } from '@prisma/client';
 import { assignInputOrderByIndex } from 'components/create/utils';
 import { prisma } from 'lib/prismadb';
-import { apiHandler, validateOneInput } from 'lib/util';
+import { apiHandler, validateOneInput } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import {
   BasePayload,

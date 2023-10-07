@@ -1,7 +1,7 @@
 import { getAuth } from '@clerk/nextjs/server';
 import { ERROR_RESPONSES } from 'lib/server/constants';
 import { prisma } from 'lib/prismadb';
-import { apiHandler, validateOneInput } from 'lib/util';
+import { apiHandler, validateOneInput } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import {
   BasePayload,
@@ -39,7 +39,7 @@ async function handler(
   });
 
   if (!isValid) {
-    return ERROR_RESPONSES.INVALID_INPUT(res);
+    return ERROR_RESPONSES.INVALID_INPUT(res, 'recipe name');
   }
 
   await prisma.recipe.update({

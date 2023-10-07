@@ -82,7 +82,7 @@ export interface EquipmentForSmartInstruction extends EquipmentWithAll {
 
 export interface InstructionMeasurement extends IngredientUnit {
   text: string;
-  quantity: number;
+  quantity: string;
 }
 
 export interface InstructionTemperature {

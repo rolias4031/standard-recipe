@@ -1,5 +1,5 @@
 import { prisma } from 'lib/prismadb';
-import { prepareSubsForUpsert, validateOneInput, apiHandler } from 'lib/util';
+import { prepareSubsForUpsert, validateOneInput, apiHandler, connectIngredientUnit } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import { ingredientSchema } from 'validation/schemas';
 import {
@@ -20,20 +20,11 @@ import { assignInputOrderByIndex } from 'components/create/utils';
     - this same pattern applies to equipment and instructions in the CreateRecipeFlow.
   */
 
-function connectUnit(ingredientUnit: FlowIngredient['unit']) {
-  if (ingredientUnit) {
-    return {
-      connect: {
-        id: ingredientUnit.id,
-      },
-    };
-  }
-  return undefined;
-}
+
 
 function connectOrDisconnectUnit(ingredientUnit: FlowIngredient['unit']) {
   if (ingredientUnit) {
-    return connectUnit(ingredientUnit);
+    return connectIngredientUnit(ingredientUnit);
   }
   return { disconnect: true };
 }

@@ -3,7 +3,7 @@ import { prisma } from 'lib/prismadb';
 import { AllUnitsQueryPayload, ErrorPayload } from 'types/types';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERRORS } from 'lib/server/constants';
-import { apiHandler } from 'lib/util';
+import { apiHandler } from 'lib/server/util';
 
 async function handler(
   req: NextApiRequest,

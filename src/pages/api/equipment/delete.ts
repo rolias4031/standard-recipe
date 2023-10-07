@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
-import { apiHandler } from 'lib/util';
+import { apiHandler } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import {
   BasePayload,

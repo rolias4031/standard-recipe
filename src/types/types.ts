@@ -58,6 +58,20 @@ export interface CustomError extends Error {
 
 // queries and mutations
 
+export interface ImportRecipeMutationBody {
+  text: string;
+  recipeName: string;
+}
+
+export interface ImportRecipeMutationPayload extends BasePayload {
+  importedRecipeId: string
+  failedImports?: {
+    ingredients: number,
+    equipment: number,
+    instructions: number
+  }
+}
+
 export interface PublishRecipeMutationBody {
   recipeId: Recipe['id']
 }

@@ -4,7 +4,7 @@ import CreateRecipeFlow from 'components/create/CreateRecipeFlow';
 import { useExtractCreatePageQueryParams } from 'components/create/hooks';
 
 function CreateRecipePage() {
-  const { recipeId, stage } = useExtractCreatePageQueryParams();
+  const { recipeId, stage, } = useExtractCreatePageQueryParams();
 
   if (recipeId && stage) {
     return (

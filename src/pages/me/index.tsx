@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import HomeDock from 'components/home/HomeDock';
-import PageFrame from 'components/common/PageFrame';
 import Home, { HomeView } from 'components/home/Home';
 import { useRouter } from 'next/router';
 import Redirect from 'components/common/Redirect';
@@ -11,7 +9,7 @@ function useExtractHomePageQueryParams() {
   if (view && !Array.isArray(view)) {
     return { view };
   }
-  return { view: null };
+  return { view: 'recipes' };
 }
 
 export default function HomePage() {

@@ -6,7 +6,7 @@ import {
   ErrorPayload,
   StandardRecipeApiRequest,
 } from 'types/types';
-import { apiHandler } from 'lib/util';
+import { apiHandler } from 'lib/server/util';
 import { Prisma } from '@prisma/client';
 
 async function handler(

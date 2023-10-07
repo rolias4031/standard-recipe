@@ -1,4 +1,4 @@
-import { apiHandler, validateOneInput } from 'lib/util';
+import { apiHandler, createEquipmentHolders, createIngredientHolders, createInstructionHolders, validateOneInput } from 'lib/server/util';
 import { NextApiResponse } from 'next';
 import {
   ErrorPayload,
@@ -11,37 +11,6 @@ import { prisma } from 'lib/prismadb';
 import { recipeNameSchema } from 'validation/schemas';
 import { getAuth } from '@clerk/nextjs/server';
 import { ERROR_RESPONSES } from 'lib/server/constants';
-
-function createIngredientHolders(numberOfHolders: number) {
-  const ingredientHolder: Prisma.IngredientCreateManyRecipeInput = {
-    inUse: false,
-    order: 1,
-  };
-  return Array(numberOfHolders)
-    .fill(null)
-    .map(() => ({ ...ingredientHolder }));
-}
-
-function createEquipmentHolders(numberOfHolders: number) {
-  const equipmentHolder: Prisma.EquipmentCreateManyRecipeInput = {
-    inUse: false,
-    order: 1
-  };
-  return Array(numberOfHolders)
-    .fill(null)
-    .map(() => ({ ...equipmentHolder }));
-}
-
-function createInstructionHolders(numberOfHolders: number) {
-  const instructionHolder: Prisma.InstructionCreateManyRecipeInput = {
-    description: '',
-    order: 1,
-    inUse: false
-  };
-  return Array(numberOfHolders)
-    .fill(null)
-    .map(() => ({ ...instructionHolder }));
-}
 
 async function handler(
   req: StandardRecipeApiRequest<CreateNewRecipeMutationBody>,
@@ -88,7 +57,7 @@ async function handler(
     input: req.body,
   });
   if (!isValid) {
-    return ERROR_RESPONSES.INVALID_INPUT(res);
+    return ERROR_RESPONSES.INVALID_INPUT(res, 'recipe name');
   }
 
   const newDraftRecipe = await prisma.recipe.create({

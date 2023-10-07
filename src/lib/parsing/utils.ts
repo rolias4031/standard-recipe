@@ -16,10 +16,16 @@ export const markdownConfig: { [key in markdownConfigKey]: [string, string] } =
     temperatures: ['{', '}'],
   };
 
-function splitStringAtNumber(string: string) {
-  const regex = /(\d+(\.\d+)?)|(\D.*)/g;
-  const matches = string.match(regex)?.map((m) => m.trim());
-  return matches ?? [];
+function splitMeasurementQuantityAndUnit(str: string) {
+  const match = str.match(/[a-zA-Z]/);
+  const letterIdx = match?.index;
+  if (!match || !letterIdx) return null;
+  const quantity = str.substring(0, letterIdx).trim();
+  const unit = str.substring(letterIdx);
+  return {
+    quantity,
+    unit,
+  };
 }
 
 export function removeMarkdown(segment: string) {
@@ -37,6 +43,14 @@ const createRegex = {
   measurements: (unitStrings: string[]) => {
     return new RegExp(
       '\\b\\d+(\\.\\d+)?\\s(' + unitStrings.join('|') + ')\\b',
+      'gi',
+    );
+  },
+  measurementsV2: (unitStrings: string[]) => {
+    return new RegExp(
+      '\\b(\\d+\\s)?(\\d+/\\d+|\\d+(\\.\\d+)?)\\s(' +
+        unitStrings.join('|') +
+        ')\\b',
       'gi',
     );
   },
@@ -66,7 +80,7 @@ export const addMarkdown = {
   },
   measurement: (namesToMatch: string[], description: string) => {
     // create regex with names list
-    const regex = createRegex.measurements(namesToMatch);
+    const regex = createRegex.measurementsV2(namesToMatch);
     // apply regex to each word in description.
     const descriptionWithMeasurements = description.replace(regex, (match) => {
       return createMarkdown(match, markdownConfig.measurements);
@@ -102,13 +116,17 @@ export const buildObject = {
     segment: string,
     unitMap: Map<string, IngredientUnit>,
   ): InstructionMeasurement | string => {
-    const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
-    if (!unit || !quantity) return segment;
-    const numberQuantity = parseFloat(quantity);
+    // problem is that fractions are not convertible...
+    // need to create a function that converts, do this in the popover
+    // const [quantity, unit] = splitStringAtNumber(removeMarkdown(segment));
+    const measurement = splitMeasurementQuantityAndUnit(
+      removeMarkdown(segment),
+    );
+    if (!measurement) return segment;
+    // if (!unit || !quantity) return segment;
+    const { quantity, unit } = measurement;
     const obj = unitMap.get(unit.toLowerCase());
-    return obj
-      ? { text: quantity + ' ' + unit, quantity: numberQuantity, ...obj }
-      : segment;
+    return obj ? { ...obj, text: quantity + ' ' + unit, quantity } : segment;
   },
   temperatures: (segment: string): InstructionTemperature | string => {
     const temperature = parseFloat(segment.slice(1, -2));
@@ -154,7 +172,7 @@ export function getAppropriateUnitsByProperty(
   property: UnitProperty | undefined,
   unitsByProperty: Partial<Record<UnitProperty, IngredientUnit[] | undefined>>,
 ) {
-  if (!property) return
+  if (!property) return;
   return property === 'mass' || property === 'weight'
     ? unitsByProperty['mass']?.concat(unitsByProperty['weight'] ?? [])
     : unitsByProperty[property];

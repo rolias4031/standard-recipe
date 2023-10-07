@@ -76,7 +76,7 @@ function RecipePreview({ recipe, allUnits }: RecipeViewProps) {
     useGetOnlyInUseInputs(recipe);
   return (
     <PreviewController recipeId={recipe.id} recipeName={recipe.name}>
-      <IngredientsView ingredients={inUseIngredients} />
+      <IngredientsView ingredients={inUseIngredients} allUnits={allUnits} />
       <EquipmentView equipment={inUseEquipment} />
       <InstructionsView
         allUnits={allUnits}
