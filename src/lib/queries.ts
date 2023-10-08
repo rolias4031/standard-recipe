@@ -14,7 +14,7 @@ async function fetchData<T extends BasePayload>(url: string) {
     method: 'GET',
   });
   const result: T | ErrorPayload = await response.json();
-  console.log(result);
+  console.log('QUERY RESULT', result);
   if (!response.ok && isErrorPayload(result)) {
     const error = new Error() as CustomError;
     error.errors = result.errors;

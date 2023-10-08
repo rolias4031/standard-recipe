@@ -23,8 +23,6 @@ async function handler(
     },
   });
 
-  const existingRecipeNames: string[] = [];
-
   return res.status(200).json({
     message: 'success',
     recipes,
