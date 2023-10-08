@@ -258,7 +258,7 @@ export default function CreateController<
               <StatusIconDisplay status={updateStatus} size="10" />
               <button
                 type="button"
-                className="flex w-fit items-center justify-center rounded-l-lg bg-fern p-4 shadow-md shadow-abyss/50"
+                className="flex w-fit items-center justify-center rounded-l-lg bg-fern p-3 md:p-4 shadow-md shadow-abyss/50"
                 onClick={createNewInputHandler}
               >
                 <PlusIcon styles={{ icon: 'w-12 h-12 text-white' }} />

@@ -157,7 +157,7 @@ function NewRecipeDialog({
                 <div className="my-6 flex w-full flex-col justify-end">
                   <input
                     type="text"
-                    className="border-b-2 border-fern py-2 text-lg outline-none md:text-xl"
+                    className="border-b-2 border-fern py-2 text-lg outline-none md:text-xl rounded-none"
                     value={newRecipeInputs.name}
                     onChange={handleUpdateRecipeInputs}
                     placeholder="Your Recipe Name"
