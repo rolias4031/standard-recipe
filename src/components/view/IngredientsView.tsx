@@ -1,5 +1,5 @@
 import React from 'react';
-import { IngredientWithAll, InstructionMeasurement } from 'types/models';
+import { IngredientWithAll } from 'types/models';
 import ViewSectionContainer from './ViewSectionContainer';
 import { ItemBlock, ItemBlockDetail } from '.';
 import {
@@ -23,16 +23,6 @@ function IngredientBlock({ ingredient, propertyUnits }: IngredientBlockProps) {
     (ingredient.notes !== null && ingredient.notes.length > 0) ||
     ingredient.substitutes.length > 0 ||
     ingredient.optional;
-
-  const dialog = ingredient.unit ? (
-    <MeasurementDialog
-      measurement={{
-        ...ingredient.unit,
-        quantity: ingredient.quantity,
-      }}
-      propertyUnits={propertyUnits}
-    />
-  ) : null;
 
   return (
     <>
@@ -68,7 +58,7 @@ function IngredientBlock({ ingredient, propertyUnits }: IngredientBlockProps) {
             <MeasurementDialog
               measurement={{
                 ...ingredient.unit,
-                quantity: ingredient.quantity,
+                quantity: ingredient.quantity.toString(),
               }}
               propertyUnits={propertyUnits}
               onCloseDialog={handleToggleDialog(false)}
