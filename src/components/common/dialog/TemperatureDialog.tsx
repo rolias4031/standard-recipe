@@ -55,7 +55,7 @@ function TemperatureDialog({
   onCloseDialog,
 }: TemperatureDialogProps) {
   const convertedTemperatures = useConvertTemperature(
-    temperature.temperature,
+    parseFloat(temperature.temperature),
     temperature.unit,
   );
   return (
