@@ -48,7 +48,7 @@ export function insertIntoPrevArray<T>(
 }
 
 export function createApiUrl(route: string): string {
-  return `${process.env.NEXT_PUBLIC_BASE_URL}${route}`;
+  return `${BASE_URL}${route}`;
 }
 
 export function createShareUrl(recipeId: string): string {

@@ -129,7 +129,7 @@ export const buildObject = {
     return obj ? { ...obj, text: quantity + ' ' + unit, quantity } : segment;
   },
   temperatures: (segment: string): InstructionTemperature | string => {
-    const temperature = parseFloat(segment.slice(1, -2));
+    const temperature = segment.slice(1, -2);
     const unit = segment[segment.length - 2];
     if (!temperature || !unit) return segment;
     return { text: `${temperature}°${unit}`, temperature, unit };
