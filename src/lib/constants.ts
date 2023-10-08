@@ -7,4 +7,8 @@ function createBaseUrlFromEnvironment(env: string | undefined) {
   return LOCALHOST_BASE_URL;
 }
 
-export const BASE_URL = createBaseUrlFromEnvironment(process.env.NEXT_PUBLIC_VERCEL_ENV);
+export const BASE_URL = createBaseUrlFromEnvironment(
+  process.env.NEXT_PUBLIC_VERCEL_ENV,
+);
+
+console.log('BASE_URL', BASE_URL);
