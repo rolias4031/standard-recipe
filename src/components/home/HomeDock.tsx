@@ -8,14 +8,15 @@ interface HomeDockProps {
 }
 
 function HomeDock({ children }: HomeDockProps) {
-  const { data: homeData, status } = useGetUserRecipes();
+  const { data: homeData, status, error } = useGetUserRecipes();
+  console.log({ error });
   if (homeData && status === 'success') {
     return <>{children(homeData)}</>;
   }
   if (status === 'loading') {
     return <LoadingPage />;
   }
-  return null
+  return <div>error</div>;
 }
 
 export default HomeDock;

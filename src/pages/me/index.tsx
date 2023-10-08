@@ -14,6 +14,7 @@ function useExtractHomePageQueryParams() {
 
 export default function HomePage() {
   const { view } = useExtractHomePageQueryParams();
+  console.log({ view });
   if (view) {
     return (
       <HomeDock>
