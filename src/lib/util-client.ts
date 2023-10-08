@@ -1,6 +1,7 @@
 import { IngredientUnit } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorPayload } from 'types/types';
+import { BASE_URL } from './constants';
 
 export function capitalizeString(input: string): string {
   if (!input || typeof input !== 'string' || input.length === 0) {
@@ -52,7 +53,7 @@ export function createApiUrl(route: string): string {
 }
 
 export function createShareUrl(recipeId: string): string {
-  return `${process.env.NEXT_PUBLIC_BASE_URL}view/${recipeId}`
+  return `${BASE_URL}view/${recipeId}`
 }
 
 export function isErrorPayload(obj: any): obj is ErrorPayload {
