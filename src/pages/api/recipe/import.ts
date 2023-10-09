@@ -20,10 +20,6 @@ import {
 } from 'types/types';
 import { recipeNameSchema } from 'validation/schemas';
 
-export const config = {
-  maxDuration: 30,
-};
-
 interface ImportResponse<T extends {}> {
   inputs: T[];
 }
