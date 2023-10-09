@@ -42,7 +42,7 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
     result = await response.json();
   } catch (error) {
     console.log('mutateWithBody', { error });
-    throw new AppError('Unknown Server Error', []);
+    throw new AppError('Unknown Server Error', ['Unknown Server Error']);
   }
   if (!response.ok && isErrorPayload(result)) {
     const error = new AppError(result.message, result.errors) as CustomError;

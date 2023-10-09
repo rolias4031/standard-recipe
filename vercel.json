@@ -1,6 +1,6 @@
 {
   "functions": {
-    "pages/api/recipe/import": {
+    "pages/api/recipe/import.js": {
       "maxDuration": 30
     }
   }
