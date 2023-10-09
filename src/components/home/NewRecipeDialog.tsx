@@ -39,7 +39,7 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
     error: importError,
   } = useImportRecipe();
 
-  console.log(importError instanceof AppError, { importError });
+  console.log(importError instanceof AppError && importRecipeStatus, { importError });
 
   function pushToCreatePage(
     recipeId: string,
@@ -176,7 +176,7 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
         )}
       </div>
       {showLoadingModal ? <ImportLoadingModal /> : null}
-      {status === 'error' && importError instanceof AppError ? (
+      {importRecipeStatus === 'error' && importError instanceof AppError ? (
         <div>{importError.errors[0]}</div>
       ) : null}
     </>
