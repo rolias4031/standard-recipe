@@ -1,5 +1,5 @@
 const LOCALHOST_BASE_URL = 'http://localhost:3000/';
-const APP_DOMAIN_BASE_URL = 'https://standardrecipe.com/';
+const APP_DOMAIN_BASE_URL = 'https://www.standardrecipe.com/';
 
 function createBaseUrlFromEnvironment(env: string | undefined) {
   if (env === 'production' || env === 'preview') {
