@@ -21,12 +21,12 @@ export class AppError extends Error {
   errors: string[];
 
   constructor(message: string, errors: string[] = []) {
-      super(message);
-      this.errors = errors;
+    super(message);
+    this.errors = errors;
 
-      // Set the prototype explicitly.
-      // This ensures that `instanceof` checks work correctly.
-      Object.setPrototypeOf(this, AppError.prototype);
+    // Set the prototype explicitly.
+    // This ensures that `instanceof` checks work correctly.
+    Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
@@ -37,10 +37,16 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
     body: JSON.stringify(config.body),
   });
   // you get that doctype error when the server responds with unhandled error, and then response.json() doesn't get json.
-  const result: K | ErrorPayload = await response.json();
+  let result: K | ErrorPayload;
+  try {
+    result = await response.json();
+  } catch (error) {
+    console.log('mutateWithBody', { error });
+    throw new AppError('Unknown Server Error');
+  }
   if (!response.ok && isErrorPayload(result)) {
     const error = new AppError(result.message, result.errors) as CustomError;
-    console.log(error.errors)
+    console.log(error.errors);
     throw error;
   }
   console.log('mutateWithBody', result);
