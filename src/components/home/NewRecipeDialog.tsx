@@ -39,6 +39,8 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
     error: importError,
   } = useImportRecipe();
 
+  console.log(importError instanceof AppError, { importError });
+
   function pushToCreatePage(
     recipeId: string,
     failedImports?: ImportRecipeMutationPayload['failedImports'],
