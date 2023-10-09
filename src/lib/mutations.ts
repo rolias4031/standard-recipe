@@ -17,6 +17,19 @@ import {
 } from 'types/types';
 import { createApiUrl, isErrorPayload } from './util-client';
 
+export class AppError extends Error {
+  errors: string[];
+
+  constructor(message: string, errors: string[] = []) {
+      super(message);
+      this.errors = errors;
+
+      // Set the prototype explicitly.
+      // This ensures that `instanceof` checks work correctly.
+      Object.setPrototypeOf(this, AppError.prototype);
+  }
+}
+
 async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   const response = await fetch(createApiUrl(config.apiRoute), {
     method: config.method,
@@ -26,8 +39,7 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   // you get that doctype error when the server responds with unhandled error, and then response.json() doesn't get json.
   const result: K | ErrorPayload = await response.json();
   if (!response.ok && isErrorPayload(result)) {
-    const error = new Error() as CustomError;
-    error.errors = result.errors;
+    const error = new AppError(result.message, result.errors) as CustomError;
     console.log(error.errors)
     throw error;
   }

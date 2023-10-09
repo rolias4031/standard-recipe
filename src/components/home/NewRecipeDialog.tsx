@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { ModalBackdrop } from 'components/common/ModalBackdrop';
-import { useCreateNewDraftRecipe, useImportRecipe } from 'lib/mutations';
+import {
+  AppError,
+  useCreateNewDraftRecipe,
+  useImportRecipe,
+} from 'lib/mutations';
 import { recipeNameSchema } from 'validation/schemas';
-import { pickStyles, stopRootDivPropagation } from 'lib/util-client';
 import { ZodIssue } from 'zod';
 import LoadingSpinner from 'components/common/LoadingSpinner';
-import CloseButton from 'components/common/CloseButton';
-import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
-import { ImportRecipeMutationPayload } from 'types/types';
+import { ImportRecipeMutationPayload, CustomError } from 'types/types';
 import ImportLoadingModal from './ImportLoadingModal';
 import ImportRecipe from './ImportRecipe';
-import Link from 'next/link';
-import { buildHomePageNavUrl } from './util';
 
 interface NewRecipeInputs {
   name: string;
@@ -35,8 +33,11 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
   >([]);
 
   const { mutate: createRecipeFromScratch, status } = useCreateNewDraftRecipe();
-  const { mutate: importRecipe, status: importRecipeStatus } =
-    useImportRecipe();
+  const {
+    mutate: importRecipe,
+    status: importRecipeStatus,
+    error: importError,
+  } = useImportRecipe();
 
   function pushToCreatePage(
     recipeId: string,
@@ -122,7 +123,7 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
       <div className="mx-auto p-5 lg:w-2/3">
         {!isImportSelected ? (
           <>
-            <div className="text-center pt-5">
+            <div className="pt-5 text-center">
               <span className="font-mono text-xl md:text-2xl">
                 Create new recipe
               </span>
@@ -173,6 +174,9 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
         )}
       </div>
       {showLoadingModal ? <ImportLoadingModal /> : null}
+      {status === 'error' && importError instanceof AppError ? (
+        <div>{importError.errors[0]}</div>
+      ) : null}
     </>
   );
 }
