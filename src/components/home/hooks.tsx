@@ -35,8 +35,6 @@ export function useFilterAndSortRecipes(recipes: Recipe[]) {
     descending: false,
   });
 
-  console.log(recipeSearchText);
-
   function handleSelectRecipeFilter(filter: RecipeFilter) {
     return () => setRecipeFilter(filter);
   }

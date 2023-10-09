@@ -20,14 +20,6 @@ import {
 } from 'types/types';
 import { recipeNameSchema } from 'validation/schemas';
 
-interface ImportTypeConfig {
-  [key: string]: 'string' | 'number';
-}
-
-// const IMPORT_TYPES: { [key: string]: ImportTypeConfig } = {
-//   INGREDIENTS: { name: 'string', quantity: 'number', unit: '' },
-// };
-
 interface ImportResponse<T extends {}> {
   inputs: T[];
 }
@@ -327,7 +319,7 @@ function prepareIngredientCreateInputs(
         },
         unit: connectIngredientUnit(unit),
         notes: ing.notes,
-        quantity: idx === 1 ? 'text' as unknown as number : ing.quantity,
+        quantity: ing.quantity,
         order: idx + 1,
       };
     },

@@ -1,33 +1,26 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Recipe } from '@prisma/client';
 import Link from 'next/link';
 import VerticalEllipsisIcon from 'components/common/icons/VerticalEllipsisIcon';
 import { useFixedDialog } from 'components/common/dialog/hooks';
 import { useFilterAndSortRecipes, useMyRecipesFilterConfig } from './hooks';
-import { ModalBackdrop } from 'components/common/ModalBackdrop';
-import RecipeOptionDialog from './RecipeOptionDialog';
+import RecipeOptionMenu from './RecipeOptionMenu';
 import SliderIcon from 'components/common/icons/SliderIcon';
 import { pickStyles } from 'lib/util-client';
 import ChevronDownIcon from 'components/common/icons/ChevronDownIcon';
 import { capitalize } from 'lodash';
 import PlusIcon from 'components/common/icons/PlusIcon';
-import NewRecipeDialog from './NewRecipeDialog';
 import { Url } from 'next/dist/shared/lib/router/router';
+import { useRouter } from 'next/router';
+import { buildHomePageNavUrl } from './util';
 
 interface MyRecipesViewProps {
   recipes: Recipe[];
 }
 
 export function MyRecipesView({ recipes }: MyRecipesViewProps) {
+  const router = useRouter();
   const [isFilterOptionsOpen, setIsFilterOptionsOpen] = useState(false);
-  const { isDialogOpen: isNewRecipeDialogOpen, handleToggleDialog } =
-    useFixedDialog();
-
-  const existingRecipeNames = useMemo(
-    () => recipes.map((r) => r.name),
-    [recipes],
-  );
-
   const {
     filteredRecipes,
     recipeFilter,
@@ -46,20 +39,20 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
 
   return (
     <>
-      <div className="flex flex-col space-y-5 pb-28 md:space-y-6">
-        <div className="sticky top-0 flex flex-col space-y-3 bg-white px-5 py-5 shadow-md shadow-concrete md:px-10">
-          <div className="flex items-center space-x-1">
+      <div className="flex flex-col space-y-5 pb-28">
+        <div className="sticky top-0 flex flex-col items-center space-y-5 bg-white p-5 shadow-md shadow-concrete">
+          <div className="flex w-full items-center space-x-1 lg:w-2/3">
             <input
               type="text"
               placeholder="Search"
-              className="w-full rounded-lg border px-2 py-2 outline-fern"
+              className="w-full rounded-lg border p-2 outline-fern lg:p-3 lg:text-lg"
               value={recipeSearchText}
               onChange={handleUpdateSearchText}
             />
             <button onClick={() => setIsFilterOptionsOpen((prev) => !prev)}>
               <SliderIcon
                 styles={{
-                  icon: pickStyles('w-10 h-10', [
+                  icon: pickStyles('w-10 h-10 md:w-12 md:h-12', [
                     isFilterOptionsOpen,
                     'text-fern',
                     'text-concrete',
@@ -69,7 +62,7 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
             </button>
           </div>
           {isFilterOptionsOpen ? (
-            <div className="flex flex-col space-y-3">
+            <div className="flex w-full flex-col space-y-3 lg:w-2/3">
               <div>
                 <span className="font-mono text-concrete">Filter</span>
                 <div className="flex items-center space-x-4 text-lg">
@@ -102,28 +95,24 @@ export function MyRecipesView({ recipes }: MyRecipesViewProps) {
                 </div>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="flex w-full justify-start lg:w-2/3">
+              <Link
+                className="w-full lg:w-fit"
+                href={buildHomePageNavUrl('create')}
+                shallow
+              >
+                <button className="w-full rounded-full border border-fern px-3 py-2 font-mono text-fern">
+                  Create New Recipe
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
-        <div className="flex w-full flex-col space-y-3 px-5 md:w-2/3 mx-auto">
+        <div className="mx-auto flex w-full flex-col space-y-3 px-5 lg:w-2/3">
           {recipeBlocks}
         </div>
-        <div className="fixed bottom-5 right-0">
-          <button
-            className="flex items-center rounded-l-xl bg-fern px-4 py-3 opacity-90 shadow-md shadow-neutral-600 hover:opacity-100 active:opacity-100"
-            onClick={handleToggleDialog(true)}
-          >
-            <PlusIcon
-              styles={{ icon: 'w-10 h-10 text-white md:w-12 md:h-12' }}
-            />
-          </button>
-        </div>
       </div>
-      {isNewRecipeDialogOpen ? (
-        <NewRecipeDialog
-          onCloseDialog={handleToggleDialog(false)}
-          existingRecipeNames={existingRecipeNames}
-        />
-      ) : null}
     </>
   );
 }
@@ -138,7 +127,8 @@ interface RecipeLinkProps {
 }
 
 function RecipeBlock({ recipe }: RecipeLinkProps) {
-  const { isDialogOpen, handleToggleDialog } = useFixedDialog();
+  const { isDialogOpen: isMenuOpen, handleToggleDialog: handleToggleMenu } =
+    useFixedDialog();
 
   const date = new Date(recipe.createdAt);
 
@@ -147,25 +137,35 @@ function RecipeBlock({ recipe }: RecipeLinkProps) {
       <div className="flex items-center justify-between rounded-lg bg-smoke px-3 py-2">
         <div className="flex flex-col">
           <Link
-            className="text-xl"
+            className="text-xl lg:text-2xl"
             href={buildLinkHref(recipe.status === 'draft', recipe.id)}
           >
             {recipe.name}
           </Link>
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-concrete">
+            <span className="text-sm text-concrete md:text-base">
               {date.toLocaleDateString()}
             </span>
-            <span className="text-sm text-concrete">{recipe.status}</span>
+            <span className="text-sm text-concrete md:text-base">
+              {recipe.status}
+            </span>
           </div>
         </div>
-        <button onClick={handleToggleDialog(true)}>
-          <VerticalEllipsisIcon styles={{ icon: 'w-8 h-8 text-concrete' }} />
+        <button onClick={handleToggleMenu()}>
+          <VerticalEllipsisIcon
+            styles={{
+              icon: pickStyles('w-9 h-9', [
+                isMenuOpen,
+                'text-fern',
+                'text-concrete',
+              ]),
+            }}
+          />
         </button>
       </div>
-      {isDialogOpen ? (
-        <RecipeOptionDialog
-          onCloseDialog={handleToggleDialog(false)}
+      {isMenuOpen ? (
+        <RecipeOptionMenu
+          onCloseDialog={handleToggleMenu(false)}
           recipe={recipe}
         />
       ) : null}

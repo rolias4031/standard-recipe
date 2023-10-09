@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import { useCreateNewDraftRecipe, useImportRecipe } from 'lib/mutations';
@@ -11,24 +11,18 @@ import ArrowLeftIcon from 'components/common/icons/ArrowLeftIcon';
 import { ImportRecipeMutationPayload } from 'types/types';
 import ImportLoadingModal from './ImportLoadingModal';
 import ImportRecipe from './ImportRecipe';
-
-function useExtractQueryParams() {
-  const router = useRouter();
-}
+import Link from 'next/link';
+import { buildHomePageNavUrl } from './util';
 
 interface NewRecipeInputs {
   name: string;
 }
 
 interface NewRecipeDialogProps {
-  onCloseDialog: () => void;
   existingRecipeNames: string[];
 }
 
-function NewRecipeDialog({
-  onCloseDialog,
-  existingRecipeNames,
-}: NewRecipeDialogProps) {
+function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
   const router = useRouter();
   const schema = recipeNameSchema(existingRecipeNames);
   const [isImportSelected, setIsImportSelected] = useState(false);
@@ -125,81 +119,60 @@ function NewRecipeDialog({
 
   return (
     <>
-      {showLoadingModal ? (
-        <ImportLoadingModal />
-      ) : (
-        <ModalBackdrop modalRoot="modal-root" onClose={onCloseDialog}>
-          <div
-            className="fixed bottom-0 left-0 right-0 rounded-t-2xl bg-white px-5 py-5 md:px-10 md:py-10"
-            onClick={stopRootDivPropagation}
-          >
-            <div
-              className={pickStyles('flex', [
-                isImportSelected,
-                'justify-between',
-                'justify-end',
-              ])}
-            >
-              {isImportSelected ? (
-                <button onClick={() => setIsImportSelected(false)}>
-                  <ArrowLeftIcon styles={{ icon: 'w-7 h-7 text-concrete' }} />
-                </button>
-              ) : null}
-              <CloseButton onClick={onCloseDialog} />
+      <div className="mx-auto p-5 lg:w-2/3">
+        {!isImportSelected ? (
+          <>
+            <div className="text-center pt-5">
+              <span className="font-mono text-xl md:text-2xl">
+                Create new recipe
+              </span>
             </div>
-            {!isImportSelected ? (
-              <>
-                <div className="text-center">
-                  <span className="font-mono text-xl md:text-2xl">
-                    Create new recipe
-                  </span>
-                </div>
-                <div className="my-6 flex w-full flex-col justify-end">
-                  <input
-                    type="text"
-                    className="border-b-2 border-fern py-2 text-lg outline-none md:text-xl rounded-none"
-                    value={newRecipeInputs.name}
-                    onChange={handleUpdateRecipeInputs}
-                    placeholder="Your Recipe Name"
-                  />
-                </div>
-                <div className="mb-6 flex flex-col items-center justify-center font-mono text-red-500">
-                  {inputValidationErrors.length === 0
-                    ? null
-                    : inputValidationErrors.map((e) => e.message)}
-                </div>
-                <div className="flex flex-col gap-3 md:mx-auto md:w-2/3 md:flex-row">
-                  <button
-                    className="w-full rounded-lg bg-indigo-500 p-3 text-xl text-white disabled:bg-concrete"
-                    disabled={!isNameValid}
-                    onClick={() => setIsImportSelected(true)}
-                  >
-                    Import with AI
-                  </button>
-                  <button
-                    onClick={createNewRecipeHandler}
-                    disabled={!isNameValid}
-                    className="w-full rounded-lg bg-fern p-3 text-xl text-white disabled:bg-concrete"
-                  >
-                    {status === 'loading' ? (
-                      <LoadingSpinner size="6" color="white" />
-                    ) : (
-                      'From scratch'
-                    )}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <ImportRecipe
-                canStartImport={canStartImport}
-                onImportRecipe={importRecipeHandler}
-                raiseRecipeImportText={setRecipeImportText}
-                recipeImportText={recipeImportText}
+            <div className="my-6 flex w-full flex-col justify-end">
+              <input
+                type="text"
+                className="rounded-none border-b-2 border-fern py-2 text-lg outline-none md:text-xl"
+                value={newRecipeInputs.name}
+                onChange={handleUpdateRecipeInputs}
+                placeholder="Your Recipe Name"
               />
-            )}
-          </div>
-        </ModalBackdrop>
-      )}
+            </div>
+            <div className="mb-6 flex flex-col items-center justify-center font-mono text-red-500">
+              {inputValidationErrors.length === 0
+                ? null
+                : inputValidationErrors.map((e) => e.message)}
+            </div>
+            <div className="flex flex-col gap-3 md:mx-auto md:w-2/3 md:flex-row">
+              <button
+                className="w-full rounded-lg bg-indigo-500 p-3 text-xl text-white disabled:bg-smoke"
+                disabled={!isNameValid}
+                onClick={() => setIsImportSelected(true)}
+              >
+                Import with AI
+              </button>
+              <button
+                onClick={createNewRecipeHandler}
+                disabled={!isNameValid}
+                className="w-full rounded-lg bg-fern p-3 text-xl text-white disabled:bg-smoke"
+              >
+                {status === 'loading' ? (
+                  <LoadingSpinner size="6" color="white" />
+                ) : (
+                  'From scratch'
+                )}
+              </button>
+            </div>
+          </>
+        ) : (
+          <ImportRecipe
+            onGoBack={() => setIsImportSelected(false)}
+            canStartImport={canStartImport}
+            onImportRecipe={importRecipeHandler}
+            raiseRecipeImportText={setRecipeImportText}
+            recipeImportText={recipeImportText}
+          />
+        )}
+      </div>
+      {showLoadingModal ? <ImportLoadingModal /> : null}
     </>
   );
 }
