@@ -3,6 +3,27 @@ import { v4 as uuidv4 } from 'uuid';
 import { ErrorPayload } from 'types/types';
 import { BASE_URL } from './constants';
 
+export function isInstanceOfAppError(object: any): object is AppError {
+  return object instanceof AppError;
+}
+
+export function newUnknownServerError() {
+  return new AppError('Unknown Server Error', ['Unknown Server Error']);
+}
+
+export class AppError extends Error {
+  errors: string[];
+
+  constructor(message: string, errors: string[] = []) {
+    super(message);
+    this.errors = errors;
+
+    // Set the prototype explicitly.
+    // This ensures that `instanceof` checks work correctly.
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
+}
+
 export function capitalizeString(input: string): string {
   if (!input || typeof input !== 'string' || input.length === 0) {
     return '';
@@ -53,7 +74,7 @@ export function createApiUrl(route: string): string {
 }
 
 export function createShareUrl(recipeId: string): string {
-  return `${BASE_URL}view/${recipeId}`
+  return `${BASE_URL}view/${recipeId}`;
 }
 
 export function isErrorPayload(obj: any): obj is ErrorPayload {

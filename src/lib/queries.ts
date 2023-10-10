@@ -1,8 +1,12 @@
-import { createApiUrl, isErrorPayload } from './util-client';
+import {
+  AppError,
+  createApiUrl,
+  isErrorPayload,
+  newUnknownServerError,
+} from './util-client';
 import {
   AllUnitsQueryPayload,
   BasePayload,
-  CustomError,
   ErrorPayload,
   RecipeQueryPayload,
   UserRecipesQueryPayload,
@@ -13,12 +17,14 @@ async function fetchData<T extends BasePayload>(url: string) {
   const response = await fetch(createApiUrl(url), {
     method: 'GET',
   });
-  const result: T | ErrorPayload = await response.json();
-  console.log('QUERY RESULT', result);
+  let result: T | ErrorPayload;
+  try {
+    result = await response.json();
+  } catch (error) {
+    throw newUnknownServerError();
+  }
   if (!response.ok && isErrorPayload(result)) {
-    const error = new Error() as CustomError;
-    error.errors = result.errors;
-    throw error;
+    throw new AppError(result.message, result.errors);
   }
   if (!isErrorPayload(result)) {
     return result;

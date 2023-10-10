@@ -15,20 +15,12 @@ import {
   ImportRecipeMutationBody,
   ImportRecipeMutationPayload,
 } from 'types/types';
-import { createApiUrl, isErrorPayload } from './util-client';
-
-export class AppError extends Error {
-  errors: string[];
-
-  constructor(message: string, errors: string[] = []) {
-    super(message);
-    this.errors = errors;
-
-    // Set the prototype explicitly.
-    // This ensures that `instanceof` checks work correctly.
-    Object.setPrototypeOf(this, AppError.prototype);
-  }
-}
+import {
+  AppError,
+  createApiUrl,
+  isErrorPayload,
+  newUnknownServerError,
+} from './util-client';
 
 async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   const response = await fetch(createApiUrl(config.apiRoute), {
@@ -41,13 +33,10 @@ async function mutateWithBody<T, K>(config: MutateConfig<T>) {
   try {
     result = await response.json();
   } catch (error) {
-    console.log('mutateWithBody', { error });
-    throw new AppError('Unknown Server Error', ['Unknown Server Error']);
+    throw newUnknownServerError();
   }
   if (!response.ok && isErrorPayload(result)) {
-    const error = new AppError(result.message, result.errors) as CustomError;
-    console.log(error.errors);
-    throw error;
+    throw new AppError(result.message, result.errors);
   }
   console.log('mutateWithBody', result);
   return result as K;

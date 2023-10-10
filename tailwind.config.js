@@ -16,6 +16,9 @@ module.exports = {
         fern: '#047857',
         jungle: '#064e3b',
       },
+      fontFamily: {
+        mono: ['var(--font-roboto_mono)'],
+      },
     },
   },
   plugins: [],

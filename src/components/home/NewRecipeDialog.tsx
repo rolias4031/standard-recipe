@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import {
-  AppError,
-  useCreateNewDraftRecipe,
-  useImportRecipe,
-} from 'lib/mutations';
+import { useCreateNewDraftRecipe, useImportRecipe } from 'lib/mutations';
 import { recipeNameSchema } from 'validation/schemas';
 import { ZodIssue } from 'zod';
 import LoadingSpinner from 'components/common/LoadingSpinner';
 import { ImportRecipeMutationPayload, CustomError } from 'types/types';
 import ImportLoadingModal from './ImportLoadingModal';
 import ImportRecipe from './ImportRecipe';
+import { AppError, isInstanceOfAppError } from 'lib/util-client';
+import ErrorBanner from 'components/common/ErrorBanner';
 
 interface NewRecipeInputs {
   name: string;
@@ -39,7 +37,9 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
     error: importError,
   } = useImportRecipe();
 
-  console.log(importError instanceof AppError && importRecipeStatus, { importError });
+  console.log(importError instanceof AppError && importRecipeStatus, {
+    importError,
+  });
 
   function pushToCreatePage(
     recipeId: string,
@@ -176,9 +176,12 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
         )}
       </div>
       {showLoadingModal ? <ImportLoadingModal /> : null}
-      {importRecipeStatus === 'error' && importError instanceof AppError ? (
-        <div>{importError.errors[0]}</div>
+      {importRecipeStatus === 'error' && isInstanceOfAppError(importError) ? (
+        <ErrorBanner error={importError} />
       ) : null}
+      <ErrorBanner
+        error={new AppError('failure', ['error 1', 'another error occurred'])}
+      />
     </>
   );
 }
