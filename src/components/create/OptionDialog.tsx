@@ -4,10 +4,11 @@ import CheckIcon from 'components/common/icons/CheckIcon';
 import TrashIcon from 'components/common/icons/TrashIcon';
 import { ReactNode } from 'react';
 import AddSubstitutes, { AddSubstitutesProps, SubTag } from './AddSubstitutes';
+import XIcon from 'components/common/icons/XIcon';
 
 export function Card({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col space-y-3 bg-white rounded-t-2xl p-5 md:p-10">
+    <div className="flex flex-col space-y-3 rounded-t-2xl bg-white p-5 md:px-10">
       {children}
     </div>
   );
@@ -21,7 +22,7 @@ export function Heading({
   onDeleteIngredient: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between my-1">
+    <div className="my-1 flex items-center justify-between">
       <span className="font-mono text-2xl text-concrete">{name}</span>
       <ButtonWithConfirm
         confirmComponent={
@@ -72,9 +73,23 @@ export function Substitutes(props: SubstitutesProps) {
   );
 }
 
+export function CloseButton({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex items-center justify-center mb-3">
+      <button
+        className="font-mono text-concrete w-full"
+        onClick={onClose}
+      >
+        close
+      </button>
+    </div>
+  );
+}
+
 export const OptionDialog = {
   Card,
   Heading,
   Notes,
   Substitutes,
+  CloseButton,
 };

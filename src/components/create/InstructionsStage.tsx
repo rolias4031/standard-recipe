@@ -89,8 +89,9 @@ function InstructionsStage({
             ) : null}
           </div>
         )}
-        optionsComponent={
+        optionsComponent={(handleToggleDialog) => (
           <OptionDialog.Card>
+            <OptionDialog.CloseButton onClose={handleToggleDialog} />
             <OptionDialog.Heading
               name={i.order.toString()}
               onDeleteIngredient={() => removeInstructionHandler(i.id)}
@@ -101,7 +102,7 @@ function InstructionsStage({
               onRaiseInput={updateInstructionHandler}
             />
           </OptionDialog.Card>
-        }
+        )}
       />
     ),
   );

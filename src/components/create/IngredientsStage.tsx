@@ -163,9 +163,10 @@ function IngredientsStage({
                     }
                   />
                   <SelectUnit
+                    idForDialogParam={(index + 1).toString()}
                     isDisabled={isDisabled}
                     curUnit={i.unit ? i.unit.unit : null}
-                    onSelectUnit={({ value }) => 
+                    onSelectUnit={({ value }) =>
                       updateUnitHandler({ id: i.id, unitInput: value })
                     }
                     unitOptions={allUnits}
@@ -173,9 +174,10 @@ function IngredientsStage({
                   />
                 </>
               }
-              optionsComponent={
+              optionsComponent={(handleToggleDialog) => (
                 <>
                   <OptionDialog.Card>
+                    <OptionDialog.CloseButton onClose={handleToggleDialog} />
                     <OptionDialog.Heading
                       name={i.name}
                       onDeleteIngredient={() => deleteIngredientHandler(i.id)}
@@ -229,12 +231,12 @@ function IngredientsStage({
                     />
                   </OptionDialog.Card>
                 </>
-              }
+              )}
             />
           );
         })}
       />
-    {isDisabled ? (
+      {isDisabled ? (
         <div
           className="absolute top-0 bottom-0 cursor-not-allowed bg-abyss bg-smoke/40"
           onClick={(e) => e.stopPropagation()}

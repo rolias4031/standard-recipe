@@ -161,6 +161,7 @@ export default function CreateController<
             <div className="flex space-x-4 text-lg">
               {failedImports ? (
                 <ButtonWithDialog
+                  dialogParamName="failedImportsView"
                   styles={{
                     button: {
                       default:
@@ -177,6 +178,7 @@ export default function CreateController<
                 />
               ) : null}
               <ButtonWithDialog
+                dialogParamName="tips"
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',
@@ -190,6 +192,7 @@ export default function CreateController<
                 )}
               />
               <ButtonWithDialog
+                dialogParamName="actionsMenu"
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',
@@ -258,7 +261,7 @@ export default function CreateController<
               <StatusIconDisplay status={updateStatus} size="10" />
               <button
                 type="button"
-                className="flex w-fit items-center justify-center rounded-l-lg bg-fern p-3 md:p-4 shadow-md shadow-abyss/50"
+                className="flex w-fit items-center justify-center rounded-l-lg bg-fern p-3 shadow-md shadow-abyss/50 md:p-4"
                 onClick={createNewInputHandler}
               >
                 <PlusIcon styles={{ icon: 'w-12 h-12 text-white' }} />

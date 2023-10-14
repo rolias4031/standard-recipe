@@ -108,8 +108,9 @@ function EquipmentStage({
                 autoComplete="off"
               />
             )}
-            optionsComponent={
+            optionsComponent={(handleToggleDialog) => (
               <OptionDialog.Card>
+                <OptionDialog.CloseButton onClose={handleToggleDialog} />
                 <OptionDialog.Heading
                   name={e.name}
                   onDeleteIngredient={() => deleteEquipmentHandler(e.id)}
@@ -133,7 +134,7 @@ function EquipmentStage({
                   onRaiseNotes={updateEquipmentHandler}
                 />
               </OptionDialog.Card>
-            }
+            )}
           />
         ),
       )}

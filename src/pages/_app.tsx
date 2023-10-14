@@ -24,7 +24,10 @@ export default function App({
     <ClerkProvider {...pageProps}>
       <QueryClientProvider client={queryClient}>
         <main className={`${roboto.className} ${roboto_mono.variable}`}>
-          <Component {...pageProps} />
+          <div id="app-root">
+            <Component {...pageProps} />
+          </div>
+          <div id="modal-root" />
         </main>
       </QueryClientProvider>
     </ClerkProvider>

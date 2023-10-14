@@ -1,4 +1,26 @@
+import { useRouter } from 'next/router';
 import { useRef, useState } from 'react';
+
+export function useDialogWithCustomParam(customParamName: string) {
+  const router = useRouter();
+  console.log('Query', router.query);
+  const dialogParam = router.query[customParamName];
+
+  function handleToggleDialog(isOpen: boolean) {
+    const previousParams = { ...router.query };
+    delete previousParams[customParamName];
+    const newQueryParams = isOpen
+      ? { ...previousParams, [customParamName]: 'true' }
+      : previousParams;
+    return () => {
+      router.push({ query: newQueryParams }, undefined, { shallow: true });
+    };
+  }
+
+  const isDialogOpen = dialogParam === 'true';
+
+  return { router, isDialogOpen, handleToggleDialog };
+}
 
 export function useDynamicDialog<T extends HTMLElement>() {
   const anchorRef = useRef<T>(null);

@@ -1,6 +1,7 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { ModalBackdrop } from 'components/common/ModalBackdrop';
 import {
+  useDialogWithCustomParam,
   useFixedDialog,
 } from 'components/common/dialog/hooks';
 import { pickStyles } from 'lib/util-client';
@@ -14,7 +15,7 @@ interface FlowInputBlockProps {
     setIsMainInputFocused: Dispatch<SetStateAction<boolean>>,
   ) => ReactNode;
   secondaryInputComponent?: ReactNode;
-  optionsComponent: ReactNode;
+  optionsComponent: (handleToggleDialog: () => void) => ReactNode;
   isDisabled?: boolean;
 }
 
@@ -26,8 +27,11 @@ function FlowInputBlock({
   optionsComponent,
   isDisabled,
 }: FlowInputBlockProps) {
-  const { isDialogOpen: isOptionDialogOpen, handleToggleDialog } =
-    useFixedDialog();
+  const {
+    router,
+    isDialogOpen: isOptionDialogOpen,
+    handleToggleDialog,
+  } = useDialogWithCustomParam(`${order}-options`);
 
   const [isMainInputFocused, setIsMainInputFocused] = useState(false);
 
@@ -83,7 +87,7 @@ function FlowInputBlock({
               e.stopPropagation()
             }
           >
-            {optionsComponent}
+            {optionsComponent(handleToggleDialog(false))}
           </div>
         </ModalBackdrop>
       ) : null}

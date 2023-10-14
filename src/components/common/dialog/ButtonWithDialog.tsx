@@ -1,7 +1,19 @@
 import React, { ReactNode } from 'react';
-import { useFixedDialog } from './hooks';
+import { useDialogWithCustomParam, useFixedDialog } from './hooks';
 import { ModalBackdrop } from '../ModalBackdrop';
 import { pickStyles } from 'lib/util-client';
+import { useRouter } from 'next/router';
+import { isStringType } from 'types/util';
+
+function useExtractCustomDialogParamName(customParam: string) {
+  const router = useRouter();
+  console.log('Query', router.query);
+  const dialogParam = router.query[customParam];
+  if (isStringType(dialogParam) && !Array.isArray(dialogParam)) {
+    return { router, dialogParam };
+  }
+  return { router, dialogParam: undefined };
+}
 
 interface ButtonWithDialogProps {
   dialogComponent?: (
@@ -15,6 +27,7 @@ interface ButtonWithDialogProps {
       isDialogOpen?: [string, string];
     };
   };
+  dialogParamName: string;
 }
 
 function ButtonWithDialog({
@@ -22,14 +35,19 @@ function ButtonWithDialog({
   buttonContent,
   isDisabled,
   styles,
+  dialogParamName,
 }: ButtonWithDialogProps) {
-
-  const { isDialogOpen, handleToggleDialog } = useFixedDialog()
-
-  const isOpenStyle = styles?.button?.isDialogOpen ? styles.button.isDialogOpen[0] : undefined
-  const isNotOpenStyle = styles?.button?.isDialogOpen ? styles.button.isDialogOpen[1] : undefined
-
   
+  const { router, isDialogOpen, handleToggleDialog } =
+    useDialogWithCustomParam(dialogParamName);
+
+  const isOpenStyle = styles?.button?.isDialogOpen
+    ? styles.button.isDialogOpen[0]
+    : undefined;
+  const isNotOpenStyle = styles?.button?.isDialogOpen
+    ? styles.button.isDialogOpen[1]
+    : undefined;
+
   return (
     <>
       <button
@@ -38,7 +56,7 @@ function ButtonWithDialog({
         className={pickStyles(styles?.button.default, [
           isDialogOpen,
           isOpenStyle,
-          isNotOpenStyle
+          isNotOpenStyle,
         ])}
       >
         {buttonContent}

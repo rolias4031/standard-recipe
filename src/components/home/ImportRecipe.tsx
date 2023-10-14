@@ -15,11 +15,11 @@ function ImportRecipe({
   raiseRecipeImportText,
   onImportRecipe,
   canStartImport,
-  onGoBack
+  onGoBack,
 }: ImportRecipeDialogProps) {
   return (
     <div className="flex flex-col space-y-4">
-      <button className='w-fit' onClick={onGoBack}>
+      <button className="w-fit" onClick={onGoBack}>
         <ArrowLeftIcon styles={{ icon: 'w-9 h-9 text-concrete' }} />
       </button>
       <div className="text-center">
@@ -49,6 +49,7 @@ function ImportRecipe({
           </button>
           <div>
             <ButtonWithDialog
+              dialogParamName="confirmImport"
               isDisabled={!canStartImport}
               styles={{
                 button: {

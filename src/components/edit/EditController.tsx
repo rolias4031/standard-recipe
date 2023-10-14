@@ -102,6 +102,7 @@ export function EditController<
             </div>
             <div className="flex space-x-4 text-lg">
               <ButtonWithDialog
+                dialogParamName="tips"
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',
@@ -116,6 +117,7 @@ export function EditController<
                 )}
               />
               <ButtonWithDialog
+                dialogParamName="menu"
                 styles={{
                   button: {
                     default: 'p-1 rounded-lg bg-fern',

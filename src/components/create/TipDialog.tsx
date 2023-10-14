@@ -10,7 +10,7 @@ const subheaderClass = 'text-lg underline';
 export function TipDialogCard({ children }: { children: ReactNode }) {
   return (
     <div
-      className="fixed flex flex-col bottom-0 left-0 right-0 max-h-[90vh] rounded-t-2xl bg-white p-5 md:px-10 md:py-5"
+      className="flex flex-col h-full bg-white p-5 md:px-10 lg:w-2/3 lg:h-5/6 lg:rounded-2xl"
       onClick={stopRootDivPropagation}
     >
       {children}
