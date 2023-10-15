@@ -45,7 +45,7 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
     recipeId: string,
     failedImports?: ImportRecipeMutationPayload['failedImports'],
   ) {
-    const baseParams = { recipeId, stage: 'ingredients' };
+    const baseParams = { recipeId, stage: 'ingredients', isFromImport: 'true' };
     const queryParams = failedImports
       ? {
           ...baseParams,
@@ -179,9 +179,6 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
       {importRecipeStatus === 'error' && isInstanceOfAppError(importError) ? (
         <ErrorBanner error={importError} />
       ) : null}
-      <ErrorBanner
-        error={new AppError('failure', ['error 1', 'another error occurred'])}
-      />
     </>
   );
 }

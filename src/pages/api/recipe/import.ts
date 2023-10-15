@@ -301,6 +301,7 @@ function prepareIngredientCreateInputs(
   const ingredients: Prisma.IngredientCreateInput[] = aiIngredients.map(
     (ing, idx) => {
       const unit = allUnits.find((u) => u.unit === ing.unit);
+      const parsedIngName = ing.name.toLowerCase()
       return {
         recipe: {
           connect: {
@@ -310,10 +311,10 @@ function prepareIngredientCreateInputs(
         name: {
           connectOrCreate: {
             where: {
-              name: ing.name,
+              name: parsedIngName,
             },
             create: {
-              name: ing.name,
+              name: parsedIngName,
             },
           },
         },

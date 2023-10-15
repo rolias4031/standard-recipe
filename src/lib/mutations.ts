@@ -155,6 +155,18 @@ export async function importRecipeMutation(
   });
 }
 
+export async function initAllIngredientUnits() {
+  return mutateWithBody({
+    method: 'POST',
+    apiRoute: 'api/ingredient_units/init_all_units',
+    body: {},
+  });
+}
+
+export function useInitAllIngredientUnits() {
+  return useMutation({ mutationFn: initAllIngredientUnits });
+}
+
 export function useImportRecipe() {
   return useMutation({ mutationFn: importRecipeMutation });
 }

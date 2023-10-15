@@ -28,11 +28,14 @@ import FailedImportsModal from './FailedImportsModal';
 
 function useExtractQueryParams() {
   const router = useRouter();
-  const { failedImports } = router.query;
-  if (Array.isArray(failedImports) && !isStringType(failedImports)) {
-    return { router, failedImports };
-  }
-  return { router, failedImports: undefined };
+  const { failedImports, isFromImport } = router.query;
+  const hasFailedImports =
+    Array.isArray(failedImports) && !isStringType(failedImports);
+  return {
+    router,
+    failedImports: hasFailedImports ? failedImports : undefined,
+    isFromImport: isStringType(isFromImport) ? isFromImport : undefined,
+  };
 }
 
 export function useControllerModalStates() {
@@ -90,7 +93,7 @@ export default function CreateController<
   controllerConfig,
   extraHeaderComponent,
 }: CreateControllerProps<T>) {
-  const { router, failedImports } = useExtractQueryParams();
+  const { router, failedImports, isFromImport } = useExtractQueryParams();
 
   const {
     stageName,
@@ -282,6 +285,23 @@ export default function CreateController<
           recipeId={recipeId}
           onClose={handleTogglePublishDialog(false)}
         />
+      ) : null}
+      {isFromImport === 'true' ? (
+        <ModalBackdrop modalRoot="modal-root">
+          <div className="rounded-2xl bg-white p-5">
+            <div className="flex-column flex items-center">
+              <div>Import Success!</div>
+              {failedImports ? (
+                <div>Some imports failed</div>
+              ) : (
+                <div>
+                  Everything went smoothly, but you should still double check
+                  for errors.
+                </div>
+              )}
+            </div>
+          </div>
+        </ModalBackdrop>
       ) : null}
     </>
   );
