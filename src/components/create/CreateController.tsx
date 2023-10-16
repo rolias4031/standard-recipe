@@ -25,6 +25,7 @@ import { StageTab } from 'components/edit/EditController';
 import { useFixedDialog } from 'components/common/dialog/hooks';
 import { isStringType } from 'types/util';
 import FailedImportsModal from './FailedImportsModal';
+import CircleCheckIcon from 'components/common/icons/CircleCheckIcon';
 
 function useExtractQueryParams() {
   const router = useRouter();
@@ -151,6 +152,18 @@ export default function CreateController<
       pathname: '/view/[recipeId]',
       query: { recipeId },
     });
+  }
+
+  function closeImportSuccessModal() {
+    const newParams = { ...router.query };
+    delete newParams.isFromImport;
+    router.push(
+      {
+        query: newParams,
+      },
+      undefined,
+      { shallow: true },
+    );
   }
 
   return (
@@ -287,10 +300,15 @@ export default function CreateController<
         />
       ) : null}
       {isFromImport === 'true' ? (
-        <ModalBackdrop modalRoot="modal-root">
+        <ModalBackdrop modalRoot="modal-root" onClose={closeImportSuccessModal}>
           <div className="rounded-2xl bg-white p-5">
-            <div className="flex-column flex items-center">
-              <div>Import Success!</div>
+            <div className="flex flex-col items-center space-y-3">
+              <div className="flex items-center space-x-2">
+                <span className="font-mono text-2xl text-indigo-500">
+                  Import Success
+                </span>
+                <CircleCheckIcon styles={{ icon: 'w-9 h-9 text-indigo-500' }} />
+              </div>
               {failedImports ? (
                 <div>Some imports failed</div>
               ) : (
@@ -299,6 +317,7 @@ export default function CreateController<
                   for errors.
                 </div>
               )}
+              <button className="font-mono text-lg text-concrete">close</button>
             </div>
           </div>
         </ModalBackdrop>

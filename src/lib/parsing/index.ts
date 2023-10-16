@@ -56,7 +56,7 @@ export function useBuildSmartInstructionArray({
 > {
   return useMemo(() => {
     console.log('items', items);
-    console.log('unitStringsForRegex', unitStringsForRegex)
+    console.log('unitStringsForRegex', unitStringsForRegex);
 
     // sort items by number of words in name - largest go first otherwise small will break large.
     const sortedItems = sortItemsInDescending(items);
@@ -73,6 +73,7 @@ export function useBuildSmartInstructionArray({
     // go over array and replace markdown with full objects
     // detect by markdown opening char and replace from itemMap
     const itemMap = buildItemMap(items);
+    console.log('itemMap', itemMap);
     return descriptionArray.map((segment) => {
       if (segment.startsWith(markdownConfig.items[0])) {
         return buildObject.items(segment, itemMap);

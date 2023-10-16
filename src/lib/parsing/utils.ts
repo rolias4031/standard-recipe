@@ -108,8 +108,10 @@ export const buildObject = {
     segment: string,
     itemMap: Map<string, IngredientWithAll | EquipmentWithAll>,
   ) => {
+    console.log('buildObject');
     const itemText = removeMarkdown(segment);
     const obj = itemMap.get(itemText.toLowerCase());
+    console.log('buildObject', itemText, obj);
     return obj ? { ...obj, text: itemText } : segment;
   },
   measurements: (

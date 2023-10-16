@@ -1,7 +1,10 @@
 import { getAuth } from '@clerk/nextjs/server';
 import { IngredientUnit, Prisma } from '@prisma/client';
 import { prisma } from 'lib/prismadb';
-import { ERROR_RESPONSES } from 'lib/server/constants';
+import {
+  ERROR_RESPONSES,
+  IMPORT_RECIPES_COMPLETION_INIT,
+} from 'lib/server/constants';
 import {
   apiHandler,
   connectIngredientUnit,
@@ -40,15 +43,6 @@ interface AiInstruction {
   description: string;
   order: number;
 }
-
-const IMPORT_RECIPES_COMPLETION_INIT = {
-  INGREDIENTS:
-    "Hello, you are IngredientGPT. Your job is to parse the recipes I give you and list all the unique ingredients in it. When listing out ingredients, you should put them into a JSON object with the following structure: { inputs: [{ name: string, quantity: float, unit: string, notes: string }] }. These properties must always be present. If you cannot find one of them, use either an empty string or the number 0.\nHere are specific instructions for some of the fields. For the name, only include what is necessary for the recipe. Leave out brand names and other specifiers like 'organic' and 'all natural'.\nFor the unit, include the full, singular name of the unit. So instead of tbsp, use tablespoon. Instead of oz, use ounce.\nFor the notes, include any other information that seems relevant to the ingredient. For instance, here you can put brand names and other specifiers, like 'organic' and 'all-natural'.\nYou should only return the JSON object. If you cannot find any ingredients or the text does not resemble a recipe, then return the JSON object with an empty inputs array. Thank you!",
-  EQUIPMENT:
-    'Hello, you are EquipmentGPT. Your job is to parse the recipes I give you and list all the unique equipment in it. When listing out equipment, you should put them into a JSON object with the following structure: { inputs: [{ name: string, notes: string }] }. These properties must always be present. Use an empty string if you cannot find one of them.\nHere are specific instructions for some of the fields. For the name, only include what is necessary for the recipe. Leave out brand names and other specifiers.\nFor the notes, include any other information that seems relevant to the ingredient. For instance, here you can put brand names and other specifiers that did not go in the name.\nYou should only return the JSON object. If you cannot find any equipment, or the text does not resemble a recipe, then return the JSON object with an empty inputs array. Thank you!',
-  INSTRUCTIONS:
-    'Hello, you are InstructionGPT. Your job is to parse the recipes I give you and list all the unique instructions in it. When listing out instructions, you should put them into a JSON object with the following structure: { inputs: [{ description: string, order: number }] }. These properties must always be present. Use an empty string or the number 0 if you cannot find a property.\nHere are specific instructions for some of the fields. For the description, if the recipe comes with numbered instructions already, just use those. However, if the recipe has just unstructured text or very loose instructions, group them as you see fit. For the order, assign this based on the order you receive the instructions. If you cannot find any equipment, or the text does not resemble a recipe, then return the JSON object with an empty inputs array. Thank you!',
-};
 
 const openAI = new OpenAI({
   apiKey: process.env.OPEN_AI_API_KEY,
@@ -229,7 +223,7 @@ async function handler(
     },
   );
 
-  console.log('FAILED IMPORTS', failedImports)
+  console.log('FAILED IMPORTS', failedImports);
 
   const hasFailedImports =
     failedImports.ingredients > 0 ||
@@ -269,6 +263,8 @@ function prepareEquipmentCreateInputs(
 ) {
   const equipment: Prisma.EquipmentCreateInput[] = aiEquipment.map(
     (eq, idx) => {
+      const parsedEquipmentName = eq.name.toLowerCase();
+      console.log('parsedEquipmentName', parsedEquipmentName);
       return {
         recipe: {
           connect: {
@@ -278,10 +274,10 @@ function prepareEquipmentCreateInputs(
         name: {
           connectOrCreate: {
             where: {
-              name: eq.name,
+              name: parsedEquipmentName,
             },
             create: {
-              name: eq.name,
+              name: parsedEquipmentName,
             },
           },
         },
@@ -301,7 +297,7 @@ function prepareIngredientCreateInputs(
   const ingredients: Prisma.IngredientCreateInput[] = aiIngredients.map(
     (ing, idx) => {
       const unit = allUnits.find((u) => u.unit === ing.unit);
-      const parsedIngName = ing.name.toLowerCase()
+      const parsedIngName = ing.name.toLowerCase();
       return {
         recipe: {
           connect: {
