@@ -157,7 +157,7 @@ export function buildItemMap(
   items.forEach((i) => {
     const itemName = i.name?.name;
     if (!itemName) return;
-    itemMap.set(itemName, i);
+    itemMap.set(itemName.toLowerCase(), i);
   });
   return itemMap;
 }
