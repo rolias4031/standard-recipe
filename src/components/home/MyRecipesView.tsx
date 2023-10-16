@@ -9,18 +9,14 @@ import SliderIcon from 'components/common/icons/SliderIcon';
 import { pickStyles } from 'lib/util-client';
 import ChevronDownIcon from 'components/common/icons/ChevronDownIcon';
 import { capitalize } from 'lodash';
-import PlusIcon from 'components/common/icons/PlusIcon';
 import { Url } from 'next/dist/shared/lib/router/router';
-import { useRouter } from 'next/router';
 import { buildHomePageNavUrl } from './util';
-import { useInitAllIngredientUnits } from 'lib/mutations';
 
 interface MyRecipesViewProps {
   recipes: Recipe[];
 }
 
 export function MyRecipesView({ recipes }: MyRecipesViewProps) {
-  const router = useRouter();
   const [isFilterOptionsOpen, setIsFilterOptionsOpen] = useState(false);
   const {
     filteredRecipes,

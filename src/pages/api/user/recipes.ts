@@ -17,11 +17,17 @@ async function handler(
     });
   }
 
-  const recipes = await prisma.recipe.findMany({
-    where: {
-      authorId: session.userId,
-    },
-  });
+  const isAdminUser = session.userId === process.env.APP_ADMIN_USER_ID;
+
+  const recipeQuery = isAdminUser
+    ? undefined
+    : {
+        where: {
+          authorId: session.userId,
+        },
+      };
+
+  const recipes = await prisma.recipe.findMany(recipeQuery);
 
   return res.status(200).json({
     message: 'success',
@@ -29,4 +35,4 @@ async function handler(
   });
 }
 
-export default apiHandler(handler)
+export default apiHandler(handler);
