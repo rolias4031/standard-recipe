@@ -162,14 +162,6 @@ export function buildItemMap(
   return itemMap;
 }
 
-type SmartInstructionSegment = Array<
-  | string
-  | IngredientWithAll
-  | EquipmentWithAll
-  | InstructionMeasurement
-  | InstructionTemperature
->;
-
 export function getAppropriateUnitsByProperty(
   property: UnitProperty | undefined,
   unitsByProperty: Partial<Record<UnitProperty, IngredientUnit[] | undefined>>,
