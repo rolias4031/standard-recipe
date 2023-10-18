@@ -44,8 +44,9 @@ function NewRecipeDialog({ existingRecipeNames }: NewRecipeDialogProps) {
   function pushToCreatePage(
     recipeId: string,
     failedImports?: ImportRecipeMutationPayload['failedImports'],
+    isFromImport: string = 'false',
   ) {
-    const baseParams = { recipeId, stage: 'ingredients', isFromImport: 'true' };
+    const baseParams = { recipeId, stage: 'ingredients', isFromImport };
     const queryParams = failedImports
       ? {
           ...baseParams,
