@@ -108,12 +108,15 @@ function EquipmentStage({
                 autoComplete="off"
               />
             )}
-            optionsComponent={(handleToggleDialog) => (
+            optionsComponent={(handleToggleDialogOff) => (
               <OptionDialog.Card>
-                <OptionDialog.CloseButton onClose={handleToggleDialog} />
+                <OptionDialog.CloseButton onClose={handleToggleDialogOff} />
                 <OptionDialog.Heading
                   name={e.name}
-                  onDeleteIngredient={() => deleteEquipmentHandler(e.id)}
+                  onDeleteIngredient={() => {
+                    deleteEquipmentHandler(e.id);
+                    handleToggleDialogOff();
+                  }}
                 />
                 <div className="flex space-x-5 text-lg">
                   <OptionalInput

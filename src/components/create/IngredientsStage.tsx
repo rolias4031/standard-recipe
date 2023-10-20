@@ -174,13 +174,16 @@ function IngredientsStage({
                   />
                 </>
               }
-              optionsComponent={(handleToggleDialog) => (
+              optionsComponent={(handleToggleDialogOff) => (
                 <>
                   <OptionDialog.Card>
-                    <OptionDialog.CloseButton onClose={handleToggleDialog} />
+                    <OptionDialog.CloseButton onClose={handleToggleDialogOff} />
                     <OptionDialog.Heading
                       name={i.name}
-                      onDeleteIngredient={() => deleteIngredientHandler(i.id)}
+                      onDeleteIngredient={() => {
+                        deleteIngredientHandler(i.id);
+                        handleToggleDialogOff();
+                      }}
                     />
                     <div className="flex space-x-5 text-lg">
                       <OptionalInput
