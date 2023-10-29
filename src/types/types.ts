@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
 import { Equipment, IngredientUnit, Instruction, Recipe } from '@prisma/client';
 import { FlowIngredient, RecipeWithFull } from './models';
+import { User } from '@clerk/nextjs/dist/api';
 
 export type Stage = 'ingredients' | 'equipment' | 'instructions';
 
@@ -64,16 +65,16 @@ export interface ImportRecipeMutationBody {
 }
 
 export interface ImportRecipeMutationPayload extends BasePayload {
-  importedRecipeId: string
+  importedRecipeId: string;
   failedImports?: {
-    ingredients: number,
-    equipment: number,
-    instructions: number
-  }
+    ingredients: number;
+    equipment: number;
+    instructions: number;
+  };
 }
 
 export interface PublishRecipeMutationBody {
-  recipeId: Recipe['id']
+  recipeId: Recipe['id'];
 }
 
 export interface DeleteRecipeMutationBody {
@@ -104,6 +105,11 @@ export interface RecipeQueryPayload extends BasePayload {
 
 export interface UserRecipesQueryPayload extends BasePayload {
   recipes: Recipe[];
+}
+
+export interface AppRecipesAndUsersQueryPayload extends BasePayload {
+  appRecipes: Recipe[];
+  appUsers: User[];
 }
 
 export interface CreateNewRecipeMutationPayload extends BasePayload {

@@ -6,6 +6,7 @@ import {
 } from './util-client';
 import {
   AllUnitsQueryPayload,
+  AppRecipesAndUsersQueryPayload,
   BasePayload,
   ErrorPayload,
   RecipeQueryPayload,
@@ -34,19 +35,13 @@ async function fetchData<T extends BasePayload>(url: string) {
 async function fetchUserRecipes() {
   return fetchData<UserRecipesQueryPayload>('api/user/recipes');
 }
-
-async function fetchRecipeById(recipeId: string) {
-  return fetchData<RecipeQueryPayload>(`api/recipe/${recipeId}`);
-}
-
-async function fetchAllUnits() {
-  return fetchData<AllUnitsQueryPayload>('api/ingredient_units/all');
-}
-
 export function useGetUserRecipes() {
   return useQuery({ queryKey: ['user', 'recipes'], queryFn: fetchUserRecipes });
 }
 
+async function fetchRecipeById(recipeId: string) {
+  return fetchData<RecipeQueryPayload>(`api/recipe/${recipeId}`);
+}
 export function useGetRecipeById(recipeId: string) {
   return useQuery({
     queryKey: ['recipe', recipeId],
@@ -55,11 +50,22 @@ export function useGetRecipeById(recipeId: string) {
   });
 }
 
+async function fetchAllUnits() {
+  return fetchData<AllUnitsQueryPayload>('api/ingredient_units/all');
+}
+
 export function useGetAllUnits() {
   return useQuery({
     queryKey: ['all units'],
     queryFn: fetchAllUnits,
   });
+}
+
+async function fetchAppRecipesAndUsers() {
+  return fetchData<AppRecipesAndUsersQueryPayload>('api/admin');
+}
+export function useGetAppRecipesAndUsers() {
+  return useQuery({ queryKey: ['admin'], queryFn: fetchAppRecipesAndUsers });
 }
 
 export function useGetRecipeViewData(recipeId: string) {

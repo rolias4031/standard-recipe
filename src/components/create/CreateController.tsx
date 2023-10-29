@@ -26,6 +26,7 @@ import { useFixedDialog } from 'components/common/dialog/hooks';
 import { isStringType } from 'types/util';
 import FailedImportsModal from './FailedImportsModal';
 import CircleCheckIcon from 'components/common/icons/CircleCheckIcon';
+import ConvertFractionDialog from 'components/common/dialog/ConvertFractionDialog';
 
 function useExtractQueryParams() {
   const router = useRouter();
@@ -205,6 +206,20 @@ export default function CreateController<
                 }
                 dialogComponent={(handleToggleDialog) => (
                   <TipDialog onClose={handleToggleDialog(false)} />
+                )}
+              />
+              <ButtonWithDialog
+                dialogParamName="convert"
+                styles={{
+                  button: {
+                    default: 'p-1 rounded-lg bg-fern',
+                  },
+                }}
+                buttonContent={
+                  <span className="font-mono text-base text-white">1/3</span>
+                }
+                dialogComponent={(handleToggleDialog) => (
+                  <ConvertFractionDialog onClose={handleToggleDialog(false)} />
                 )}
               />
               <ButtonWithDialog
