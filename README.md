@@ -1,6 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-### [standardrecipe.com](https://www.standardrecipe.com/)
+### Live at [standardrecipe.com](https://www.standardrecipe.com/)
 
 ### About
 Standard Recipe makes creating, sharing, and viewing recipes a breeze. It offers an intuitive creation flow, dedicated pages to view recipes, and a smart viewer that embeds information into your recipes, such as quick conversions, notes, and substitutions.
@@ -13,3 +11,5 @@ Standard Recipe makes creating, sharing, and viewing recipes a breeze. It offers
 
 ### Powered By
 Vercel, Clerk Auth, PlanetScale, and OpenAI
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
