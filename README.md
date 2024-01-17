@@ -12,4 +12,4 @@ Standard Recipe makes creating, sharing, and viewing recipes a breeze. It offers
 4. The App also features the quickest and most accurate recipe import feature on the web using OpenAI. Simply copy and paste your recipe, and Standard Recipe will break it down into ingredients, equipment, and instructions and give it all the benefits we offer.
 
 ### Powered By
-Vercel, Clerk Auth, and OpenAI
+Vercel, Clerk Auth, PlanetScale, and OpenAI
