@@ -1,5 +1,5 @@
 import { Recipe } from '@prisma/client';
-import React, { ReactNode } from 'react';
+import React from 'react';
 
 interface ViewModeRouterProps {
   status: Recipe['status'];

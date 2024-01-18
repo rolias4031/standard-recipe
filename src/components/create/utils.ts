@@ -18,11 +18,17 @@ export function navigateToStage(
     recipeId,
     stage,
     shallow,
-  }: { recipeId: string; stage: Stage; shallow?: boolean },
+    isEditMode,
+  }: {
+    recipeId: string;
+    stage: Stage;
+    shallow?: boolean;
+    isEditMode?: boolean;
+  },
 ) {
   return router.push(
     {
-      pathname: '/create/[recipeId]',
+      pathname: `/${isEditMode ? 'edit' : 'create'}/[recipeId]`,
       query: { recipeId, stage },
     },
     undefined,

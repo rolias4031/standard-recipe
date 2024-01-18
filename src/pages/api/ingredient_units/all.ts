@@ -19,8 +19,6 @@ async function handler(
 
   const units = await prisma.ingredientUnit.findMany();
 
-  console.log('ALL UNITS', units)
-
   return res.status(200).json({
     units,
     message: 'success',

@@ -82,6 +82,7 @@ export function EditController<
         recipeId,
         stage: newStage,
         shallow: true,
+        isEditMode: true,
       });
   }
 

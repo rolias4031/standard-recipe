@@ -73,3 +73,20 @@ export function useGetRecipeViewData(recipeId: string) {
   const unitsQuery = useGetAllUnits();
   return { recipeQuery, unitsQuery };
 }
+
+export function fetchExampleRecipe() {
+  return fetchData<RecipeQueryPayload>('api/recipe/landing_page_example');
+}
+
+export function useGetExampleRecipe() {
+  return useQuery({
+    queryKey: ['example'],
+    queryFn: fetchExampleRecipe,
+  });
+}
+
+export function useGetExampleRecipeViewData() {
+  const exampleRecipeQuery = useGetExampleRecipe();
+  const unitsQuery = useGetAllUnits();
+  return { exampleRecipeQuery, unitsQuery };
+}
