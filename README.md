@@ -1,38 +1,19 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+### Live at [standardrecipe.com](https://www.standardrecipe.com/)
 
-## Getting Started
+### About
+Standard Recipe makes creating, sharing, and viewing recipes a breeze. It offers an intuitive creation flow, dedicated pages to view recipes, and a smart viewer that embeds information into your recipes, such as quick conversions, notes, and substitutions.
 
-First, run the development server:
+### Features
+1. Standard Recipe makes recipe easy to create using our intuitive creation flow
+2. Standard Recipe makes recipes easy to share by giving each of your recipes a dedicated link
+3. Standard Recipe makes recipes easy to use through our smart features that put valuable information about the recipe right at your fingertips, like important notes, substitutions, quantities, and instant conversions. Focus on cooking, not scrolling up and down with flour-covereed fingers because you forget how many teaspoons of extract to add.
+4. The App also features the quickest and most accurate recipe import feature on the web using OpenAI. Simply copy and paste your recipe, and Standard Recipe will break it down into ingredients, equipment, and instructions and give it all the benefits we offer.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+### Future
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Eventually, I'd love to make Standard Recipe the GitHub for recipes, where people apply all the basics of git, but also have a dedicated platform with great features for creating, sharing, and viewing. As of right now, such an app doesn't exist.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+### Powered By
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- Next.js, Typescript, Prisma, & Tailwindcss
+- Vercel, Clerk Auth, PlanetScale, and OpenAI
