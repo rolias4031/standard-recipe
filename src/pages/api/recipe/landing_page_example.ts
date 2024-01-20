@@ -9,12 +9,6 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<RecipeQueryPayload | ErrorPayload>,
 ) {
-  const session = getAuth(req);
-  if (!session || !session.userId) {
-    return ERROR_RESPONSES.UNAUTHORIZED(res);
-  }
-
-  // Admin id is an env variable. use this.
   const exampleRecipe = await prisma.recipe.findFirst({
     where: {
       name: 'Beef Wellington',
